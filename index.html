@@ -315,6 +315,8 @@ const MIGRATIONS=[
  S=>{S.pantry.forEach(p=>{p.t=p.t||kType(p.name)||(p.days!=null?'per':'oth')})},
  // v10: onions, flour, stock and canned tomatoes are tracked now; move any sitting in Other
  S=>{S.pantry.forEach(p=>{if(p.t=='oth'){const t=kType(p.name,p.name);if(t)p.t=t}})},
+ // v11: Perishables become Produce (dairy moves to Proteins or Misc), garnishes join the sauces, Other is Misc
+ S=>{S.pantry.forEach(p=>{if(p.t=='gar'||p.t=='per'||p.t=='oth'){const t=kType(p.name,p.name);p.t=t||(p.t=='gar'?'sauce':p.t=='per'?'per':'oth')}})},
 ];
 // A brand-new setup: run every migration, then put back the sample's stated time
 function fresh(){S=seed();migrate();S.recipes.forEach(r=>r.time=num(sample().time))}
@@ -468,27 +470,37 @@ const leftTxt=n=>n==null?'':n<0?'past due':n==0?'use today':n+' day'+(n==1?'':'s
 function perishList(lines){const out=[],seen=new Set();lines.forEach(l=>{const x=perish(l);if(x){const k=nkey(x.name);if(!seen.has(k)){seen.add(k);out.push(x)}}});return out}
 function addPantry(name,days,t){const k=nkey(name),ex=S.pantry.find(p=>nkey(p.name)==k);if(ex){ex.added=tdy();ex.days=days;if(t)ex.t=t}else S.pantry.push({id:uid('p'),name:cap(name.trim()),added:tdy(),days,t:t||kType(name)||'oth'})}
 
-// ---- Kitchen groups: the few things that decide what's for dinner ----
-// Not a full pantry. Spices, oil, salt, sugar, vinegar and garlic are assumed on hand.
-const KG=[['carb','Carbs','Rice, pasta, flour, tortillas, potatoes'],['pro','Proteins','Tofu, eggs, chickpeas, chicken'],['per','Perishables','Onions, spinach, mushrooms, milk'],['sauce','Sauces','Soy sauce, stock, canned tomatoes, pesto'],['gar','Garnishes','Cilantro, scallions, sesame seeds'],['oth','Other','']];
-const KGC={carb:'#e0a030',pro:'#e8435a',per:'#1fa971',sauce:'#c0392b',gar:'#5aa85a',oth:'#94706f'};
+// ---- Kitchen groups: what decides what's for dinner ----
+// Only spices, oil, salt and pepper, white sugar and garlic (and water) are assumed on hand. Everything else is tracked.
+const KG=[['carb','Carbs','Rice, pasta, flour, tortillas, potatoes'],['pro','Proteins','Tofu, eggs, chickpeas, cheese'],['per','Produce','Onions, spinach, cilantro, lemons'],['sauce','Prepared sauces & garnishes','Soy sauce, stock, canned tomatoes, pickled onions'],['oth','Misc','Chocolate chips, butter, coconut milk, vanilla']];
+const KGO=KG[KG.length-1],kgOf=t=>KG.find(x=>x[0]==t)||KGO;
+const KGC={carb:'#e0a030',pro:'#e8435a',per:'#1fa971',sauce:'#c0392b',oth:'#8e5fc0'};
 const kre=a=>new RegExp('(?:^|[^a-z])(?:'+a.join('|')+')(?![a-z])','i');
-const KT_SAUCE=kre(['broth','stock','bouillon','passata','tomato paste','tomato puree','san marzano tomatoes','soy sauce','tamari','shoyu','fish sauce','oyster sauce','hoisin','teriyaki','ponzu','sriracha','hot sauce','chili sauce','sweet chili','chili garlic sauce','black bean sauce','gochujang','doenjang','miso','tahini','pesto','salsa(?: verde| roja)?','marinara','pasta sauce','tomato sauce','pizza sauce','enchilada sauce','curry paste','harissa','chili crisp','chili oil','chimichurri','tzatziki','hummus','bbq sauce','barbecue sauce','ketchup','(?:dijon |whole grain |yellow )?mustard','mayo(?:nnaise)?','aioli','worcestershire','sambal(?: oelek)?','zhoug|zhug|schug','chutney','tamarind','mole','alfredo','ranch','dressing','vinaigrette','peanut sauce','peanut butter','almond butter','coconut aminos','liquid aminos','tikka masala sauce','buffalo sauce','jerk sauce','amba']),
- KT_SKIP=kre(['powder','extract','starch','vinegar','wine','bread ?crumbs','panko','juice of','vanilla beans?','coffee','oil','spray','water','salt','sugar','baking soda','baking powder','yeast','garlic','cloves?']),
- KT_GAR=kre(['cilantro','coriander leaves','parsley','basil','mint','dill','chives','scallions?','green onions?','spring onions?','sesame seeds','furikake','nori','microgreens','(?<!brussels )sprouts','pickled [a-z]+','pickles?','crispy (?:shallots|onions|garlic)','fried (?:shallots|onions)','pepitas','pumpkin seeds','pomegranate(?: seeds| arils)?','croutons','everything bagel seasoning','(?:toasted |roasted |chopped )?(?:peanuts|cashews|pine nuts|almonds|walnuts|pecans|pistachios)','lime wedges','lemon wedges','avocado','sour cream','crema','cotija','queso fresco']),
+// Assumed on hand: spices (and dried herbs), oil, salt and pepper, white sugar, garlic, water
+const KA_DRY=/\b(dried|ground)\s+(basil|oregano|thyme|rosemary|sage|parsley|dill|mint|marjoram|tarragon|cumin|coriander|ginger|cinnamon|nutmeg|cloves?|cardamom|turmeric|mustard|fennel|allspice|black pepper|white pepper|pepper|chil(?:i|e|ies|es)|herbs|bay leaves|chipotle|ancho|sumac|savory)\b/,
+ KA_SPICE=kre(['cumin(?: seeds)?','coriander seeds','(?:smoked |sweet |hot )?paprika','turmeric','chil[ie] powder','curry powder','garam masala','cinnamon(?: sticks?)?','nutmeg','cardamom(?: pods)?','cayenne(?: pepper)?','allspice','bay leaf','bay leaves','red pepper flakes','chil[ie] flakes','crushed red pepper(?: flakes)?','aleppo pepper','urfa biber','sumac',"za'?atar",'five[- ]spice(?: powder)?','star anise','fennel seeds','mustard seeds','nigella seeds','fenugreek','asafoetida','hing','saffron','(?<!everything bagel )seasoning','italian seasoning','herbes de provence','old bay','garlic powder','onion powder','ginger powder','chipotle powder','msg','whole cloves','ras el hanout','baharat','berbere','dukkah','shichimi(?: togarashi)?','gochugaru','sichuan peppercorns','white pepper','black pepper','peppercorns','celery salt','garlic salt','celery seeds?','caraway seeds?','poppy seeds','dry mustard','mustard powder','cloves(?= ?$)']),
+ KA_OIL=/\boil\b|cooking spray|nonstick spray/,
+ KA_SALT=/\b(?:kosher |sea |table |fine |flaky |coarse )?salt\b/,
+ KA_PEPPER=/(?<!bell |red |green |yellow |orange |jalape[ñn]o |chil[ie] |hot |sweet |banana |cherry |poblano |serrano |shishito |roasted red |piquillo |padr[oó]n |scotch bonnet |habanero )\bpepper(?:corns)?\b(?!s| jack)/,
+ KA_SUGAR=/\bsugar\b/,KA_NOTSUGAR=/\b(brown|powdered|confectioners'?|icing|coconut|palm|demerara|turbinado|muscovado|maple|raw|vanilla|cinnamon|pearl|sanding)\s+sugar\b/,
+ KA_GARLIC=/\bgarlic\b/,KA_WATER=/^\s*(?:(?:hot|cold|warm|boiling|ice|filtered|lukewarm|tap)\s+)?(?:water|ice)\s*$/;
+const KT_SAUCE=kre(['broth','stock','bouillon','passata','tomato paste','tomato puree','san marzano tomatoes','vinegar','mirin','soy sauce','tamari','shoyu','fish sauce','oyster sauce','hoisin','teriyaki','ponzu','sriracha','hot sauce','chili sauce','sweet chili','chili garlic sauce','black bean sauce','gochujang','doenjang','miso','tahini','pesto','salsa(?: verde| roja)?','marinara','pasta sauce','tomato sauce','pizza sauce','enchilada sauce','curry paste','harissa','chili crisp','chil[il] oil','chimichurri','tzatziki','hummus','bbq sauce','barbecue sauce','ketchup','(?:dijon |whole grain |yellow )?mustard','mayo(?:nnaise)?','aioli','worcestershire','sambal(?: oelek)?','zhoug|zhug|schug','chutney','tamarind','mole','alfredo','ranch','dressing','vinaigrette','peanut sauce','peanut butter','almond butter','coconut aminos','liquid aminos','tikka masala sauce','buffalo sauce','jerk sauce','amba']),
+ // Prepared garnishes share the sauce group
+ KT_GAR=kre(['sesame seeds','furikake','nori','pickled [a-z]+','pickles?','kimchi','sauerkraut','crispy (?:shallots|onions|garlic)','fried (?:shallots|onions)','pepitas','pumpkin seeds','croutons','everything bagel seasoning','(?:toasted |roasted |chopped )?(?:peanuts|cashews|pine nuts|almonds|walnuts|pecans|pistachios|hazelnuts)','sour cream','crema','cotija','queso fresco','olives','capers','sun[- ]dried tomato(?:e?s)?','roasted red peppers','jarred [a-z]+ peppers']),
  KT_CARB=kre(['rice(?! vinegar| wine| flour)','pasta','spaghetti','linguine','fettuccine','penne','rigatoni','fusilli','farfalle','orzo','macaroni','lasagna(?: noodles| sheets)?','gnocchi','noodles','ramen','udon','soba','vermicelli','bread','baguette','sourdough','tortillas?','tortilla chips','pitas?','naan','flatbreads?','buns?','bagels?','english muffins?','potato(?:es)?','sweet potato(?:es)?','yams?','quinoa','couscous','farro','barley','bulgur','polenta','grits','oats','oatmeal','wonton wrappers','dumpling wrappers','rice paper','pizza dough','puff pastry','pie crust','crackers','challah','matzo(?:h)?','(?:all[- ]purpose |bread |whole wheat |self[- ]rising |cake |pastry |00 |almond |chickpea |rice )?flour']),
- KT_PRO=kre(['tofu','tempeh','seitan','tvp','textured vegetable protein','edamame','chickpeas','garbanzo(?: beans)?','lentils','dal','dhal','(?:black|kidney|pinto|white|cannellini|navy|butter|great northern|refried|borlotti|mung|adzuki|fava|lima|baked) beans','(?<!green |string |runner |wax )beans','eggs?','egg whites','paneer','halloumi','cottage cheese','chicken(?: breasts?| thighs?)?','beef','ground beef','steak','pork','bacon','sausages?','turkey','lamb','ham','fish','salmon','tuna','cod','tilapia','shrimp','prawns','scallops','crab','lox','brisket','meatballs']),
- KT_PER=kre(['(?:red |yellow |white |sweet |vidalia |spanish )?onions?','shallots?','squash','butternut squash','pumpkin','beets?','radish(?:es)?','leeks?','fennel','okra','snap peas','snow peas','peas','corn','mangoes|mangos?','pineapple','peach(?:es)?','pears?','grapes','oranges?','kimchi','sauerkraut','brussels sprouts']);
+ KT_PRO=kre(['tofu','tempeh','seitan','tvp','textured vegetable protein','edamame','chickpeas','garbanzo(?: beans)?','lentils','dal','dhal','(?:black|kidney|pinto|white|cannellini|navy|butter|great northern|refried|borlotti|mung|adzuki|fava|lima|baked) beans','(?<!green |string |runner |wax |vanilla |coffee )beans','eggs?','egg whites','paneer','halloumi','(?:cottage |cream |goat |blue |swiss |jack |cheddar |vegan )?cheese','parmesan','parmigiano(?:[- ]reggiano)?','pecorino(?: romano)?','cheddar','mozzarella','feta','ricotta','gruy[eè]re','burrata','gouda','manchego','fontina','provolone','(?:greek |plain |vegan )?yogh?urt','labneh','chicken(?: breasts?| thighs?)?','beef','ground beef','steak','pork','bacon','sausages?','turkey','lamb','ham','fish','salmon','tuna','cod','tilapia','shrimp','prawns','scallops','crab','lox','brisket','meatballs']),
+ KT_PROD=kre(['cilantro','coriander leaves','parsley','basil','mint','dill','chives','thyme','rosemary','oregano','sage','tarragon','lemongrass','scallions?','green onions?','spring onions?','(?:red |yellow |white |sweet |vidalia |spanish )?onions?','shallots?','leeks?','ginger','(?:cherry |grape |roma |plum |heirloom )?tomato(?:e?s)?','tomatillos?','mushrooms?','shiitakes?','cremini','portobellos?','oyster mushrooms','zucchinis?','courgettes?','cucumbers?','(?:red |green |yellow |orange )?bell peppers?','(?:red|green|yellow|orange) peppers?','jalape[ñn]os?','serranos?','poblanos?','chil(?:i|e|ies|es|lies)','broccolini','broccoli','cauliflower','green beans','asparagus','eggplants?','aubergines?','avocados?','corn','celery','carrots?','spinach','baby spinach','arugula','rocket','kale','romaine','lettuce','(?:swiss |rainbow )?chard','bok choy','pak choi','greens','(?<!brussels )sprouts','bean sprouts','microgreens','cabbage','squash','butternut squash','pumpkin','beets?','radish(?:es)?','fennel','okra','snap peas','snow peas','peas','brussels sprouts','artichokes?','(?:straw|blue|rasp|black)berries','berries','cherries','bananas?','apples?','lemons?','limes?','oranges?','mangoes|mangos?','pineapple','peach(?:es)?','pears?','grapes','plums?','figs?','dates','pomegranates?(?: seeds| arils)?','melon','watermelon','kiwis?','coconut(?! milk| cream| oil| aminos| sugar)']);
 // Canned tomatoes in any form: one kitchen item covers diced, crushed, whole and fire-roasted
 const KCT=/\b(?:cans?|canned|tins?|tinned|jars?|cartons?)\b[^,]*\btomato|\b(?:diced|crushed|whole peeled|peeled|stewed|fire[- ]roasted|petite diced|chopped canned)\s+tomato|\bcanned tomato|\bsan marzano/;
-// What kind of thing an ingredient is, or null if it's assumed on hand
-function kType(name,line){let t=' '+cleanName(name||'').toLowerCase()+' ';t=t.replace(/\b(dried|ground|powdered|dehydrated|granulated)\s+(?!(?:beef|pork|turkey|chicken|lamb|meat)\b)[a-z]+/g,' ');
- if(!t.trim())return null;if(KT_SAUCE.test(t))return 'sauce';
- if(KCT.test(' '+(line||t).toLowerCase()+' '))return 'sauce';
- if(KT_GAR.test(t))return 'gar';if(KT_CARB.test(t))return 'carb';if(KT_PRO.test(t))return 'pro';
- if(KT_SKIP.test(t))return null;
- const tin=/\b(cans?|canned|tins?|tinned|jars?|jarred)\b/i.test(line||'');
- if(perish(t)||KT_PER.test(t))return tin?null:'per';return null}
+// Which group an ingredient belongs to, or null if it's assumed on hand. Anything not recognized is Misc.
+function kType(name,line){const t=' '+cleanName(name||'').toLowerCase().replace(/\s+/g,' ').trim()+' ';
+ if(!t.trim()||KA_WATER.test(t))return null;
+ if(KA_DRY.test(t)||KA_SPICE.test(t))return null;
+ if(KT_SAUCE.test(t)||KCT.test(' '+(line||t).toLowerCase()+' '))return 'sauce';
+ if(KT_GAR.test(t))return 'sauce';if(KT_CARB.test(t))return 'carb';if(KT_PRO.test(t))return 'pro';
+ if(KA_OIL.test(t)||KA_SALT.test(t)||KA_PEPPER.test(t)||(KA_SUGAR.test(t)&&!KA_NOTSUGAR.test(t))||(KA_GARLIC.test(t)&&!/black garlic/.test(t)))return null;
+ if(KT_PROD.test(t))return /\b(cans?|canned|tins?|tinned|jars?|jarred)\b/i.test(line||'')?'oth':'per';
+ return 'oth'}
 // A generic kitchen item covers the specific kinds a recipe asks for: "pasta" covers spaghetti, "noodles" covers udon
 const KFAM={pasta:/\b(spaghetti|linguine|fettuccine|penne|rigatoni|fusilli|farfalle|orzo|macaroni|lasagna|pasta)\b/,noodle:/\b(ramen|udon|soba|vermicelli|noodle)\b/,bread:/\b(baguette|sourdough|bread|challah|bun|roll)\b/,
  bean:/\bbean\b/,stock:/\b(stock|broth|bouillon)\b/,broth:/\b(stock|broth|bouillon)\b/,flour:/\bflour\b/,onion:/\b(red|yellow|white|sweet|vidalia|spanish) onion\b/,cheese:/\b(cheddar|mozzarella|parmesan|feta|gouda|gruyere|cheese)\b/,egg:/\begg\b/,tortilla:/\btortilla\b/,potato:/\bpotato\b/};
@@ -867,18 +879,18 @@ function vKit(){const P=pSorted(),sh=S.shop,rows=shopRows(),have=shopItems().fil
 function vOnHand(){const P=pSorted(),C=S.recipes.map(r=>({r,c:kCheck(r)})).filter(x=>x.c.n.length);
  const ready=C.filter(x=>!x.c.miss.length).sort((a,b)=>b.c.soon-a.c.soon||(last(a.r)<last(b.r)?-1:last(a.r)>last(b.r)?1:0)),
   near=C.filter(x=>x.c.miss.length&&x.c.miss.length<=2&&x.c.miss.length<x.c.n.length).sort((a,b)=>a.c.miss.length-b.c.miss.length||b.c.uses.length-a.c.uses.length);
- const row=(r,sub,extra='')=>`<div class="srow"><button class="rc" data-a="open" data-id="${esc(r.id)}" style="flex:1;min-width:0">${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${sub}</span></span>${extra?'':CHEV}</button>${extra}</div>`;
+ const row=(r,sub,extra='')=>`<div class="srow pr"><button class="rc" data-a="open" data-id="${esc(r.id)}" style="flex:1;min-width:0">${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${sub}</span></span>${extra?'':CHEV}</button>${extra}</div>`;
  const useTxt=c=>{const s=c.uses.filter(p=>p.days!=null&&pLeft(p)<=3);return s.length?'Uses up '+esc(s.map(p=>p.name.toLowerCase()).join(', ')):esc(c.uses.slice(0,3).map(p=>p.name.toLowerCase()).join(', '))};
  let h=`<div class="card wide"><h3><span>Cook without shopping</span><span class="mu">${ready.length?ready.length+' ready':''}</span></h3>`;
- if(!P.length)h+=`<p class="mu" style="margin:0">Add the carbs, proteins, perishables, sauces and garnishes you have below, and this shows which recipes you can make right now.</p>`;
+ if(!P.length)h+=`<p class="mu" style="margin:0">Add your carbs, proteins, produce, sauces and garnishes, and anything else worth remembering, below, and this shows which recipes you can make right now.</p>`;
  else{const RS=O.kra?ready:ready.slice(0,5),NS=O.kna?near:near.slice(0,4);
   h+=(ready.length?RS.map(({r,c})=>row(r,useTxt(c))).join('')+(ready.length>5?`<button class="g lnk" data-a="kMore" data-k="kra" style="margin:4px 0">${O.kra?'Show fewer':'Show all '+ready.length}</button>`:'')
     :`<p class="mu" style="margin:0 0 6px">Nothing fully covered yet.${near.length?' These are close:':''}</p>`)
    +(near.length?`<div class="sec" style="margin-top:12px">Missing one or two things</div>`+NS.map(({r,c})=>row(r,'Need '+esc(c.miss.map(x=>x.name.toLowerCase()).join(', ')),`<button class="g lnk" data-a="kMiss" data-id="${esc(r.id)}" style="flex:none;padding:8px 6px">+ List</button>`)).join('')
      +(near.length>4?`<button class="g lnk" data-a="kMore" data-k="kna" style="margin:4px 0">${O.kna?'Show fewer':'Show all '+near.length}</button>`:''):'')
-   +`<div class="hint">Only carbs, proteins, perishables, sauces, garnishes and your own made recipes count. Spices, oil, salt, sugar, vinegar and garlic are assumed. Optional and "to serve" lines are skipped.</div>`}
+   +`<div class="hint">Every ingredient counts except spices, oil, salt and pepper, white sugar and garlic, which are assumed. Optional and "to serve" lines are skipped.</div>`}
  h+=`</div><div class="card wide"><h3><span>In my kitchen</span><span class="mu">${P.length||''}</span></h3><div class="row"><input id="pin" type="text" placeholder="Rice, tofu, cilantro, gochujang" enterkeyhint="done" autocomplete="off"><button data-a="pAdd" style="flex:none">Add</button></div><div class="hint">Add several with commas. Each one lands in its group; tap it to move it, set a use-by, or mark it used up.</div></div>`;
- KG.forEach(([t,l,ex])=>{const L=P.filter(p=>(p.t||'oth')==t);if(t=='oth'&&!L.length)return;
+ KG.forEach(([t,l,ex])=>{const L=P.filter(p=>(p.t&&KGC[p.t]?p.t:'oth')==t);
   h+=`<div class="card kg" style="--kc:${KGC[t]}"><h3><span>${l}</span><span class="mu">${L.length||''}</span></h3><div class="chips" style="margin:0">`
    +L.map(p=>{const n=pLeft(p);return `<span class="chip ed2${n!=null&&n<=1?' kl':''}"><button class="cn" data-a="pEd" data-id="${esc(p.id)}">${esc(p.name)}${n!=null?`<em class="dl ${dlCls(n)}">${n<0?'past':n==0?'today':n+'d'}</em>`:''}</button><button class="cx" data-a="pUse" data-id="${esc(p.id)}" aria-label="Used up ${esc(p.name)}">${ICX}</button></span>`}).join('')
    +`<button class="chip add" data-a="pNew" data-t="${t}">+ Add</button></div>${!L.length&&ex?`<div class="hint">Like ${esc(ex.toLowerCase())}</div>`:''}</div>`});
@@ -895,7 +907,7 @@ function vSheet(){if(!SH)return '';let b='';
  const pRow=(r,a,extra='')=>`<button class="rc" data-a="${a}" data-id="${esc(r.id)}"${extra}>${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${esc([r.cuisine,r.serves?'serves '+r.serves:'',fmtTime(r.time)].filter(Boolean).join(' · ')||' ')}</span></span>${CHEV}</button>`;
  const srch=(id,v,ph)=>`<div class="srch" style="margin:8px 0 4px">${ICS}<input id="${id}" type="search" placeholder="${ph}" value="${esc(v||'')}" autocomplete="off" enterkeyhint="search"></div>`;
  // A kitchen item: name, group, use-by
- if(SH.kind=='pit'){const nw=!SH.id,g=KG.find(x=>x[0]==SH.t)||KG[5],n=SH.left;
+ if(SH.kind=='pit'){const nw=!SH.id,g=kgOf(SH.t),n=SH.left;
   return wrap(`<h2>${nw?'Add to '+g[1]:'Edit item'}</h2><input id="pitN" type="text" value="${esc(SH.name)}" placeholder="${esc((g[2]||'').split(',')[0]||'Name')}" autocomplete="off" enterkeyhint="done">`
    +`<div class="sec" style="margin-top:14px">Group</div><div class="chips" style="margin:0">${KG.map(([t,l])=>`<button class="chip ${SH.t==t?'on':''}" data-a="pitT" data-t="${t}">${l}</button>`).join('')}</div>`
    +`<div class="sec" style="margin-top:14px">Use by</div><div class="row"><span class="stp"><button class="g sb" data-a="pitD" data-d="-1" aria-label="Sooner">−</button><span class="dl ${dlCls(n)}">${dlTxt(n)}</span><button class="g sb" data-a="pitD" data-d="1" aria-label="Later">+</button></span>${n!=null?'<button class="g lnk" data-a="pitNoD" style="margin-left:auto">No date</button>':''}</div>`
@@ -1085,7 +1097,7 @@ const ACT={
  pDays:d=>{const p=S.pantry.find(x=>x.id==d.id);if(!p)return;if(p.days==null)p.days=-dayDiff(p.added)+(+d.d>0?7:3);else p.days=Math.max(0,p.days+(+d.d));commit()},
  pUse:d=>{const i=S.pantry.findIndex(x=>x.id==d.id);if(i<0)return;const [x]=S.pantry.splice(i,1);commit();toast(x.name+' is off the list',()=>{S.pantry.splice(i,0,x);commit()})},
  pAdd:()=>{const inp=document.getElementById('pin'),L=(inp&&inp.value||'').split(/[,\n]/).map(s=>s.trim()).filter(Boolean);if(!L.length)return;L.forEach(v=>{const g=perish(v);addPantry(v,g?g.days:null)});inp.value='';commit();inp.focus();
-  const gl=v=>(KG.find(x=>x[0]==(S.pantry.find(p=>nkey(p.name)==nkey(v))||{}).t)||KG[5])[1];toast(L.length>1?'Added '+L.length+' items':cap(L[0])+' added to '+gl(L[0]))},
+  const gl=v=>kgOf((S.pantry.find(p=>nkey(p.name)==nkey(v))||{}).t)[1];toast(L.length>1?'Added '+L.length+' items':cap(L[0])+' added to '+gl(L[0]))},
  pick:()=>{SH={kind:'pick'};R()},
  pEd:d=>{const p=S.pantry.find(x=>x.id==d.id);if(!p)return;SH={kind:'pit',id:p.id,name:p.name,t:p.t||'oth',left:pLeft(p)};R()},
  pNew:d=>{SH={kind:'pit',name:'',t:d.t||'oth',left:null};R();setTimeout(()=>document.getElementById('pitN')?.focus(),60)},
@@ -1095,7 +1107,7 @@ const ACT={
  pitSave:()=>{if(!SH)return;const v=(document.getElementById('pitN')?.value??SH.name).trim();if(!v){toast('Give it a name');return}
   const t=SH.t,g=!SH.dt?perish(v):null,left=SH.dt||!SH.id?(SH.dt?SH.left:(g?g.days:null)):SH.left;
   if(!SH.id){addPantry(v,left,t)}else{const p=S.pantry.find(x=>x.id==SH.id);if(p){p.name=cap(v);p.t=t;p.days=left==null?null:left-dayDiff(p.added)}}
-  const nw=!SH.id;SH=null;commit();toast(nw?cap(v)+' added to '+(KG.find(x=>x[0]==t)||KG[5])[1]:'Saved')},
+  const nw=!SH.id;SH=null;commit();toast(nw?cap(v)+' added to '+kgOf(t)[1]:'Saved')},
  pitDel:()=>{if(!SH||!SH.id)return;const id=SH.id;SH=null;ACT.pUse({id})},
  kMore:d=>{O[d.k]=!O[d.k];R()},
  kMiss:d=>{const r=byId(d.id);if(!r)return;const c=kCheck(r),have=new Set(S.shop.extra.map(x=>nkey(x.t))),add=c.miss.filter(x=>!have.has(nkey(x.name)));
