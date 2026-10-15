@@ -105,6 +105,13 @@ body.hast #toast{bottom:calc(140px + env(safe-area-inset-bottom,0px))}
 #toast button{background:none;color:#ffb020;padding:6px 10px;font-weight:800}
 
 /* ===== Greeting, search, recipe rows ===== */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.ctl{position:relative;aspect-ratio:1;border-radius:18px;padding:0;overflow:hidden;color:#fff;box-shadow:var(--sh);display:block;text-align:left}
+.ctl i{position:absolute;inset:0 0 30px;display:grid;place-content:center;font-style:normal;font:600 40px/1 var(--fd);text-shadow:0 2px 6px #0003}
+.ctl span{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:6px;padding:7px 10px;background:#0000002e;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.ctl b{flex:1;min-width:0;font-weight:800;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ctl em{font-style:normal;font-weight:800;font-size:12px;opacity:.9}
+.ctl.all{background:linear-gradient(135deg,var(--pc),var(--pc2))}
+.ctl:active{transform:scale(.97)}
 .hello{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:4px 4px -2px}
 .hello b{font:600 25px/1.2 var(--fd)}.hello span{flex:none;font-size:13px;font-weight:800;color:var(--pc);background:color-mix(in srgb,var(--pc) 13%,transparent);padding:5px 12px;border-radius:99px}
 .srch{display:flex;align-items:center;gap:8px;background:var(--fld);border-radius:14px;padding:0 12px;color:var(--mu)}.srch input{background:none!important;border:0!important;box-shadow:none!important;padding:11px 0;font-size:16px}
@@ -212,7 +219,7 @@ const DEFF={cuisine:['American','Chinese','French','Greek','Indian','Italian','J
 const TIMES=[0,20,30,45,60];
 const SORTS=[['az','A to Z'],['stale','Not cooked lately'],['new','Newest first'],['quick','Quickest first'],['most','Most cooked']];
 // Tab colors: [light, dark]
-const TC={browse:[['#ff4d5e','#e8336b'],['#ff6b76','#ff4f86']],kit:[['#f57c1f','#e8435a'],['#ff9a4d','#ff6b6b']],cook:[['#17a06a','#0f8463'],['#22b07a','#13916c']],add:[['#ff4d5e','#e8336b'],['#ff6b76','#ff4f86']],hist:[['#8e3fd0','#d6338a'],['#b57be0','#ff5fa2']],lists:[['#8e3fd0','#ff4d5e'],['#b57be0','#ff6b76']],more:[['#8e3fd0','#ff4d5e'],['#b57be0','#ff6b76']]};
+const TC={browse:[['#ff4d5e','#e8336b'],['#ff6b76','#ff4f86']],kit:[['#f57c1f','#e8435a'],['#ff9a4d','#ff6b6b']],cook:[['#17a06a','#0f8463'],['#22b07a','#13916c']],add:[['#ff4d5e','#e8336b'],['#ff6b76','#ff4f86']],hist:[['#8e3fd0','#d6338a'],['#b57be0','#ff5fa2']],find:[['#f2994a','#e8435a'],['#ffab5e','#ff6b6b']],lists:[['#8e3fd0','#ff4d5e'],['#b57be0','#ff6b76']],more:[['#8e3fd0','#ff4d5e'],['#b57be0','#ff6b76']]};
 // Recipe tile gradients, picked by cuisine
 const CG=[['#ff4d5e','#e8336b'],['#1fa971','#0f8463'],['#ff7a59','#e8435a'],['#e8336b','#b8234f'],['#5aa85a','#1fa971'],['#d9534f','#a8323f'],['#f2994a','#e05a47'],['#17a589','#1f8a70'],['#ff6f91','#e8336b'],['#b5655a','#8a3f3a'],['#7bbf5a','#3a9a5a'],['#e8435a','#ff8a5c']],CGN=['#c4a5a0','#8e716c'];
 const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],MOL=['January','February','March','April','May','June','July','August','September','October','November','December'],WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -552,7 +559,7 @@ function ingCard(r){const f=SC[r.id]||1,ck=CK[r.id]||{},any=Object.values(ck).so
 // 6. VIEWS (one function per screen; each returns HTML for #app)
 // =====================================================================
 // ---- Recipes (browse) ----
-function vBrowse(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF(),tags=allTags().map(x=>x[0]);
+function vFind(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF(),tags=allTags().map(x=>x[0]);
  const chipsFor=(k,vals)=>`${vals.map(v=>`<button class="chip ${f[k].includes(v)?'on':''}" data-a="fil" data-k="${k}" data-v="${esc(v)}">${esc(k=='tags'?'#'+v:v)}</button>`).join('')}`,frow=(l,c)=>`<div class="frow"><span class="sec">${l}</span>${c}</div>`;
  let h=hello()+(S.set.welcome?welcome():'');
  const LOW=pSorted().filter(p=>p.days!=null&&pLeft(p)<=5);if(LOW.length){h+=`<div class="card wide"><h3><span>Use it up</span><button class="g lnk" data-a="kitUse">Kitchen ›</button></h3>${LOW.slice(0,3).map(p=>{const n=pLeft(p);return `<button class="urow" data-a="kitUse"><span>${esc(p.name)}</span><span class="dl ${dlCls(n)}">${dlTxt(n)}</span></button>`}).join('')}</div>`}
@@ -566,6 +573,26 @@ function vBrowse(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF()
  if(!S.recipes.length)return h+`<div class="card wide"><p class="mu" style="margin:0 0 10px">No recipes yet.</p><button data-a="tab" data-id="add">Add your first recipe</button></div>`;
  if(!L.length)return h+`<div class="card wide"><p class="mu" style="margin:0 0 10px">Nothing matches.</p><button class="g bd" data-a="fclear">Clear search and filters</button></div>`;
  return h+`<div class="card wide"><div class="sec">${L.length} recipe${L.length==1?'':'s'}${act.length||f.q.trim()?' match':''}</div>${L.map(rRow).join('')}</div>`}
+
+// ---- Recipes (category grid) ----
+let BC=null;   // open category on the Recipes tab: {k,v} or {k:'all'}
+const BGS=[['meal','Meal'],['cuisine','Cuisine'],['protein','Protein'],['recent','Recent']];
+const EMO={breakfast:'🥞',brunch:'🍳',lunch:'🥪',dinner:'🍽️',side:'🥗',sides:'🥗',snack:'🍪',snacks:'🍪',dessert:'🍰',desserts:'🍰',drink:'🥤',drinks:'🥤',beverage:'🥤',appetizer:'🥟',soup:'🍲',salad:'🥗',sauce:'🫙',baking:'🥖',
+ american:'🍔',chinese:'🥡',french:'🥐',greek:'🫒',indian:'🍛',italian:'🍝',japanese:'🍣',korean:'🍲',mediterranean:'🫒',mexican:'🌮','middle eastern':'🧆',thai:'🍜',vietnamese:'🍜',spanish:'🥘',caribbean:'🍍',german:'🥨',british:'🫖',cajun:'🦐',southern:'🍗',
+ chicken:'🍗',beef:'🥩',pork:'🥓',fish:'🐟',seafood:'🦐',shrimp:'🦐',salmon:'🐟',turkey:'🦃',lamb:'🍖',eggs:'🥚',egg:'🥚',tofu:'🧈',tempeh:'🫘',seitan:'🌾',beans:'🫘',chickpeas:'🫘',lentils:'🫘',cheese:'🧀',sausage:'🌭',vegetables:'🥦',veggie:'🥦',none:'🥦'};
+const ctile=(k,v,n)=>`<button class="ctl" data-a="cat" data-k="${k}" data-v="${esc(v)}" style="background:${cgrad(v)}"><i aria-hidden="true">${EMO[v.toLowerCase()]||esc(inits(v))}</i><span><b>${esc(v)}</b><em>${n}</em></span></button>`;
+function vBrowse(){const g=S.set.bg||'meal',N=S.recipes.length;
+ if(BC){const L=BC.k=='all'?S.recipes:S.recipes.filter(r=>BC.k=='cuisine'?r.cuisine==BC.v:(r[BC.k]||[]).includes(BC.v)),srt=sortList(L),t=BC.k=='all'?'All recipes':BC.v;
+  return `<div class="bk"><button class="g" data-a="catX">‹ All categories</button></div><div class="hello"><b>${esc(t)}</b><span>${L.length} recipe${L.length==1?'':'s'}</span></div>`
+   +(L.length?`<div class="card wide">${srt.map(rRow).join('')}</div>`:`<div class="card wide"><p class="mu" style="margin:0">Nothing here anymore.</p></div>`)}
+ let h=(S.set.welcome?welcome():'')+`<div class="hello"><b>All recipes</b><span>${N}</span></div><div class="seg qm wide">${BGS.map(([k,l])=>`<button class="${g==k?'on':''}" data-a="bg" data-k="${k}">${l}</button>`).join('')}</div>`;
+ if(!N)return h+`<div class="card wide"><p class="mu" style="margin:0 0 10px">No recipes yet.</p><button data-a="tab" data-id="add">Add your first recipe</button></div>`;
+ if(g=='recent'){const c=S.recipes.filter(r=>r.cooked.length).sort((a,b)=>last(a)<last(b)?1:-1),nw=S.recipes.filter(r=>!r.cooked.length);
+  return h+(c.length?`<div class="card wide"><div class="sec">Cooked recently</div>${c.slice(0,30).map(rRow).join('')}</div>`:'')+(nw.length?`<div class="card wide"><div class="sec">Not cooked yet</div>${nw.map(rRow).join('')}</div>`:'')}
+ const cnt=new Map();S.recipes.forEach(r=>(g=='cuisine'?[r.cuisine].filter(Boolean):r[g]||[]).forEach(v=>cnt.set(v,(cnt.get(v)||0)+1)));
+ const ord=[...S.facets[g].filter(v=>cnt.has(v)),...[...cnt.keys()].filter(v=>!S.facets[g].includes(v)).sort()];
+ return h+`<div class="cgrid wide">${ord.map(v=>ctile(g,v,cnt.get(v))).join('')}<button class="ctl all" data-a="cat" data-k="all" data-v=""><i aria-hidden="true">📖</i><span><b>All</b><em>${N}</em></span></button></div>`
+  +(ord.length?'':`<p class="mu wide" style="margin:0 4px">No recipes have a ${g} picked yet. Edit a recipe and use <b>Sort it</b> to add one.</p>`)}
 
 // ---- Recipe page ----
 function vRecipe(){const r=byId(RID);if(!r)return '';const i=S.recipes.indexOf(r),p='recipes.'+i,lc=last(r),fac=[...r.meal,...r.protein,...r.method,...r.diet];
@@ -724,7 +751,7 @@ addEventListener('popstate',()=>{if(SKIP){SKIP=0;return}if(T=='recipe')closeReci
 function surprise(){const L=S.recipes.filter(match);if(!L.length){toast('No recipes match these filters');return}
  const C=L.length>1&&SUR?L.filter(r=>r.id!=SUR):L,w=C.map(r=>{const lc=last(r);return lc?Math.min(-dayDiff(lc),180)+3:60});
  let x=Math.random()*sum(w,v=>v),i=0;while(i<C.length-1&&x>w[i]){x-=w[i];i++}SUR=C[i].id;SURN=L.length;
- if(T=='recipe'){RID=SUR;R();scrollTo({top:0,behavior:'smooth'})}else openRecipe(SUR,'browse')}
+ if(T=='recipe'){RID=SUR;R();scrollTo({top:0,behavior:'smooth'})}else openRecipe(SUR)}
 function addTags(inp,focus=true){const v=inp.value.split(',').map(s=>s.trim().toLowerCase().replace(/^#+/,'')).filter(Boolean);inp.value='';if(!v.length)return;const D=S.draft;v.forEach(t=>{if(!D.tags.includes(t))D.tags.push(t)});commit();if(focus)inp.focus()}
 // Copy whatever is in the form into the draft (in case a field hasn't reported its change yet)
 function pull(){document.querySelectorAll('#app [data-p^="draft."]').forEach(el=>setQ(el.dataset.p,el.value,el.dataset.t));const ti=document.getElementById('tagin');if(ti&&ti.value.trim()){ti.value.split(',').map(s=>s.trim().toLowerCase().replace(/^#+/,'')).filter(Boolean).forEach(t=>{if(!S.draft.tags.includes(t))S.draft.tags.push(t)});ti.value=''}}
@@ -784,8 +811,11 @@ async function wakeSync(){const want=T=='cook'&&!!byId(S.cookId)&&!document.hidd
 
 const ACT={
  // navigation
- tab:d=>goTab(d.id), gear:()=>goTab(T=='more'||T=='lists'?'browse':'more'),
+ tab:d=>{if(d.id=='browse'&&T=='browse'&&BC)return ACT.catX();goTab(d.id)}, gear:()=>goTab(T=='more'||T=='lists'?'browse':'more'),
  open:d=>{SUR=null;if(T=='recipe'){RID=d.id;R();scrollTo(0,0)}else openRecipe(d.id)},
+ bg:d=>{S.set.bg=d.k;commit()},
+ cat:d=>{BC=d.k=='all'?{k:'all'}:{k:d.k,v:d.v};R();scrollTo(0,0);slideIn(1)},
+ catX:()=>{BC=null;R();scrollTo(0,0);slideIn(-1)},
  back:()=>{if(history.state&&history.state.r)history.back();else closeRecipe()},
  surprise,
  // browse
@@ -936,9 +966,10 @@ document.addEventListener('toggle',e=>{const k=e.target.dataset&&e.target.datase
 const ICON={browse:'<path d="M4 19.5V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2v0a2 2 0 0 0 2 2h14"/><path d="M9 7h7M9 11h5"/>',
  cook:'<path d="M4 10h16v7a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z"/><path d="M2 10h20"/><path d="M9 6.5c0-1.2 1-1.3 1-2.5M14 6.5c0-1.2 1-1.3 1-2.5"/>',
  kit:'<path d="M5 9h14l-1.5 10.3a2 2 0 0 1-2 1.7h-7a2 2 0 0 1-2-1.7z"/><path d="M9 9l3-5.5L15 9M10 13v4M14 13v4"/>',
+ find:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
  hist:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'};
-const TABS=[['browse','Recipes'],['kit','Kitchen'],['add','Add'],['cook','Cook'],['hist','Cooked']];
-const VIEW={kit:vKit,browse:vBrowse,cook:vCook,add:vAdd,hist:vHist,lists:vLists,more:vMore,recipe:vRecipe};
+const TABS=[['browse','Recipes'],['find','Find'],['add','Add'],['kit','Kitchen'],['cook','Cook']];
+const VIEW={kit:vKit,browse:vBrowse,find:vFind,cook:vCook,add:vAdd,hist:vHist,lists:vLists,more:vMore,recipe:vRecipe};
 const navId=()=>T=='recipe'?(TABS.some(t=>t[0]==PREV)?PREV:'browse'):T;
 const tabCols=id=>(TC[id]||TC.browse)[document.documentElement.dataset.theme=='dark'?1:0];
 
