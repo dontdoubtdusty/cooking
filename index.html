@@ -217,7 +217,9 @@ button.cd.on{border-color:var(--pc);background:var(--card)}
 .cd i{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;max-width:30px}.cd u{width:6px;height:6px;border-radius:50%;background:var(--pc)}.cd u.l{background:var(--ac)}
 .lo{flex:none;font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px;background:color-mix(in srgb,var(--ac) 15%,transparent);color:var(--ac);white-space:nowrap}.lo.neg{background:color-mix(in srgb,var(--neg) 14%,transparent);color:var(--neg)}
 .leg{display:flex;gap:14px;margin-top:10px;font-size:12px;color:var(--mu);font-weight:700}.leg span{display:inline-flex;align-items:center;gap:5px}.leg u{width:8px;height:8px;border-radius:50%;background:var(--pc)}.leg u.l{background:var(--ac)}
-.pr .rcn b,.pr .rcn .mu,.pr .pn b,.pr .pn .mu{white-space:normal}.sbig{min-width:30px;text-align:center;font:600 18px var(--fd)}
+.pr .rcn b,.pr .rcn .mu,.pr .pn b,.pr .pn .mu{white-space:normal}.view>.card.kg{background-image:linear-gradient(90deg,var(--kc),color-mix(in srgb,var(--kc) 60%,var(--pc2)))}.card.kg h3>span:first-child{color:var(--kc)}
+.chip.ed2 .cn em{font-style:normal;min-width:0;margin-left:7px;padding:1px 7px;font-size:11px}.chip.kl{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--neg) 45%,transparent)}
+.sbig{min-width:30px;text-align:center;font:600 18px var(--fd)}
 @media(prefers-reduced-motion:reduce){*,*:after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
 </style></head><body><header class="top"><span class="tt"><svg class="logo" viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><circle cx="16" cy="18" r="12" fill="#ff4d5e"/><ellipse cx="11" cy="15" rx="3" ry="2" fill="#fff" opacity=".35"/><path d="M16 9l-5-3 3.6 4.2L10 11.5l5 .3L16 16l1-4.2 5-.3-4.6-1.3L21 6z" fill="#1fa971"/><path d="M16 9V4" stroke="#1fa971" stroke-width="2" stroke-linecap="round"/></svg><span><span class="jz">Big Saucy</span> Recipes</span></span><button id="gear" class="gear" aria-label="Settings" data-a="gear"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></header><div class="vclip"><main id="app" class="view"></main></div><div id="tdock"></div><nav id="nav"></nav><div id="toast" role="status" aria-live="polite"></div><div id="sheet"></div>
 <script>
@@ -226,8 +228,8 @@ button.cd.on{border-color:var(--pc);background:var(--card)}
 // =====================================================================
 const LS='saucy-v1',LST='saucy-timers';   // localStorage keys (don't change: they hold your data)
 // Facets: [key, label, single-choice?]
-const FAC=[['cuisine','Cuisine',1],['meal','Meal'],['protein','Protein'],['method','Method'],['diet','Diet']];
-const DEFF={cuisine:['American','Chinese','French','Greek','Indian','Italian','Japanese','Korean','Mediterranean','Mexican','Middle Eastern','Thai','Vietnamese'],
+const FAC=[['cuisine','Cuisine',1],['meal','Category'],['protein','Protein'],['method','Method'],['diet','Diet']];
+const DEFF={cuisine:['American','Chinese','French','Greek','Indian','Italian','Japanese','Jewish','Korean','Mediterranean','Mexican','Middle Eastern','Thai','Vietnamese'],
  meal:['Breakfast','Lunch','Dinner','Side','Snack','Dessert'],
  protein:['Tofu','Tempeh','Seitan','Beans','Lentils','Chickpeas','Cheese/Dairy','Mushrooms'],
  method:['One-pot','Sheet pan','Slow cooker','Air fryer','Grill','No-cook'],
@@ -273,7 +275,7 @@ let O={},AM='type',PT='',PARSED='',CK={},SC={},SUR=null,SURN=0,TM=[];   // UI-on
 
 const blankD=()=>({id:'',title:'',cuisine:'',meal:[],protein:[],method:[],diet:[],tags:[],serves:'',time:'',ingT:'',stepT:'',nutT:'',notes:'',src:'',vid:''});
 const blankShop=()=>({rids:[],extra:[],ck:{},got:{},have:{},need:{},note:{}});
-const blankF=()=>({q:'',time:0,sort:'az',tags:[],cuisine:[],meal:[],protein:[],method:[],diet:[]});
+const blankF=()=>({q:'',time:0,now:0,sort:'az',tags:[],cuisine:[],meal:[],protein:[],method:[],diet:[]});
 const dEmpty=d=>!((d.title||'').trim()||(d.ingT||'').trim()||(d.stepT||'').trim()||(d.notes||'').trim());
 // "Ingredients for the baking soda bath" saved as an ingredient line -> a "Baking soda bath:" heading
 function subHead(l){if(typeof l!='string'||l.length>60||/:$/.test(l))return l;
@@ -309,6 +311,8 @@ const MIGRATIONS=[
  // v8: a meal calendar. Each entry is a cook day {k:'cook', mk: servings made, eat: servings eaten that day}
  // or a leftovers meal {k:'left', src: the cook entry it comes from, eat}
  S=>{S.plan=Array.isArray(S.plan)?S.plan:[]},
+ // v9: kitchen items are grouped: carbs, proteins, perishables, sauces, garnishes (or other)
+ S=>{S.pantry.forEach(p=>{p.t=p.t||kType(p.name)||(p.days!=null?'per':'oth')})},
 ];
 // A brand-new setup: run every migration, then put back the sample's stated time
 function fresh(){S=seed();migrate();S.recipes.forEach(r=>r.time=num(sample().time))}
@@ -316,7 +320,7 @@ function migrate(){S.set=S.set||{};for(let v=S.v||0;v<MIGRATIONS.length;v++)MIGR
 function load(){try{S=JSON.parse(localStorage.getItem(LS))}catch(e){}if(!S)fresh();else migrate();try{TM=JSON.parse(localStorage.getItem(LST))||[]}catch(e){TM=[]}}
 let SVT=0,SI=null;   // SI: merged shopping items, rebuilt after each save
 function flush(){clearTimeout(SVT);SVT=0;try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('Could not save: storage is full')}}
-const save=()=>{SI=null;clearTimeout(SVT);SVT=setTimeout(flush,400)};
+const save=()=>{SI=null;KC=null;clearTimeout(SVT);SVT=setTimeout(flush,400)};
 const commit=()=>{save();R()};
 const saveT=()=>{try{localStorage.setItem(LST,JSON.stringify(TM))}catch(e){}};
 addEventListener('pagehide',flush);document.addEventListener('visibilitychange',()=>{if(document.hidden)flush();wakeSync()});
@@ -362,13 +366,13 @@ function match(r){const f=S.f;
  if(f.q){const q=f.q.toLowerCase().trim();if(q&&!(r.title+' '+r.cuisine+' '+r.tags.join(' ')+' '+r.ing.join(' ')).toLowerCase().includes(q))return false}
  for(const [k,,one] of FAC){const sel=f[k];if(sel.length){const v=one?[r.cuisine]:r[k];if(!sel.some(x=>v.includes(x)))return false}}
  if(f.tags.length&&!f.tags.every(t=>r.tags.includes(t)))return false;
- if(f.time&&!(r.time&&r.time<=f.time))return false;return true}
+ if(f.time&&!(r.time&&r.time<=f.time))return false;if(f.now&&!kReady(r))return false;return true}
 function sortList(L){const s=S.f.sort,t=r=>(r.title||'').toLowerCase(),az=(a,b)=>t(a)<t(b)?-1:t(a)>t(b)?1:0;
  L.sort(s=='stale'?(a,b)=>{const x=last(a),y=last(b);if(!x&&!y)return az(a,b);if(!x)return -1;if(!y)return 1;return x<y?-1:x>y?1:az(a,b)}
   :s=='new'?(a,b)=>(a.added<b.added?1:a.added>b.added?-1:0)||(S.recipes.indexOf(b)-S.recipes.indexOf(a))
   :s=='quick'?(a,b)=>((a.time||1e9)-(b.time||1e9))||az(a,b)
   :s=='most'?(a,b)=>(b.cooked.length-a.cooked.length)||az(a,b):az);return L}
-const activeF=()=>[...FAC.flatMap(([k])=>S.f[k]),...S.f.tags.map(t=>'#'+t),...(S.f.time?['under '+fmtTime(S.f.time)]:[])];
+const activeF=()=>[...FAC.flatMap(([k])=>S.f[k]),...S.f.tags.map(t=>'#'+t),...(S.f.time?['under '+fmtTime(S.f.time)]:[]),...(S.f.now?['can make now']:[])];
 
 // ---- Ingredient quantities and scaling (US units) ----
 const UFR={'½':'1/2','⅓':'1/3','⅔':'2/3','¼':'1/4','¾':'3/4','⅕':'1/5','⅖':'2/5','⅗':'3/5','⅘':'4/5','⅙':'1/6','⅚':'5/6','⅛':'1/8','⅜':'3/8','⅝':'5/8','⅞':'7/8'};
@@ -450,7 +454,7 @@ function calcShop(){const m=new Map();
   if(e.w)a.push(e.w>=16?fmtQ(e.w/16)+' lb':fmtQ(e.w)+' oz');
   Object.entries(e.c).forEach(([u,q])=>a.push(fmtQ(q)+(u?' '+plu(u,q):'')));
   e.amt=a.join(' + ');return e})}
-const kitHit=e=>S.pantry.find(p=>pm(p.name,e.k));
+const kitHit=e=>S.pantry.find(p=>kHas(p,e.k));
 const isHave=e=>!S.shop.need[e.k]&&!!(S.shop.have[e.k]||STAPLE.test(e.k));
 // When recipes leave the list, forget checks and notes for ingredients no recipe needs any more
 function pruneShop(){SI=null;const sh=S.shop,keep=new Set(shopItems().map(e=>e.k));['ck','got','have','need','note'].forEach(f=>Object.keys(sh[f]).forEach(k=>{if(!keep.has(k))delete sh[f][k]}))}
@@ -460,7 +464,46 @@ const dlCls=n=>n==null?'nr':n<=1?'late':n<=3?'soon':'ok';
 const dlTxt=n=>n==null?'No date':n<0?'Past due':n==0?'Use today':n==1?'1 day':n+' days';
 const leftTxt=n=>n==null?'':n<0?'past due':n==0?'use today':n+' day'+(n==1?'':'s')+' left';
 function perishList(lines){const out=[],seen=new Set();lines.forEach(l=>{const x=perish(l);if(x){const k=nkey(x.name);if(!seen.has(k)){seen.add(k);out.push(x)}}});return out}
-function addPantry(name,days){const k=nkey(name),ex=S.pantry.find(p=>nkey(p.name)==k);if(ex){ex.added=tdy();ex.days=days}else S.pantry.push({id:uid('p'),name:cap(name.trim()),added:tdy(),days})}
+function addPantry(name,days,t){const k=nkey(name),ex=S.pantry.find(p=>nkey(p.name)==k);if(ex){ex.added=tdy();ex.days=days;if(t)ex.t=t}else S.pantry.push({id:uid('p'),name:cap(name.trim()),added:tdy(),days,t:t||kType(name)||'oth'})}
+
+// ---- Kitchen groups: the few things that decide what's for dinner ----
+// Not a full pantry. Spices, oil, flour, stock, canned tomatoes, onions and garlic are assumed on hand.
+const KG=[['carb','Carbs','Rice, pasta, tortillas, potatoes'],['pro','Proteins','Tofu, eggs, chickpeas, chicken'],['per','Perishables','Spinach, mushrooms, milk, lemons'],['sauce','Sauces','Soy sauce, pesto, gochujang, salsa'],['gar','Garnishes','Cilantro, scallions, sesame seeds'],['oth','Other','']];
+const KGC={carb:'#e0a030',pro:'#e8435a',per:'#1fa971',sauce:'#c0392b',gar:'#5aa85a',oth:'#94706f'};
+const kre=a=>new RegExp('(?:^|[^a-z])(?:'+a.join('|')+')(?![a-z])','i');
+const KT_SAUCE=kre(['soy sauce','tamari','shoyu','fish sauce','oyster sauce','hoisin','teriyaki','ponzu','sriracha','hot sauce','chili sauce','sweet chili','chili garlic sauce','black bean sauce','gochujang','doenjang','miso','tahini','pesto','salsa(?: verde| roja)?','marinara','pasta sauce','tomato sauce','pizza sauce','enchilada sauce','curry paste','harissa','chili crisp','chili oil','chimichurri','tzatziki','hummus','bbq sauce','barbecue sauce','ketchup','(?:dijon |whole grain |yellow )?mustard','mayo(?:nnaise)?','aioli','worcestershire','sambal(?: oelek)?','zhoug|zhug|schug','chutney','tamarind','mole','alfredo','ranch','dressing','vinaigrette','peanut sauce','peanut butter','almond butter','coconut aminos','liquid aminos','tikka masala sauce','buffalo sauce','jerk sauce','amba']),
+ KT_SKIP=kre(['broth','stock','bouillon','powder','extract','flour','starch','vinegar','wine','bread ?crumbs','panko','juice of','vanilla beans?','coffee','oil','spray','water','salt','sugar','baking soda','baking powder','yeast','onions?','red onions?','yellow onions?','white onions?','shallots?','garlic','cloves?','canned tomatoes','diced tomatoes','crushed tomatoes','tomato paste','whole peeled tomatoes']),
+ KT_GAR=kre(['cilantro','coriander leaves','parsley','basil','mint','dill','chives','scallions?','green onions?','spring onions?','sesame seeds','furikake','nori','microgreens','(?<!brussels )sprouts','pickled [a-z]+','pickles?','crispy (?:shallots|onions|garlic)','fried (?:shallots|onions)','pepitas','pumpkin seeds','pomegranate(?: seeds| arils)?','croutons','everything bagel seasoning','(?:toasted |roasted |chopped )?(?:peanuts|cashews|pine nuts|almonds|walnuts|pecans|pistachios)','lime wedges','lemon wedges','avocado','sour cream','crema','cotija','queso fresco']),
+ KT_CARB=kre(['rice(?! vinegar| wine| flour)','pasta','spaghetti','linguine','fettuccine','penne','rigatoni','fusilli','farfalle','orzo','macaroni','lasagna(?: noodles| sheets)?','gnocchi','noodles','ramen','udon','soba','vermicelli','bread','baguette','sourdough','tortillas?','tortilla chips','pitas?','naan','flatbreads?','buns?','bagels?','english muffins?','potato(?:es)?','sweet potato(?:es)?','yams?','quinoa','couscous','farro','barley','bulgur','polenta','grits','oats','oatmeal','wonton wrappers','dumpling wrappers','rice paper','pizza dough','puff pastry','pie crust','crackers','challah','matzo(?:h)?']),
+ KT_PRO=kre(['tofu','tempeh','seitan','tvp','textured vegetable protein','edamame','chickpeas','garbanzo(?: beans)?','lentils','dal','dhal','(?:black|kidney|pinto|white|cannellini|navy|butter|great northern|refried|borlotti|mung|adzuki|fava|lima|baked) beans','(?<!green |string |runner |wax )beans','eggs?','egg whites','paneer','halloumi','cottage cheese','chicken(?: breasts?| thighs?)?','beef','ground beef','steak','pork','bacon','sausages?','turkey','lamb','ham','fish','salmon','tuna','cod','tilapia','shrimp','prawns','scallops','crab','lox','brisket','meatballs']),
+ KT_PER=kre(['squash','butternut squash','pumpkin','beets?','radish(?:es)?','leeks?','fennel','okra','snap peas','snow peas','peas','corn','mangoes|mangos?','pineapple','peach(?:es)?','pears?','grapes','oranges?','kimchi','sauerkraut','brussels sprouts']);
+// What kind of thing an ingredient is, or null if it's assumed on hand
+function kType(name,line){let t=' '+cleanName(name||'').toLowerCase()+' ';t=t.replace(/\b(dried|ground|powdered|dehydrated|granulated)\s+(?!(?:beef|pork|turkey|chicken|lamb|meat)\b)[a-z]+/g,' ');
+ if(!t.trim())return null;if(KT_SAUCE.test(t))return 'sauce';
+ if(/\b(broth|stock|bouillon)\b/.test(t))return null;
+ if(KT_GAR.test(t))return 'gar';if(KT_CARB.test(t))return 'carb';if(KT_PRO.test(t))return 'pro';
+ if(KT_SKIP.test(t))return null;
+ const tin=/\b(cans?|canned|tins?|tinned|jars?|jarred)\b/i.test(line||'');
+ if(perish(t)||KT_PER.test(t))return tin?null:'per';return null}
+// A generic kitchen item covers the specific kinds a recipe asks for: "pasta" covers spaghetti, "noodles" covers udon
+const KFAM={pasta:/\b(spaghetti|linguine|fettuccine|penne|rigatoni|fusilli|farfalle|orzo|macaroni|lasagna|pasta)\b/,noodle:/\b(ramen|udon|soba|vermicelli|noodle)\b/,bread:/\b(baguette|sourdough|bread|challah|bun|roll)\b/,
+ bean:/\bbean\b/,cheese:/\b(cheddar|mozzarella|parmesan|feta|gouda|gruyere|cheese)\b/,egg:/\begg\b/,tortilla:/\btortilla\b/,potato:/\bpotato\b/};
+const kHas=(p,k)=>{const pk=nkey(p.name);return pm(p.name,k)||(KFAM[pk]&&KFAM[pk].test(k))};
+const kFind=k=>S.pantry.find(p=>kHas(p,k));
+// The tracked ingredients a recipe needs. Optional lines and "To serve:" sections don't count.
+const KOPT=/\b(optional|for (?:serving|garnish|topping)|to serve|to garnish|if desired|if you like|as desired)\b/i;
+function kNeed(r){let opt=false;const out=[];
+ r.ing.forEach(l=>{if(/:$/.test(l)){opt=/serv|garnish|topping|optional|extra|on the side/i.test(l);return}if(opt||KOPT.test(l))return;
+  const x=ingInfo(l),lk=linksIn(l),t=kType(x.name,l)||(lk.length?'made':null);if(!t)return;
+  const alts=x.name.split(/\s+or\s+|\s*\/\s*/).map(a=>nkey(a)).filter(Boolean);if(!alts.length)return;
+  const nm=cleanName(x.name.split(/\s+or\s+/)[0])||x.name,w=nm.split(' ');while(w.length>1&&DROPW.has(w[0].toLowerCase()))w.shift();
+  out.push({name:cap(w.join(' ')),alts,t})});return out}
+// For each recipe: what it needs from the kitchen, and what's missing. Cached until the next save.
+let KC=null;
+function kCheck(r){if(!KC)KC=new Map();let v=KC.get(r.id);if(v)return v;const n=kNeed(r),miss=[],uses=[];
+ n.forEach(x=>{let p=null;x.alts.some(k=>p=kFind(k));if(p)uses.push(p);else miss.push(x)});
+ v={n,miss,uses,soon:uses.filter(p=>p.days!=null&&pLeft(p)<=3).length};KC.set(r.id,v);return v}
+const kReady=r=>{const c=kCheck(r);return c.n.length>0&&!c.miss.length};
 // After cooking: offer to clear what got used, and to track perishable leftovers
 function afterCook(r){const L=r.ing.filter(l=>!/:$/.test(l)),keys=L.map(l=>ingInfo(l).key);
  const used=S.pantry.filter(p=>keys.some(k=>pm(p.name,k)));
@@ -624,6 +667,7 @@ function vFind(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF(),t
  <div class="row" style="margin-top:8px"><select data-a="sort" aria-label="Sort">${SORTS.map(([v,l])=>`<option value="${v}" ${f.sort==v?'selected':''}>${l}</option>`).join('')}</select><button data-a="surprise" style="flex:none">Surprise me</button></div>`;
  h+=`<details class="fdet" ${O.fl?'open':''} data-o="fl"><summary><h3><span>Filters${act.length?`<span class="cnt">${act.length}</span>`:''}</span><span class="mu fsum">${act.length?esc(act.join(', ')):'<span class="ex">Expand</span><span class="co">Collapse</span>'}</span></h3></summary><div>`
  +FAC.map(([k,l])=>S.facets[k].length?frow(l,chipsFor(k,S.facets[k])):'').join('')
+ +frow('Kitchen',`<button class="chip ${f.now?'on':''}" data-a="fnow">Can make now${S.pantry.length?'':' · add your kitchen first'}</button>`)
  +frow('Time',TIMES.map(v=>`<button class="chip ${f.time==v?'on':''}" data-a="ftime" data-v="${v}">${v?'Under '+fmtTime(v):'Any'}</button>`).join(''))
  +(tags.length?frow('Tags',chipsFor('tags',tags)):'')
  +(act.length?`<button class="g lnk" data-a="fclear" style="margin-top:6px">Clear all filters</button>`:'')+`</div></details></div>`;
@@ -633,21 +677,22 @@ function vFind(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF(),t
 
 // ---- Recipes (category grid) ----
 let BC=null;   // open category on the Recipes tab: {k,v} or {k:'all'}
-const BGS=[['meal','Meal'],['cuisine','Cuisine'],['protein','Protein'],['recent','Recent']];
+const BGS=[['meal','Category'],['cuisine','Cuisine'],['protein','Protein'],['recent','Recent']];
 // Cuisine tiles show the region's flag from the flags/ folder (file name = cuisine, lowercase, hyphens for spaces)
-const FLAGS=new Set(["american", "brazilian", "british", "chinese", "cuban", "ethiopian", "filipino", "french", "german", "greek", "indian", "irish", "italian", "japanese", "korean", "lebanese", "mediterranean", "mexican", "middle-eastern", "moroccan", "peruvian", "slovenian", "spanish", "thai", "turkish", "vietnamese"]);
-const fkey=v=>v.toLowerCase().trim().replace(/\s+/g,'-');
+const FLAGS=new Set(["american", "brazilian", "british", "chinese", "cuban", "ethiopian", "filipino", "french", "german", "greek", "indian", "irish", "italian", "japanese", "jewish", "korean", "lebanese", "mediterranean", "mexican", "middle-eastern", "moroccan", "peruvian", "slovenian", "spanish", "thai", "turkish", "vietnamese"]);
+const FALIAS={'jewish-food':'jewish','jewish-foods':'jewish','jewish-cuisine':'jewish'};
+const fkey=v=>{const k=v.toLowerCase().trim().replace(/\s+/g,'-');return FALIAS[k]||k};
 // Regions without a single flag get their colors drawn instead
 const FLAGC={caribbean:'linear-gradient(#009b3a 0 40%,#fed100 40% 60%,#000 60%)'};
 const hasFlag=v=>FLAGS.has(fkey(v))||!!FLAGC[fkey(v)];
-// Meal tiles each get their own color
+// Category tiles (stored as 'meal') each get their own color
 const MEALC={breakfast:['#f6b23e','#e8792b'],brunch:['#f59a5a','#e0663f'],lunch:['#3bb08f','#1d8a72'],dinner:['#c8364f','#8f1f3c'],side:['#7cbf4f','#3f9a45'],sides:['#7cbf4f','#3f9a45'],
  snack:['#9a6bd8','#6d43b5'],snacks:['#9a6bd8','#6d43b5'],dessert:['#f06aa0','#c93a7c'],desserts:['#f06aa0','#c93a7c'],drink:['#3f8fe0','#2563b8'],drinks:['#3f8fe0','#2563b8'],beverage:['#3f8fe0','#2563b8'],
  appetizer:['#e8a23a','#c27525'],soup:['#d9733f','#a84c2b'],salad:['#5bb56a','#2f8a4a'],baking:['#c99a5b','#93653a']};
 const MEALX=[['#4aa3c9','#2a6f9a'],['#d17a3a','#a04f22'],['#6a7fd6','#4155a8'],['#c25a8e','#8f3466'],['#5aa58a','#357a61']];
-function tbg(k,v){const l=v.toLowerCase(),f=fkey(v);if(k=='cuisine')return FLAGS.has(f)?`url(flags/${f}.svg) center/cover no-repeat,#eee`:FLAGC[f]||cgrad(v);
+function tbg(k,v){const l=v.toLowerCase(),f=fkey(v);if(k=='cuisine'||(k=='meal'&&FLAGS.has(f)))return FLAGS.has(f)?`url(flags/${f}.svg) center/cover no-repeat,#eee`:FLAGC[f]||cgrad(v);
  if(k=='meal'){const c=MEALC[l]||MEALX[hashS(l)%MEALX.length];return `linear-gradient(135deg,${c[0]},${c[1]})`}return cgrad(v)}
-const ctile=(k,v,n)=>{const fl=k=='cuisine'&&hasFlag(v);
+const ctile=(k,v,n)=>{const fl=(k=='cuisine'&&hasFlag(v))||(k=='meal'&&FLAGS.has(fkey(v)));
  return `<button class="ctl${fl?' flag':''}" data-a="cat" data-k="${k}" data-v="${esc(v)}"${fl?'':` style="background:${tbg(k,v)}"`}>${fl?`<i class="fl" style="background:${tbg(k,v)}"></i>`:''}<em>${n}</em><b>${esc(v)}</b></button>`};
 function vBrowse(){const g=S.set.bg||'meal',N=S.recipes.length;
  if(BC){const L=BC.k=='all'?S.recipes:S.recipes.filter(r=>BC.k=='cuisine'?r.cuisine==BC.v:(r[BC.k]||[]).includes(BC.v)),srt=sortList(L),t=BC.k=='all'?'All recipes':BC.v;
@@ -660,7 +705,7 @@ function vBrowse(){const g=S.set.bg||'meal',N=S.recipes.length;
  const cnt=new Map();S.recipes.forEach(r=>(g=='cuisine'?[r.cuisine].filter(Boolean):r[g]||[]).forEach(v=>cnt.set(v,(cnt.get(v)||0)+1)));
  const ord=[...S.facets[g].filter(v=>cnt.has(v)),...[...cnt.keys()].filter(v=>!S.facets[g].includes(v)).sort()];
  return h+`<div class="cgrid wide">${ord.map(v=>ctile(g,v,cnt.get(v))).join('')}<button class="ctl all" data-a="cat" data-k="all" data-v=""><em>${N}</em><b>All</b></button></div>`
-  +(ord.length?'':`<p class="mu wide" style="margin:0 4px">No recipes have a ${g} picked yet. Edit a recipe and use <b>Sort it</b> to add one.</p>`)}
+  +(ord.length?'':`<p class="mu wide" style="margin:0 4px">No recipes have a ${g=='meal'?'category':g} picked yet. Edit a recipe and use <b>Sort it</b> to add one.</p>`)}
 
 // ---- Recipe page ----
 function vRecipe(){const r=byId(RID);if(!r)return '';const i=S.recipes.indexOf(r),p='recipes.'+i,lc=last(r),fac=[...r.meal,...r.protein,...r.method,...r.diet];
@@ -797,10 +842,7 @@ function sRow(r){const sel=SEL&&SEL.has(r.id),open=!SEL&&EX.has(r.id),ckAttr=r.k
 function vKit(){const P=pSorted(),sh=S.shop,rows=shopRows(),have=shopItems().filter(e=>!sh.got[e.k]&&isHave(e)),rs=sh.rids.map(byId).filter(Boolean),kit=rows.filter(r=>r.kit&&!r.ck);
  const toBuy=rows.filter(r=>!r.ck).length,nck=rows.filter(r=>r.ck).length;
  let h=`<div class="seg qm wide">${[['use','On hand'+(P.length?' · '+P.length:'')],['shop','Shopping'+(toBuy?' · '+toBuy:'')]].map(([v,l])=>`<button class="${KV==v?'on':''}" data-a="kitV" data-v="${v}">${l}</button>`).join('')}</div>`;
- if(KV=='use')return h+`<div class="card wide"><h3><span>In my kitchen</span><span class="mu">${P.length}</span></h3>`
-  +(P.length?P.map(p=>{const n=pLeft(p);return `<div class="prow"><span class="pn"><b>${esc(p.name)}</b><span class="mu">Added ${ago(p.added)}</span></span><span class="stp"><button class="g sb" data-a="pDays" data-id="${esc(p.id)}" data-d="-1" aria-label="Sooner">−</button><span class="dl ${dlCls(n)}">${dlTxt(n)}</span><button class="g sb" data-a="pDays" data-id="${esc(p.id)}" data-d="1" aria-label="Later">+</button></span><button class="okb" data-a="pUse" data-id="${esc(p.id)}" aria-label="Used it">${ICK}</button></div>`}).join('')
-   :`<p class="mu" style="margin:0 0 10px">Nothing here yet. Add what you have, and the shopping list will point out anything you already own. Items you buy can go here when you tap Done shopping.</p>`)
-  +`<div class="row" style="margin-top:10px"><input id="pin" type="text" placeholder="Rice, spinach, half a cabbage" enterkeyhint="done" autocomplete="off"><button data-a="pAdd" style="flex:none">Add</button></div><div class="hint">Add several at once with commas. Fresh things get a rough use-by date you can nudge with − and +. Tap the check when it's gone.</div></div>`;
+ if(KV=='use')return h+vOnHand();
  if(!SEL)h+=`<div class="card wide"><h3><span>Cooking this week</span><span class="mu">${rs.length}</span></h3><div class="chips" style="margin:0">${rs.map(r=>`<span class="chip ed2"><button class="cn" data-a="open" data-id="${esc(r.id)}">${esc(short(r.title))}</button><button class="cx" data-a="rOff" data-id="${esc(r.id)}" aria-label="Take ${esc(r.title)} off the list">${ICX}</button></span>`).join('')}<button class="chip add" data-a="pick">+ ${rs.length?'Add recipes':'Pick recipes'}</button></div></div>`;
  h+=`<div class="card wide${SEL?' selm':''}"><h3><span>${SEL?(SEL.size?SEL.size+' selected':'Tap items to select'):'Shopping list'}</span>${SEL?(kit.length?`<button class="g lnk" data-a="sSelKit">Select kitchen items</button>`:''):`<span class="mu">${toBuy?toBuy+' left':''}</span>`}</h3>`
   +(!SEL&&kit.length?`<button class="khint" data-a="sReview"><span><b>${kit.length}</b> already in your kitchen</span>Review ›</button>`:'')
@@ -810,6 +852,27 @@ function vKit(){const P=pSorted(),sh=S.shop,rows=shopRows(),have=shopItems().fil
  if(have.length&&!SEL)h+=`<details class="card wide" ${O.hv?'open':''} data-o="hv"><summary><h3><span>Taken off</span><span class="mu">${have.length}</span></h3></summary><div>${have.map(e=>`<div class="srow"><span class="ingr" style="cursor:default"><span>${esc(e.name)}<small>${STAPLE.test(e.k)?'Kitchen staple':kitHit(e)?'In your kitchen':'You have it'}</small></span></span><button class="g lnk" data-a="sNeed" data-k="${esc(e.k)}">Put back</button></div>`).join('')}</div></details>`;
  if(SEL)h+=`<div class="savebar"><button class="g bd" data-a="sSelX">Cancel</button><button data-a="sSelDel" ${SEL.size?'':'disabled'}>Remove${SEL.size?' '+SEL.size:''}</button></div>`;
  else if(rows.length||rs.length)h+=`<div class="savebar"><button class="g bd" data-a="shopClear">Clear list</button><button data-a="shopDone" ${nck?'':'disabled'}>Done shopping${nck?' ('+nck+')':''}</button></div>`;
+ return h}
+
+// The On hand view: what you can cook now, then your kitchen in five groups
+function vOnHand(){const P=pSorted(),C=S.recipes.map(r=>({r,c:kCheck(r)})).filter(x=>x.c.n.length);
+ const ready=C.filter(x=>!x.c.miss.length).sort((a,b)=>b.c.soon-a.c.soon||(last(a.r)<last(b.r)?-1:last(a.r)>last(b.r)?1:0)),
+  near=C.filter(x=>x.c.miss.length&&x.c.miss.length<=2&&x.c.miss.length<x.c.n.length).sort((a,b)=>a.c.miss.length-b.c.miss.length||b.c.uses.length-a.c.uses.length);
+ const row=(r,sub,extra='')=>`<div class="srow"><button class="rc" data-a="open" data-id="${esc(r.id)}" style="flex:1;min-width:0">${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${sub}</span></span>${extra?'':CHEV}</button>${extra}</div>`;
+ const useTxt=c=>{const s=c.uses.filter(p=>p.days!=null&&pLeft(p)<=3);return s.length?'Uses up '+esc(s.map(p=>p.name.toLowerCase()).join(', ')):esc(c.uses.slice(0,3).map(p=>p.name.toLowerCase()).join(', '))};
+ let h=`<div class="card wide"><h3><span>Cook without shopping</span><span class="mu">${ready.length?ready.length+' ready':''}</span></h3>`;
+ if(!P.length)h+=`<p class="mu" style="margin:0">Add the carbs, proteins, perishables, sauces and garnishes you have below, and this shows which recipes you can make right now.</p>`;
+ else{const RS=O.kra?ready:ready.slice(0,5),NS=O.kna?near:near.slice(0,4);
+  h+=(ready.length?RS.map(({r,c})=>row(r,useTxt(c))).join('')+(ready.length>5?`<button class="g lnk" data-a="kMore" data-k="kra" style="margin:4px 0">${O.kra?'Show fewer':'Show all '+ready.length}</button>`:'')
+    :`<p class="mu" style="margin:0 0 6px">Nothing fully covered yet.${near.length?' These are close:':''}</p>`)
+   +(near.length?`<div class="sec" style="margin-top:12px">Missing one or two things</div>`+NS.map(({r,c})=>row(r,'Need '+esc(c.miss.map(x=>x.name.toLowerCase()).join(', ')),`<button class="g lnk" data-a="kMiss" data-id="${esc(r.id)}" style="flex:none;padding:8px 6px">+ List</button>`)).join('')
+     +(near.length>4?`<button class="g lnk" data-a="kMore" data-k="kna" style="margin:4px 0">${O.kna?'Show fewer':'Show all '+near.length}</button>`:''):'')
+   +`<div class="hint">Only carbs, proteins, perishables, sauces, garnishes and your own made recipes count. Spices, oil, flour, stock, canned tomatoes, onions and garlic are assumed. Optional and "to serve" lines are skipped.</div>`}
+ h+=`</div><div class="card wide"><h3><span>In my kitchen</span><span class="mu">${P.length||''}</span></h3><div class="row"><input id="pin" type="text" placeholder="Rice, tofu, cilantro, gochujang" enterkeyhint="done" autocomplete="off"><button data-a="pAdd" style="flex:none">Add</button></div><div class="hint">Add several with commas. Each one lands in its group; tap it to move it, set a use-by, or mark it used up.</div></div>`;
+ KG.forEach(([t,l,ex])=>{const L=P.filter(p=>(p.t||'oth')==t);if(t=='oth'&&!L.length)return;
+  h+=`<div class="card kg" style="--kc:${KGC[t]}"><h3><span>${l}</span><span class="mu">${L.length||''}</span></h3><div class="chips" style="margin:0">`
+   +L.map(p=>{const n=pLeft(p);return `<span class="chip ed2${n!=null&&n<=1?' kl':''}"><button class="cn" data-a="pEd" data-id="${esc(p.id)}">${esc(p.name)}${n!=null?`<em class="dl ${dlCls(n)}">${n<0?'past':n==0?'today':n+'d'}</em>`:''}</button><button class="cx" data-a="pUse" data-id="${esc(p.id)}" aria-label="Used up ${esc(p.name)}">${ICX}</button></span>`}).join('')
+   +`<button class="chip add" data-a="pNew" data-t="${t}">+ Add</button></div>${!L.length&&ex?`<div class="hint">Like ${esc(ex.toLowerCase())}</div>`:''}</div>`});
  return h}
 
 // ---- Bottom sheet: recipe picker, and the "what's left?" prompts ----
@@ -822,6 +885,13 @@ function vSheet(){if(!SH)return '';let b='';
  const byT=(a,b)=>(a.title||'').toLowerCase()<(b.title||'').toLowerCase()?-1:1,qOk=(x,q)=>!q||(x.title+' '+x.cuisine+' '+x.tags.join(' ')).toLowerCase().includes(q);
  const pRow=(r,a,extra='')=>`<button class="rc" data-a="${a}" data-id="${esc(r.id)}"${extra}>${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${esc([r.cuisine,r.serves?'serves '+r.serves:'',fmtTime(r.time)].filter(Boolean).join(' · ')||' ')}</span></span>${CHEV}</button>`;
  const srch=(id,v,ph)=>`<div class="srch" style="margin:8px 0 4px">${ICS}<input id="${id}" type="search" placeholder="${ph}" value="${esc(v||'')}" autocomplete="off" enterkeyhint="search"></div>`;
+ // A kitchen item: name, group, use-by
+ if(SH.kind=='pit'){const nw=!SH.id,g=KG.find(x=>x[0]==SH.t)||KG[5],n=SH.left;
+  return wrap(`<h2>${nw?'Add to '+g[1]:'Edit item'}</h2><input id="pitN" type="text" value="${esc(SH.name)}" placeholder="${esc((g[2]||'').split(',')[0]||'Name')}" autocomplete="off" enterkeyhint="done">`
+   +`<div class="sec" style="margin-top:14px">Group</div><div class="chips" style="margin:0">${KG.map(([t,l])=>`<button class="chip ${SH.t==t?'on':''}" data-a="pitT" data-t="${t}">${l}</button>`).join('')}</div>`
+   +`<div class="sec" style="margin-top:14px">Use by</div><div class="row"><span class="stp"><button class="g sb" data-a="pitD" data-d="-1" aria-label="Sooner">−</button><span class="dl ${dlCls(n)}">${dlTxt(n)}</span><button class="g sb" data-a="pitD" data-d="1" aria-label="Later">+</button></span>${n!=null?'<button class="g lnk" data-a="pitNoD" style="margin-left:auto">No date</button>':''}</div>`
+   +(nw&&!SH.dt?'<div class="hint">Fresh things get a rough date from the name if you leave this.</div>':'')
+   +`<div class="row" style="margin-top:12px">${nw?'<button class="g bd" data-a="shClose">Cancel</button>':'<button class="x" data-a="pitDel">Used up</button>'}<button data-a="pitSave" style="flex:1">${nw?'Add':'Save'}</button></div>`)}
  // Pick a recipe to link from an ingredient
  if(SH.kind=='link'){const q=tkey(SH.q),own=SH.back?SH.back.id:S.draft.id,L=S.recipes.filter(r=>r.id!=own&&r.title.trim()&&qOk(r,q)).sort(byT);
   return wrap(`<h2>Link a recipe</h2><p class="mu" style="margin:0">Adds its name in [[double brackets]]. Type the amount in front, like 1/2 cup.</p>${srch('lnq',SH.q,'Search your recipes')}`
@@ -866,7 +936,7 @@ function vSheet(){if(!SH)return '';let b='';
 function vMore(){const kb=Math.round(((localStorage.getItem(LS)||'').length)/1024);
  return `<div class="card"><h2>Settings</h2><div class="sec">Appearance</div><div class="seg qm">${[['system','Auto'],['light','Light'],['dark','Dark']].map(([v,l])=>`<button class="${S.set.theme==v?'on':''}" data-a="theme" data-v="${v}">${l}</button>`).join('')}</div>
  <div class="sec" style="margin-top:16px">Storage</div><div class="mu">${S.recipes.length} recipe${S.recipes.length==1?'':'s'} using about ${kb} KB of roughly 5,000 KB.</div></div>
- <div class="card"><h2>Tags and lists</h2><p class="mu">Rename or remove cuisines, proteins, methods, diets and your own tags.</p><button data-a="tab" data-id="lists">Edit tags and lists</button></div>
+ <div class="card"><h2>Tags and lists</h2><p class="mu">Rename or remove cuisines, categories, proteins, methods, diets and your own tags.</p><button data-a="tab" data-id="lists">Edit tags and lists</button></div>
  <div class="card"><h2>Backup & restore</h2><p class="mu">Recipes live in this device's browser. Save a backup now and then, and use it to move everything to another device.</p><div class="row"><button data-a="share">Share backup</button><button data-a="export">Download backup</button></div><div class="row"><button data-a="pickFile">Import backup file</button><input type="file" id="bkf" accept=".json,application/json" style="display:none" data-a="importFile"></div>
  <details style="margin-top:8px" ${O.bk?'open':''} data-o="bk"><summary class="mu">Advanced: copy/paste text</summary><textarea id="bk">${O.bk?esc(JSON.stringify(S)):''}</textarea><div class="row"><button data-a="restore">Restore from text</button><button class="x" data-a="reset">Reset everything</button></div></details></div>`}
 
@@ -1005,8 +1075,24 @@ const ACT={
  listT:d=>{const a=S.shop.rids,i=a.indexOf(d.id);if(i<0){a.push(d.id);toast('Added to your shopping list')}else{a.splice(i,1);pruneShop();toast('Taken off the shopping list')}commit()},
  pDays:d=>{const p=S.pantry.find(x=>x.id==d.id);if(!p)return;if(p.days==null)p.days=-dayDiff(p.added)+(+d.d>0?7:3);else p.days=Math.max(0,p.days+(+d.d));commit()},
  pUse:d=>{const i=S.pantry.findIndex(x=>x.id==d.id);if(i<0)return;const [x]=S.pantry.splice(i,1);commit();toast(x.name+' is off the list',()=>{S.pantry.splice(i,0,x);commit()})},
- pAdd:()=>{const inp=document.getElementById('pin'),L=(inp&&inp.value||'').split(/[,\n]/).map(s=>s.trim()).filter(Boolean);if(!L.length)return;L.forEach(v=>{const g=perish(v);addPantry(v,g?g.days:null)});inp.value='';commit();inp.focus();if(L.length>1)toast('Added '+L.length+' items')},
+ pAdd:()=>{const inp=document.getElementById('pin'),L=(inp&&inp.value||'').split(/[,\n]/).map(s=>s.trim()).filter(Boolean);if(!L.length)return;L.forEach(v=>{const g=perish(v);addPantry(v,g?g.days:null)});inp.value='';commit();inp.focus();
+  const gl=v=>(KG.find(x=>x[0]==(S.pantry.find(p=>nkey(p.name)==nkey(v))||{}).t)||KG[5])[1];toast(L.length>1?'Added '+L.length+' items':cap(L[0])+' added to '+gl(L[0]))},
  pick:()=>{SH={kind:'pick'};R()},
+ pEd:d=>{const p=S.pantry.find(x=>x.id==d.id);if(!p)return;SH={kind:'pit',id:p.id,name:p.name,t:p.t||'oth',left:pLeft(p)};R()},
+ pNew:d=>{SH={kind:'pit',name:'',t:d.t||'oth',left:null};R();setTimeout(()=>document.getElementById('pitN')?.focus(),60)},
+ pitT:d=>{if(SH){SH.t=d.t;R()}},
+ pitD:d=>{if(!SH)return;SH.left=SH.left==null?(+d.d>0?7:3):Math.max(0,SH.left+(+d.d));SH.dt=1;R()},
+ pitNoD:()=>{if(SH){SH.left=null;SH.dt=1;R()}},
+ pitSave:()=>{if(!SH)return;const v=(document.getElementById('pitN')?.value??SH.name).trim();if(!v){toast('Give it a name');return}
+  const t=SH.t,g=!SH.dt?perish(v):null,left=SH.dt||!SH.id?(SH.dt?SH.left:(g?g.days:null)):SH.left;
+  if(!SH.id){addPantry(v,left,t)}else{const p=S.pantry.find(x=>x.id==SH.id);if(p){p.name=cap(v);p.t=t;p.days=left==null?null:left-dayDiff(p.added)}}
+  const nw=!SH.id;SH=null;commit();toast(nw?cap(v)+' added to '+(KG.find(x=>x[0]==t)||KG[5])[1]:'Saved')},
+ pitDel:()=>{if(!SH||!SH.id)return;const id=SH.id;SH=null;ACT.pUse({id})},
+ kMore:d=>{O[d.k]=!O[d.k];R()},
+ kMiss:d=>{const r=byId(d.id);if(!r)return;const c=kCheck(r),have=new Set(S.shop.extra.map(x=>nkey(x.t))),add=c.miss.filter(x=>!have.has(nkey(x.name)));
+  if(!add.length){toast('Already on your shopping list');return}const ids=add.map(x=>{const id=uid('x');S.shop.extra.push({id,t:cap(x.name),ck:0,note:'For '+r.title});return id});commit();
+  toast(`Added ${add.map(x=>x.name.toLowerCase()).join(', ')} to your list`,()=>{S.shop.extra=S.shop.extra.filter(x=>!ids.includes(x.id));commit()})},
+ fnow:()=>{S.f.now=S.f.now?0:1;commit()},
  pickT:(d,el)=>{const a=S.shop.rids,i=a.indexOf(d.id);if(el.checked){if(i<0)a.push(d.id)}else if(i>=0){a.splice(i,1);pruneShop()}commit()},
  rOff:d=>{S.shop.rids=S.shop.rids.filter(x=>x!=d.id);pruneShop();commit()},
  sCk:(d,el)=>{if(el.checked)S.shop.ck[d.k]=1;else delete S.shop.ck[d.k];commit()},
@@ -1108,6 +1194,7 @@ document.addEventListener('input',e=>{const t=e.target,d=t.dataset;
  if(t.id=='q'){S.f.q=t.value;save();clearTimeout(QT);QT=setTimeout(R,150);return}
  if(t.id=='pt')PT=t.value;
  if((t.id=='plq'||t.id=='lnq')&&SH){SH.q=t.value;R();return}
+ if(t.id=='pitN'&&SH){SH.name=t.value;return}
  if(d.nk!=null){if(t.value.trim())S.shop.note[d.nk]=t.value;else delete S.shop.note[d.nk];save();return}
  if(d.nx!=null){const x=S.shop.extra.find(y=>y.id==d.nx);if(x){x.note=t.value;save()}return}
  if(t.id=='tagin'&&t.value.includes(',')){addTags(t);return}
@@ -1121,6 +1208,7 @@ document.addEventListener('keydown',e=>{const t=e.target;if(e.key!='Enter'||e.is
  else if(t.id=='pin'){e.preventDefault();ACT.pAdd()}
  else if(t.id=='ingE'){e.preventDefault();ACT.ingSave()}
  else if(t.id=='xin'){e.preventDefault();ACT.xAdd()}
+ else if(t.id=='pitN'){e.preventDefault();ACT.pitSave()}
  else if(t.id=='q'||t.id=='plq'||t.id=='lnq'||t.dataset.nk!=null||t.dataset.nx!=null)t.blur()});
 document.addEventListener('toggle',e=>{const k=e.target.dataset&&e.target.dataset.o;if(k!=null){O[k]=e.target.open;if(k=='bk'&&O.bk)R()}},true);
 
