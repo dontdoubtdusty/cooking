@@ -77,8 +77,9 @@ button.lnk{padding:0;color:var(--pc);font-weight:800;font-size:13px}
 .pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.pill{font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px;background:color-mix(in srgb,var(--pc) 12%,transparent);color:var(--pc)}.pill.tg{background:color-mix(in srgb,var(--ac) 15%,transparent);color:var(--ac)}
 .cnt{display:inline-grid;place-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:linear-gradient(135deg,var(--pc),var(--pc2));color:#fff;font:800 12px 'Nunito',sans-serif;margin-left:6px;vertical-align:2px}
 .fdet{margin-top:6px;border-top:1px solid var(--bd);padding-top:8px}.fdet>div{padding-top:4px}
-.frow{padding:3px 0}.frow .chips{margin:0;gap:4px;align-items:center}
-.frow .sec{display:inline;margin:0 4px 0 0;font-size:11px}.frow .chip{padding:4px 10px;font-size:12.5px}
+.frow{padding:10px 0 8px;border-top:1px solid var(--bd)}.frow:first-child{border-top:0;padding-top:4px}.frow .chips{margin:0;gap:5px;align-items:center}
+.frow .fh{display:flex;align-items:center;gap:7px;margin:0 0 7px;font-size:12.5px;font-weight:800;line-height:1;letter-spacing:.8px;text-transform:uppercase;color:var(--pc)}.frow .fh:before{content:'';width:4px;height:13px;border-radius:2px;background:linear-gradient(var(--pc),var(--pc2))}
+.frow .chip{padding:4px 10px;font-size:12.5px}
 .fsum{font-weight:600;max-width:58%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 details[open] .fsum .ex,details:not([open]) .fsum .co{display:none}
 
@@ -110,7 +111,8 @@ body.hast #toast{bottom:calc(140px + env(safe-area-inset-bottom,0px))}
 .ctl b{position:absolute;left:0;right:0;bottom:0;padding:22px 10px 9px;font:600 16px/1.15 var(--fd);text-shadow:0 1px 3px #0006;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ctl.flag{border-color:var(--bd);background:var(--card)}.ctl .fl{position:absolute;inset:0 0 34px}.ctl.flag b{background:var(--card);color:var(--tx);text-shadow:none;height:34px;padding:0 10px;line-height:33px;font-size:15px;border-top:1px solid var(--bd)}
 .ctl em{position:absolute;top:8px;right:8px;font-style:normal;font-weight:800;font-size:12px;min-width:24px;height:22px;padding:0 7px;display:grid;place-content:center;border-radius:99px;background:#00000059;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-.ctl.all{background:linear-gradient(135deg,var(--pc),var(--pc2))}
+.ctl.all{background:linear-gradient(135deg,var(--pc),var(--pc2))}.ctl.flag.all{background:var(--card)}.ctl .fl.globe{background:#04060d url(img/globe.jpg) center/cover no-repeat}
+.ctl .ci{position:absolute;left:50%;top:43%;width:44%;height:44%;transform:translate(-50%,-50%);opacity:.95;filter:drop-shadow(0 1px 2px #0003);pointer-events:none}
 .ctl:active{transform:scale(.97)}
 .hello{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:4px 4px -2px}
 .hello b{font:600 25px/1.2 var(--fd)}.hello span{flex:none;font-size:13px;font-weight:800;color:var(--pc);background:color-mix(in srgb,var(--pc) 13%,transparent);padding:5px 12px;border-radius:99px}
@@ -275,7 +277,7 @@ let O={},AM='type',PT='',PARSED='',CK={},SC={},SUR=null,SURN=0,TM=[];   // UI-on
 
 const blankD=()=>({id:'',title:'',cuisine:'',meal:[],protein:[],method:[],diet:[],tags:[],serves:'',time:'',ingT:'',stepT:'',nutT:'',notes:'',src:'',vid:''});
 const blankShop=()=>({rids:[],extra:[],ck:{},got:{},have:{},need:{},note:{}});
-const blankF=()=>({q:'',time:0,now:0,sort:'az',tags:[],cuisine:[],meal:[],protein:[],method:[],diet:[]});
+const blankF=()=>({q:'',time:0,now:0,near:0,sort:'az',tags:[],cuisine:[],meal:[],protein:[],method:[],diet:[]});
 const dEmpty=d=>!((d.title||'').trim()||(d.ingT||'').trim()||(d.stepT||'').trim()||(d.notes||'').trim());
 // "Ingredients for the baking soda bath" saved as an ingredient line -> a "Baking soda bath:" heading
 function subHead(l){if(typeof l!='string'||l.length>60||/:$/.test(l))return l;
@@ -370,13 +372,13 @@ function match(r){const f=S.f;
  if(f.q){const q=f.q.toLowerCase().trim();if(q&&!(r.title+' '+r.cuisine+' '+r.tags.join(' ')+' '+r.ing.join(' ')).toLowerCase().includes(q))return false}
  for(const [k,,one] of FAC){const sel=f[k];if(sel.length){const v=one?[r.cuisine]:r[k];if(!sel.some(x=>v.includes(x)))return false}}
  if(f.tags.length&&!f.tags.every(t=>r.tags.includes(t)))return false;
- if(f.time&&!(r.time&&r.time<=f.time))return false;if(f.now&&!kReady(r))return false;return true}
+ if(f.time&&!(r.time&&r.time<=f.time))return false;if((f.now||f.near)&&!((f.now&&kReady(r))||(f.near&&kNear(r))))return false;return true}
 function sortList(L){const s=S.f.sort,t=r=>(r.title||'').toLowerCase(),az=(a,b)=>t(a)<t(b)?-1:t(a)>t(b)?1:0;
  L.sort(s=='stale'?(a,b)=>{const x=last(a),y=last(b);if(!x&&!y)return az(a,b);if(!x)return -1;if(!y)return 1;return x<y?-1:x>y?1:az(a,b)}
   :s=='new'?(a,b)=>(a.added<b.added?1:a.added>b.added?-1:0)||(S.recipes.indexOf(b)-S.recipes.indexOf(a))
   :s=='quick'?(a,b)=>((a.time||1e9)-(b.time||1e9))||az(a,b)
   :s=='most'?(a,b)=>(b.cooked.length-a.cooked.length)||az(a,b):az);return L}
-const activeF=()=>[...FAC.flatMap(([k])=>S.f[k]),...S.f.tags.map(t=>'#'+t),...(S.f.time?['under '+fmtTime(S.f.time)]:[]),...(S.f.now?['can make now']:[])];
+const activeF=()=>[...FAC.flatMap(([k])=>S.f[k]),...S.f.tags.map(t=>'#'+t),...(S.f.time?['under '+fmtTime(S.f.time)]:[]),...(S.f.now?['can make now']:[]),...(S.f.near?['missing 1–2 things']:[])];
 
 // ---- Ingredient quantities and scaling (US units) ----
 const UFR={'½':'1/2','⅓':'1/3','⅔':'2/3','¼':'1/4','¾':'3/4','⅕':'1/5','⅖':'2/5','⅗':'3/5','⅘':'4/5','⅙':'1/6','⅚':'5/6','⅛':'1/8','⅜':'3/8','⅝':'5/8','⅞':'7/8'};
@@ -525,6 +527,8 @@ function kCheck(r){if(!KC)KC=new Map();let v=KC.get(r.id);if(v)return v;const n=
  n.forEach(x=>{let p=null;x.alts.some(k=>p=kFind(k));if(p)uses.push(p);else miss.push(x)});
  v={n,miss,uses,soon:uses.filter(p=>p.days!=null&&pLeft(p)<=3).length};KC.set(r.id,v);return v}
 const kReady=r=>{const c=kCheck(r);return c.n.length>0&&!c.miss.length};
+// Same rule as the Kitchen tab's "Missing one or two things" list
+const kNear=r=>{const c=kCheck(r);return c.miss.length>0&&c.miss.length<=2&&c.miss.length<c.n.length};
 // After cooking: offer to clear what got used, and to track perishable leftovers
 function afterCook(r){const L=r.ing.filter(l=>!/:$/.test(l)),keys=L.map(l=>ingInfo(l).key);
  const used=S.pantry.filter(p=>keys.some(k=>pm(p.name,k)));
@@ -681,14 +685,14 @@ function ingCard(r){const f=SC[r.id]||1,ck=CK[r.id]||{},any=Object.values(ck).so
 // =====================================================================
 // ---- Recipes (browse) ----
 function vFind(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF(),tags=allTags().map(x=>x[0]);
- const chipsFor=(k,vals)=>`${vals.map(v=>`<button class="chip ${f[k].includes(v)?'on':''}" data-a="fil" data-k="${k}" data-v="${esc(v)}">${esc(k=='tags'?'#'+v:v)}</button>`).join('')}`,frow=(l,c)=>`<div class="frow"><div class="chips"><span class="sec">${l}</span>${c}</div></div>`;
+ const chipsFor=(k,vals)=>`${vals.map(v=>`<button class="chip ${f[k].includes(v)?'on':''}" data-a="fil" data-k="${k}" data-v="${esc(v)}">${esc(k=='tags'?'#'+v:v)}</button>`).join('')}`,frow=(l,c)=>`<div class="frow"><div class="fh">${l}</div><div class="chips">${c}</div></div>`;
  let h=hello()+(S.set.welcome?welcome():'');
  const LOW=pSorted().filter(p=>p.days!=null&&pLeft(p)<=5);if(LOW.length){h+=`<div class="card wide"><h3><span>Use it up</span><button class="g lnk" data-a="kitUse">Kitchen ›</button></h3>${LOW.slice(0,3).map(p=>{const n=pLeft(p);return `<button class="urow" data-a="kitUse"><span>${esc(p.name)}</span><span class="dl ${dlCls(n)}">${dlTxt(n)}</span></button>`}).join('')}</div>`}
  h+=`<div class="card wide"><div class="srch">${ICS}<input id="q" type="search" placeholder="Search names, ingredients, tags" value="${esc(f.q)}" autocomplete="off" enterkeyhint="search"></div>
  <div class="row" style="margin-top:8px"><select data-a="sort" aria-label="Sort">${SORTS.map(([v,l])=>`<option value="${v}" ${f.sort==v?'selected':''}>${l}</option>`).join('')}</select><button data-a="surprise" style="flex:none">Surprise me</button></div>`;
  h+=`<details class="fdet" ${O.fl?'open':''} data-o="fl"><summary><h3><span>Filters${act.length?`<span class="cnt">${act.length}</span>`:''}</span><span class="mu fsum">${act.length?esc(act.join(', ')):'<span class="ex">Expand</span><span class="co">Collapse</span>'}</span></h3></summary><div>`
  +FAC.map(([k,l])=>S.facets[k].length?frow(l,chipsFor(k,S.facets[k])):'').join('')
- +frow('Kitchen',`<button class="chip ${f.now?'on':''}" data-a="fnow">Can make now${S.pantry.length?'':' · add your kitchen first'}</button>`)
+ +frow('Kitchen',`<button class="chip ${f.now?'on':''}" data-a="fnow">Can make now${S.pantry.length?'':' · add your kitchen first'}</button><button class="chip ${f.near?'on':''}" data-a="fnear">Missing 1–2 things</button>`)
  +frow('Time',TIMES.map(v=>`<button class="chip ${f.time==v?'on':''}" data-a="ftime" data-v="${v}">${v?'Under '+fmtTime(v):'Any'}</button>`).join(''))
  +(tags.length?frow('Tags',chipsFor('tags',tags)):'')
  +(act.length?`<button class="g lnk" data-a="fclear" style="margin-top:6px">Clear all filters</button>`:'')+`</div></details></div>`;
@@ -711,10 +715,19 @@ const MEALC={breakfast:['#f6b23e','#e8792b'],brunch:['#f59a5a','#e0663f'],lunch:
  snack:['#9a6bd8','#6d43b5'],snacks:['#9a6bd8','#6d43b5'],dessert:['#f06aa0','#c93a7c'],desserts:['#f06aa0','#c93a7c'],drink:['#3f8fe0','#2563b8'],drinks:['#3f8fe0','#2563b8'],beverage:['#3f8fe0','#2563b8'],
  appetizer:['#e8a23a','#c27525'],soup:['#d9733f','#a84c2b'],salad:['#5bb56a','#2f8a4a'],baking:['#c99a5b','#93653a']};
 const MEALX=[['#4aa3c9','#2a6f9a'],['#d17a3a','#a04f22'],['#6a7fd6','#4155a8'],['#c25a8e','#8f3466'],['#5aa58a','#357a61']];
+// Category and protein tiles get a white line icon from the icons/ folder (first match wins)
+const TICON=[[/breakfast/,'fried-egg'],[/brunch/,'pancake-stack'],[/lunch/,'sandwich'],[/dinner|main|entr[eé]e/,'casserole-dish'],[/\bsides?\b/,'rice-bowl'],
+ [/snack/,'popcorn'],[/dessert|sweet/,'cake-slice'],[/coffee|\btea\b/,'cup-saucer'],[/drink|beverage|cocktail|smoothie/,'cocktail'],[/appeti[sz]er|starter/,'chaat-plate'],
+ [/soup|stew/,'soup'],[/salad/,'salad'],[/bak|bread/,'bread'],[/pasta|noodle/,'noodles'],[/sauce|condiment|dressing|dip\b/,'jar'],
+ [/tofu/,'butter'],[/tempeh|\bsoy|edamame/,'soybean'],[/seitan|wheat|gluten/,'wheat'],[/lentil/,'cereal-bowl'],[/chickpea|garbanzo|hummus/,'seed-sack'],[/bean|legume/,'dates-bowl'],
+ [/cheese|dairy/,'cheese'],[/mushroom/,'mushroom'],[/\beggs?\b/,'egg'],[/yog(h)?urt/,'yogurt'],[/milk/,'milk'],[/\bnuts?\b|peanut|almond|cashew/,'peanut'],
+ [/chicken|poultry/,'chicken-leg'],[/turkey/,'thanksgiving-turkey'],[/beef|steak/,'steak'],[/pork|bacon/,'bacon'],[/\bham\b/,'ham'],[/sausage/,'sausage'],
+ [/fish|salmon|tuna|cod\b/,'fish'],[/shrimp|prawn|seafood/,'shrimp'],[/crab|lobster/,'crab']];
+const ticon=(k,v)=>{if(k!='meal'&&k!='protein')return '';const l=v.toLowerCase(),m=TICON.find(([re])=>re.test(l));return m?m[1]:''};
 function tbg(k,v){const l=v.toLowerCase(),f=fkey(v);if(k=='cuisine'||(k=='meal'&&FLAGS.has(f)))return FLAGS.has(f)?`url(flags/${f}.svg) center/cover no-repeat,#eee`:FLAGC[f]||cgrad(v);
  if(k=='meal'){const c=MEALC[l]||MEALX[hashS(l)%MEALX.length];return `linear-gradient(135deg,${c[0]},${c[1]})`}return cgrad(v)}
 const ctile=(k,v,n)=>{const fl=(k=='cuisine'&&hasFlag(v))||(k=='meal'&&FLAGS.has(fkey(v)));
- return `<button class="ctl${fl?' flag':''}" data-a="cat" data-k="${k}" data-v="${esc(v)}"${fl?'':` style="background:${tbg(k,v)}"`}>${fl?`<i class="fl" style="background:${tbg(k,v)}"></i>`:''}<em>${n}</em><b>${esc(v)}</b></button>`};
+ return `<button class="ctl${fl?' flag':''}" data-a="cat" data-k="${k}" data-v="${esc(v)}"${fl?'':` style="background:${tbg(k,v)}"`}>${fl?`<i class="fl" style="background:${tbg(k,v)}"></i>`:''}${!fl&&ticon(k,v)?`<img class="ci" src="icons/${ticon(k,v)}.svg" alt="">`:''}<em>${n}</em><b>${esc(v)}</b></button>`};
 function vBrowse(){const g=S.set.bg||'meal',N=S.recipes.length;
  if(BC){const L=BC.k=='all'?S.recipes:S.recipes.filter(r=>BC.k=='cuisine'?r.cuisine==BC.v:(r[BC.k]||[]).includes(BC.v)),srt=sortList(L),t=BC.k=='all'?'All recipes':BC.v;
   return `<div class="bk"><button class="g" data-a="catX">‹ All categories</button></div><div class="hello"><b>${esc(t)}</b><span>${L.length} recipe${L.length==1?'':'s'}</span></div>`
@@ -725,7 +738,7 @@ function vBrowse(){const g=S.set.bg||'meal',N=S.recipes.length;
   return h+(c.length?`<div class="card wide"><div class="sec">Cooked recently</div>${c.slice(0,30).map(rRow).join('')}</div>`:'')+(nw.length?`<div class="card wide"><div class="sec">Not cooked yet</div>${nw.map(rRow).join('')}</div>`:'')}
  const cnt=new Map();S.recipes.forEach(r=>(g=='cuisine'?[r.cuisine].filter(Boolean):r[g]||[]).forEach(v=>cnt.set(v,(cnt.get(v)||0)+1)));
  const ord=[...S.facets[g].filter(v=>cnt.has(v)),...[...cnt.keys()].filter(v=>!S.facets[g].includes(v)).sort()];
- return h+`<div class="cgrid wide">${ord.map(v=>ctile(g,v,cnt.get(v))).join('')}<button class="ctl all" data-a="cat" data-k="all" data-v=""><em>${N}</em><b>All</b></button></div>`
+ return h+`<div class="cgrid wide">${ord.map(v=>ctile(g,v,cnt.get(v))).join('')}${g=='cuisine'?`<button class="ctl flag all" data-a="cat" data-k="all" data-v=""><i class="fl globe"></i><em>${N}</em><b>All</b></button>`:`<button class="ctl all" data-a="cat" data-k="all" data-v=""><img class="ci" src="icons/cutlery.svg" alt=""><em>${N}</em><b>All</b></button>`}</div>`
   +(ord.length?'':`<p class="mu wide" style="margin:0 4px">No recipes have a ${g=='meal'?'category':g} picked yet. Edit a recipe and use <b>Sort it</b> to add one.</p>`)}
 
 // ---- Recipe page ----
@@ -1114,6 +1127,7 @@ const ACT={
   if(!add.length){toast('Already on your shopping list');return}const ids=add.map(x=>{const id=uid('x');S.shop.extra.push({id,t:cap(x.name),ck:0,note:'For '+r.title});return id});commit();
   toast(`Added ${add.map(x=>x.name.toLowerCase()).join(', ')} to your list`,()=>{S.shop.extra=S.shop.extra.filter(x=>!ids.includes(x.id));commit()})},
  fnow:()=>{S.f.now=S.f.now?0:1;commit()},
+ fnear:()=>{S.f.near=S.f.near?0:1;commit()},
  pickT:(d,el)=>{const a=S.shop.rids,i=a.indexOf(d.id);if(el.checked){if(i<0)a.push(d.id)}else if(i>=0){a.splice(i,1);pruneShop()}commit()},
  rOff:d=>{S.shop.rids=S.shop.rids.filter(x=>x!=d.id);pruneShop();commit()},
  sCk:(d,el)=>{if(el.checked)S.shop.ck[d.k]=1;else delete S.shop.ck[d.k];commit()},
