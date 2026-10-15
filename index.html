@@ -580,10 +580,10 @@ function vFind(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF(),t
 let BC=null;   // open category on the Recipes tab: {k,v} or {k:'all'}
 const BGS=[['meal','Meal'],['cuisine','Cuisine'],['protein','Protein'],['recent','Recent']];
 // Cuisine tiles show the region's flag from the flags/ folder (file name = cuisine, lowercase, hyphens for spaces)
-const FLAGS=new Set(["american", "brazilian", "british", "chinese", "cuban", "ethiopian", "filipino", "french", "german", "greek", "indian", "irish", "italian", "japanese", "korean", "lebanese", "mexican", "middle-eastern", "moroccan", "peruvian", "spanish", "thai", "turkish", "vietnamese"]);
+const FLAGS=new Set(["american", "brazilian", "british", "chinese", "cuban", "ethiopian", "filipino", "french", "german", "greek", "indian", "irish", "italian", "japanese", "korean", "lebanese", "mediterranean", "mexican", "middle-eastern", "moroccan", "peruvian", "spanish", "thai", "turkish", "vietnamese"]);
 const fkey=v=>v.toLowerCase().trim().replace(/\s+/g,'-');
 // Regions without a single flag get their colors drawn instead
-const FLAGC={mediterranean:'linear-gradient(#1e5aa8 0 40%,#fff 40% 55%,#6b8e23 55%)',caribbean:'linear-gradient(#009b3a 0 40%,#fed100 40% 60%,#000 60%)'};
+const FLAGC={caribbean:'linear-gradient(#009b3a 0 40%,#fed100 40% 60%,#000 60%)'};
 const hasFlag=v=>FLAGS.has(fkey(v))||!!FLAGC[fkey(v)];
 // Meal tiles each get their own color
 const MEALC={breakfast:['#f6b23e','#e8792b'],brunch:['#f59a5a','#e0663f'],lunch:['#3bb08f','#1d8a72'],dinner:['#c8364f','#8f1f3c'],side:['#7cbf4f','#3f9a45'],sides:['#7cbf4f','#3f9a45'],
