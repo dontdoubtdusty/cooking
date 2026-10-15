@@ -24,7 +24,7 @@ body{margin:0;background:radial-gradient(900px 440px at 50% -140px,color-mix(in 
 body.hast{padding-bottom:calc(132px + env(safe-area-inset-bottom,0px))}
 button,input,select,textarea{font-family:inherit}input,select,button,b{font-variant-numeric:tabular-nums}
 main{max-width:1100px;margin:0 auto;padding:12px}
-.vclip{overflow:hidden;width:100%}
+.vclip{overflow:hidden;overflow:clip;width:100%}
 .view{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;align-items:start;touch-action:pan-y}
 .view>.seg,.view>h2,.view>p,.view>.wide,.view>.warn,.view>.hello,.view>.bk,.view>.savebar{grid-column:1/-1}
 h2,h3{margin:0 0 10px;font-family:var(--fd);font-weight:600}h2{font-size:20px;letter-spacing:-.2px}h3{font-size:16px;display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -77,6 +77,7 @@ button.lnk{padding:0;color:var(--pc);font-weight:800;font-size:13px}
 .pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.pill{font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px;background:color-mix(in srgb,var(--pc) 12%,transparent);color:var(--pc)}.pill.tg{background:color-mix(in srgb,var(--ac) 15%,transparent);color:var(--ac)}
 .cnt{display:inline-grid;place-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:linear-gradient(135deg,var(--pc),var(--pc2));color:#fff;font:800 12px 'Nunito',sans-serif;margin-left:6px;vertical-align:2px}
 .fsum{font-weight:600;max-width:58%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+details[open] .fsum .ex,details:not([open]) .fsum .co{display:none}
 
 /* ===== Header & bottom nav ===== */
 .top{display:flex;align-items:center;justify-content:center;position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--card) 88%,transparent);-webkit-backdrop-filter:saturate(1.6) blur(14px);backdrop-filter:saturate(1.6) blur(14px);color:var(--tx);border-bottom:1px solid var(--bd);padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;margin-top:calc(-1 * env(safe-area-inset-top,0px));font:600 20px/1.2 var(--fd);letter-spacing:-.2px;text-align:center}
@@ -552,7 +553,7 @@ function vBrowse(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF()
  const LOW=pSorted().filter(p=>p.days!=null&&pLeft(p)<=5);if(LOW.length){h+=`<div class="card wide"><h3><span>Use it up</span><button class="g lnk" data-a="kitUse">Kitchen ›</button></h3>${LOW.slice(0,3).map(p=>{const n=pLeft(p);return `<button class="urow" data-a="kitUse"><span>${esc(p.name)}</span><span class="dl ${dlCls(n)}">${dlTxt(n)}</span></button>`}).join('')}</div>`}
  h+=`<div class="card wide"><div class="srch">${ICS}<input id="q" type="search" placeholder="Search names, ingredients, tags" value="${esc(f.q)}" autocomplete="off" enterkeyhint="search"></div>
  <div class="row" style="margin-top:8px"><select data-a="sort" aria-label="Sort">${SORTS.map(([v,l])=>`<option value="${v}" ${f.sort==v?'selected':''}>${l}</option>`).join('')}</select><button data-a="surprise" style="flex:none">Surprise me</button></div></div>`;
- h+=`<details class="card wide" ${O.fl?'open':''} data-o="fl"><summary><h3><span>Filters${act.length?`<span class="cnt">${act.length}</span>`:''}</span><span class="mu fsum">${act.length?esc(act.join(', ')):'Tap to narrow it down'}</span></h3></summary><div>`
+ h+=`<details class="card wide" ${O.fl?'open':''} data-o="fl"><summary><h3><span>Filters${act.length?`<span class="cnt">${act.length}</span>`:''}</span><span class="mu fsum">${act.length?esc(act.join(', ')):'<span class="ex">Expand</span><span class="co">Collapse</span>'}</span></h3></summary><div>`
  +FAC.map(([k,l])=>S.facets[k].length?`<div class="sec">${l}</div>${chipsFor(k,S.facets[k])}`:'').join('')
  +`<div class="sec">Cook time</div><div class="chips">${TIMES.map(v=>`<button class="chip ${f.time==v?'on':''}" data-a="ftime" data-v="${v}">${v?'Under '+fmtTime(v):'Any'}</button>`).join('')}</div>`
  +(tags.length?`<div class="sec">Tags · must have all picked</div>${chipsFor('tags',tags)}`:'')
