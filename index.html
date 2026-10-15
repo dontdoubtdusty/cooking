@@ -108,7 +108,7 @@ body.hast #toast{bottom:calc(140px + env(safe-area-inset-bottom,0px))}
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
 .ctl{position:relative;aspect-ratio:1;border-radius:18px;padding:0;overflow:hidden;color:#fff;box-shadow:var(--sh);display:block;text-align:left;border:1px solid #0000000f}
 .ctl b{position:absolute;left:0;right:0;bottom:0;padding:22px 10px 9px;font:600 16px/1.15 var(--fd);text-shadow:0 1px 3px #0006;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ctl.flag{border-color:var(--bd);background-clip:padding-box!important}.ctl.flag b{background:var(--card);color:var(--tx);text-shadow:none;padding:8px 10px;font-size:15px;border-top:1px solid var(--bd)}
+.ctl.flag{border-color:var(--bd);background:var(--card)}.ctl .fl{position:absolute;inset:0 0 34px}.ctl.flag b{background:var(--card);color:var(--tx);text-shadow:none;height:34px;padding:0 10px;line-height:33px;font-size:15px;border-top:1px solid var(--bd)}
 .ctl em{position:absolute;top:8px;right:8px;font-style:normal;font-weight:800;font-size:12px;min-width:24px;height:22px;padding:0 7px;display:grid;place-content:center;border-radius:99px;background:#00000059;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .ctl.all{background:linear-gradient(135deg,var(--pc),var(--pc2))}
 .ctl:active{transform:scale(.97)}
@@ -579,31 +579,21 @@ function vFind(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF(),t
 // ---- Recipes (category grid) ----
 let BC=null;   // open category on the Recipes tab: {k,v} or {k:'all'}
 const BGS=[['meal','Meal'],['cuisine','Cuisine'],['protein','Protein'],['recent','Recent']];
-// Cuisine tiles wear the colors of the region's flag
-const st=(...c)=>c.map(([col,a,b])=>`${col} ${a}% ${b}%`).join(',');
-const H=(...c)=>`linear-gradient(${st(...c)})`,V=(...c)=>`linear-gradient(90deg,${st(...c)})`,dot=(c,at='50% 40%',r=17)=>`radial-gradient(circle at ${at},${c} 0 ${r}%,transparent ${r+.5}%)`;
-const FLAG={american:`linear-gradient(#3c3b6e,#3c3b6e) 0 0/44% 54% no-repeat,repeating-linear-gradient(#b22234 0 7.69%,#fff 7.69% 15.38%)`,
- chinese:`${dot('#ffde00','24% 24%',11)},#de2910`,french:V(['#0055a4',0,33.3],['#fff',33.3,66.6],['#ef4135',66.6,100]),
- greek:`linear-gradient(#fff,#fff) 15% 0/7% 44% no-repeat,linear-gradient(#fff,#fff) 0 17%/37% 10% no-repeat,linear-gradient(#0d5eaf,#0d5eaf) 0 0/37% 44% no-repeat,repeating-linear-gradient(#0d5eaf 0 11.1%,#fff 11.1% 22.2%)`,
- indian:`${dot('#000080','50% 40%',9)},${H(['#ff9933',0,33.3],['#fff',33.3,66.6],['#138808',66.6,100])}`,italian:V(['#009246',0,33.3],['#fff',33.3,66.6],['#ce2b37',66.6,100]),
- japanese:`${dot('#bc002d','50% 38%',19)},#fff`,korean:`radial-gradient(circle at 50% 38%,transparent 0 18%,#fff 18.5%),${H(['#cd2e3a',0,38],['#0047a0',38,100])}`,
- mediterranean:H(['#1e5aa8',0,40],['#fff',40,55],['#6b8e23',55,100]),mexican:V(['#006847',0,33.3],['#fff',33.3,66.6],['#ce1126',66.6,100]),
- 'middle eastern':`linear-gradient(90deg,#ce1126 0 24%,transparent 24%),${H(['#000',0,33.3],['#fff',33.3,66.6],['#007a3d',66.6,100])}`,
- thai:H(['#a51931',0,16.6],['#f4f5f8',16.6,33.3],['#2d2a4a',33.3,66.6],['#f4f5f8',66.6,83.3],['#a51931',83.3,100]),vietnamese:`${dot('#ffcd00','50% 40%',14)},#da251d`,
- spanish:H(['#aa151b',0,25],['#f1bf00',25,75],['#aa151b',75,100]),german:H(['#000',0,33.3],['#dd0000',33.3,66.6],['#ffce00',66.6,100]),
- british:`linear-gradient(#c8102e,#c8102e) 50% 0/12% 100% no-repeat,linear-gradient(#c8102e,#c8102e) 0 50%/100% 12% no-repeat,linear-gradient(#fff,#fff) 50% 0/22% 100% no-repeat,linear-gradient(#fff,#fff) 0 50%/100% 22% no-repeat,#012169`,
- irish:V(['#169b62',0,33.3],['#fff',33.3,66.6],['#ff883e',66.6,100]),caribbean:H(['#009b3a',0,40],['#fed100',40,60],['#000',60,100]),
- cuban:`linear-gradient(90deg,#cf142b 0 30%,transparent 30%),repeating-linear-gradient(#002a8f 0 20%,#fff 20% 40%)`,brazilian:`${dot('#002776','50% 42%',15)},radial-gradient(ellipse 46% 36% at 50% 42%,#fedf00 98%,transparent),#009c3b`,
- ethiopian:H(['#078930',0,33.3],['#fcdd09',33.3,66.6],['#da121a',66.6,100]),turkish:`${dot('#fff','36% 40%',14)},#e30a17`,peruvian:V(['#d91023',0,33.3],['#fff',33.3,66.6],['#d91023',66.6,100]),
- filipino:`linear-gradient(90deg,#fff 0 30%,transparent 30%),${H(['#0038a8',0,50],['#ce1126',50,100])}`,moroccan:`#c1272d`,lebanese:`${dot('#00a651','50% 50%',13)},${H(['#ed1c24',0,25],['#fff',25,75],['#ed1c24',75,100])}`};
+// Cuisine tiles show the region's flag from the flags/ folder (file name = cuisine, lowercase, hyphens for spaces)
+const FLAGS=new Set(["american", "brazilian", "british", "chinese", "cuban", "ethiopian", "filipino", "french", "german", "greek", "indian", "irish", "italian", "japanese", "korean", "lebanese", "mexican", "middle-eastern", "moroccan", "peruvian", "spanish", "thai", "turkish", "vietnamese"]);
+const fkey=v=>v.toLowerCase().trim().replace(/\s+/g,'-');
+// Regions without a single flag get their colors drawn instead
+const FLAGC={mediterranean:'linear-gradient(#1e5aa8 0 40%,#fff 40% 55%,#6b8e23 55%)',caribbean:'linear-gradient(#009b3a 0 40%,#fed100 40% 60%,#000 60%)'};
+const hasFlag=v=>FLAGS.has(fkey(v))||!!FLAGC[fkey(v)];
 // Meal tiles each get their own color
 const MEALC={breakfast:['#f6b23e','#e8792b'],brunch:['#f59a5a','#e0663f'],lunch:['#3bb08f','#1d8a72'],dinner:['#c8364f','#8f1f3c'],side:['#7cbf4f','#3f9a45'],sides:['#7cbf4f','#3f9a45'],
  snack:['#9a6bd8','#6d43b5'],snacks:['#9a6bd8','#6d43b5'],dessert:['#f06aa0','#c93a7c'],desserts:['#f06aa0','#c93a7c'],drink:['#3f8fe0','#2563b8'],drinks:['#3f8fe0','#2563b8'],beverage:['#3f8fe0','#2563b8'],
  appetizer:['#e8a23a','#c27525'],soup:['#d9733f','#a84c2b'],salad:['#5bb56a','#2f8a4a'],baking:['#c99a5b','#93653a']};
 const MEALX=[['#4aa3c9','#2a6f9a'],['#d17a3a','#a04f22'],['#6a7fd6','#4155a8'],['#c25a8e','#8f3466'],['#5aa58a','#357a61']];
-function tbg(k,v){const l=v.toLowerCase();if(k=='cuisine')return FLAG[l]||cgrad(v);
+function tbg(k,v){const l=v.toLowerCase(),f=fkey(v);if(k=='cuisine')return FLAGS.has(f)?`url(flags/${f}.svg) center/cover no-repeat,#eee`:FLAGC[f]||cgrad(v);
  if(k=='meal'){const c=MEALC[l]||MEALX[hashS(l)%MEALX.length];return `linear-gradient(135deg,${c[0]},${c[1]})`}return cgrad(v)}
-const ctile=(k,v,n)=>`<button class="ctl${k=='cuisine'&&FLAG[v.toLowerCase()]?' flag':''}" data-a="cat" data-k="${k}" data-v="${esc(v)}" style="background:${tbg(k,v)}"><em>${n}</em><b>${esc(v)}</b></button>`;
+const ctile=(k,v,n)=>{const fl=k=='cuisine'&&hasFlag(v);
+ return `<button class="ctl${fl?' flag':''}" data-a="cat" data-k="${k}" data-v="${esc(v)}"${fl?'':` style="background:${tbg(k,v)}"`}>${fl?`<i class="fl" style="background:${tbg(k,v)}"></i>`:''}<em>${n}</em><b>${esc(v)}</b></button>`};
 function vBrowse(){const g=S.set.bg||'meal',N=S.recipes.length;
  if(BC){const L=BC.k=='all'?S.recipes:S.recipes.filter(r=>BC.k=='cuisine'?r.cuisine==BC.v:(r[BC.k]||[]).includes(BC.v)),srt=sortList(L),t=BC.k=='all'?'All recipes':BC.v;
   return `<div class="bk"><button class="g" data-a="catX">‹ All categories</button></div><div class="hello"><b>${esc(t)}</b><span>${L.length} recipe${L.length==1?'':'s'}</span></div>`
