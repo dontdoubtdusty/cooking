@@ -144,6 +144,7 @@ ol.steps li:before{content:counter(s);position:absolute;left:0;top:8px;width:28p
 .lrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.lbtn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:14px;border:1px solid var(--bd);color:var(--tx);text-decoration:none;font-weight:800;font-size:14px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lbtn:active{transform:scale(.95)}.lbtn .ic{color:var(--pc)}
 .sl.cur{background:color-mix(in srgb,var(--pc) 10%,transparent);padding:14px 10px;margin:4px 0}.sl.cur .slnum{background:linear-gradient(135deg,var(--pc),var(--pc2));color:#fff;width:30px;height:30px}.sl.cur .st{font:500 20px/1.55 var(--fd);margin:0 0 12px}
 .g2f{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.g2f label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:800;color:var(--mu)}.g2f input{font:600 15px 'Nunito',sans-serif;color:var(--tx)}
+.nrow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--bd)}.nrow:first-of-type{border-top:0}.nrow b{font-weight:800;text-align:right}
 .hint{font-size:12px;color:var(--mu);margin:6px 2px 0}
 .savebar{position:sticky;bottom:calc(80px + env(safe-area-inset-bottom,0px));z-index:3;display:flex;gap:8px;padding:8px;background:color-mix(in srgb,var(--card) 90%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--bd);border-radius:20px;box-shadow:var(--sh)}
 body.hast .savebar{bottom:calc(128px + env(safe-area-inset-bottom,0px))}
@@ -238,12 +239,12 @@ let S,T='browse',RID=null,PREV='browse';
 let SH=null,KV='use',QT=0;   // open bottom sheet, Kitchen sub-view
 let O={},AM='type',PT='',PARSED='',CK={},SC={},SUR=null,SURN=0,TM=[];   // UI-only state
 
-const blankD=()=>({id:'',title:'',cuisine:'',meal:[],protein:[],method:[],diet:[],tags:[],serves:'',time:'',ingT:'',stepT:'',notes:'',src:'',vid:''});
+const blankD=()=>({id:'',title:'',cuisine:'',meal:[],protein:[],method:[],diet:[],tags:[],serves:'',time:'',ingT:'',stepT:'',nutT:'',notes:'',src:'',vid:''});
 const blankShop=()=>({rids:[],extra:[],ck:{},got:{},have:{},need:{},note:{}});
 const blankF=()=>({q:'',time:0,sort:'az',tags:[],cuisine:[],meal:[],protein:[],method:[],diet:[]});
 const dEmpty=d=>!((d.title||'').trim()||(d.ingT||'').trim()||(d.stepT||'').trim()||(d.notes||'').trim());
 function fix(r){const A=x=>Array.isArray(x)?x:[];r.id=r.id||uid('r');r.title=r.title||'';r.cuisine=r.cuisine||'';
- ['meal','protein','method','diet','tags','ing','steps','cooked'].forEach(k=>r[k]=A(r[k]));
+ ['meal','protein','method','diet','tags','ing','steps','cooked','nut'].forEach(k=>r[k]=A(r[k]));
  r.time=num(r.time);r.serves=num(r.serves);r.notes=r.notes||'';r.src=r.src||'';r.vid=r.vid||'';r.added=r.added||tdy();return r}
 const sample=()=>({title:'One-Pot Chickpea Curry',cuisine:'Indian',meal:['Dinner'],protein:['Chickpeas'],method:['One-pot'],diet:['Vegan','Gluten-free','Dairy-free'],tags:['weeknight','freezer-friendly'],time:35,serves:4,
  ing:['1 tbsp olive oil','1 yellow onion, diced','3 cloves garlic, minced','1 tbsp grated ginger','2 tbsp curry powder','1 tsp ground cumin','1/2 tsp salt','2 cans (15 oz) chickpeas, drained','1 can (14 oz) diced tomatoes','1 can (13.5 oz) coconut milk','3 cups fresh spinach','1/2 lime, juiced','To serve:','Cooked rice'],
@@ -265,6 +266,8 @@ const MIGRATIONS=[
  // v5: time is typed in now (step times only suggest it). Until now every time was summed from the steps,
  // so redo that sum once, skipping optional waits like "up to 24 hours".
  S=>{S.draft.time=S.draft.time||'';S.recipes.forEach(r=>r.time=stepsTime(r.steps))},
+ // v6: optional nutrition, one "Name: value" line each, as the recipe lists it
+ S=>{S.recipes.forEach(r=>r.nut=Array.isArray(r.nut)?r.nut:[]);S.draft.nutT=S.draft.nutT||''},
 ];
 // A brand-new setup: run every migration, then put back the sample's stated time
 function fresh(){S=seed();migrate();S.recipes.forEach(r=>r.time=num(sample().time))}
@@ -434,16 +437,46 @@ function joinLines(L,isSteps){const o=[];let cur=null,last=0;
 const mins=s=>{s=String(s||'').trim();let m=/^(\d+):([0-5]?\d)$/.exec(s);if(m)return +m[1]*60+ +m[2];
  const h=/(\d+(?:\.\d+)?)\s*(?:hours?|hrs?|h)(?![a-z])/i.exec(s),mm=/(\d+)\s*(?:minutes?|mins?|m)(?![a-z])/i.exec(s);let t=(h?parseFloat(h[1])*60:0)+(mm?+mm[1]:0);
  if(h&&!mm){const r=/(?:hours?|hrs?|h)\s*(\d{1,2})\s*$/i.exec(s);if(r)t+= +r[1]}if(!t){const n=/^(\d+)$/.exec(s);if(n)t=+n[1]}return Math.round(t)};
+// Section headings
+const HI=/^(?:\d+\s+)?(ingredients?|what you('|’)?ll need|you('|’)?ll need)\s*(:|\(.*\)|\d+x.*)?$/i,
+ HS=/^(?:\d+\s+)?(instructions?|directions?|method|steps|preparation|how to make( it)?|procedure)\s*(:|\(.*\))?$/i,
+ HN=/^(?:\d+\s+)?(recipe )?(notes?|tips?|cook'?s notes?|variations?|storage)\s*:?$/i,
+ NUTH=/^(?:\d+\s+)?nutrition(?:al)?(?: facts| information| info| estimates?| label)?\s*(?:\([^)]*\))?\s*(?::\s*(.+)|:)?$/i;
+// ---- Nutrition: "Calories: 320kcal | Protein: 12g", "350 Calories", "Total Fat 12g 15%" ----
+const NUTN='calories|energy|total carbohydrates?|carbohydrates?|carbs|net carbs|dietary fib(?:er|re)|fib(?:er|re)|total sugars?|added sugars?|sugars?|protein|total fat|saturated fat|trans fat|polyunsaturated fat|monounsaturated fat|unsaturated fat|fat|cholesterol|sodium|salt|potassium|calcium|iron|magnesium|zinc|vitamin [a-z]\\d*|serving size|serving',
+ NUTV='(\\d[\\d,]*(?:\\.\\d+)?\\s*(?:kcal|cal|mg|mcg|µg|g|iu|%)?)';
+const NUT1=new RegExp('^([A-Za-z][A-Za-z ()/-]{0,28}?)\\s*:\\s*'+NUTV+'$','i'),NUT2=new RegExp('^('+NUTN+')\\s+'+NUTV+'$','i'),NUT3=new RegExp('^'+NUTV+'\\s+('+NUTN+')$','i'),NUTK=new RegExp('^('+NUTN+')$','i');
+// One "name value" piece -> {n:'Protein',t:'Protein: 12 g',k:known name?} or null
+function nutPart(s){s=s.replace(/^[-*•]\s*/,'').replace(/\s*\(\s*\d+(\.\d+)?\s*%\s*(dv)?\s*\)\s*$/i,'').replace(/(\d\s*(?:mg|mcg|µg|g|kcal|cal)?)\s+\d+(\.\d+)?\s*%$/i,'$1').trim();let m,n,v;
+ if(m=/^serving(?: size)?\s*:?\s*(\d.{0,25})$/i.exec(s)){n='Serving size';v=m[1].replace(/^(\d+(?:\.\d+)?)(?=[a-z])/i,'$1 ')}
+ else if(m=NUT1.exec(s)){n=m[1];v=m[2]}else if(m=NUT2.exec(s)){n=m[1];v=m[2]}else if(m=NUT3.exec(s)){n=m[2];v=m[1]}else return null;
+ n=n.trim().toLowerCase();if(/servings|yield|serves|makes|prep|cook|total time|step/.test(n))return null;
+ if(/^(calories|energy|kcal|cal)$/.test(n)){n='Calories';v=v.replace(/\s*(kcal|cal)$/i,'')}
+ else{n=n.replace(/^carbs$/,'carbohydrates').replace(/^fibre$/,'fiber').replace(/\b\w/g,c=>c.toUpperCase());v=v.replace(/^([\d.,]+)\s*(?=[a-zµ%])/i,'$1 ').replace(/ %$/,'%')}
+ return {n,t:n+': '+v.trim(),k:NUTK.test(n)||n=='Calories'||n=='Serving size'}}
+// A whole line -> its nutrition pieces, or null when it isn't a nutrition line
+function nutLine(l){const s=l.replace(/^(?:nutrition(?:al)?(?: info(?:rmation)?| facts)?|(?:amount )?per serving)\s*(?:\([^)]*\))?\s*:\s*/i,''),P=s.split(/\s*[|·•;]\s*|,\s+(?=[A-Za-z][A-Za-z ]*:|\d)/).filter(Boolean),o=P.map(nutPart).filter(Boolean);
+ return o.length&&(o.length==P.length||o.length>=2)?o:null}
+// Keep the first value for each nutrient (some sites list a summary, then the full label)
+function nutMerge(L){const seen=new Set();return L.filter(t=>{const k=t.split(':')[0].toLowerCase();if(seen.has(k))return false;seen.add(k);return true})}
 function parseRecipe(txt){
  let L=txt.replace(/\r/g,'').split('\n').map(l=>l.replace(/[\u00a0\t]/g,' ').replace(/[\u25a2\u25a1\u2610\u25a0\u25cf\u2022\u25e6\u25aa\u2605\u2606]/g,' ').replace(/\s+/g,' ').trim());
  // "Servings" on one line and "4" on the next -> one line
  const LBL=/^(prep|prep time|cook|cook time|cooking time|total|total time|servings|serves|yield|yields|cuisine|course|keywords?)\s*:?$/i,J=[];
  for(let i=0;i<L.length;i++){if(LBL.test(L[i])&&L[i+1]){J.push(L[i].replace(/:$/,'')+': '+L[i+1]);i++}else J.push(L[i])}
- const NOISE=/^(print( recipe)?|pin( recipe| it)?|jump to (recipe|video)|save( recipe)?|saved!?|rate (this )?recipe|leave a (review|comment)|share|email|tweet|yum|cook mode|prevent your screen from going dark|advertisement|ad|scale|[123]x( [123]x)*|us customary|metric|equipment|video|nutrition( facts| information)?|author|calories.*)$/i;
- let sec='pre',sawI=0,sawS=0,src='',vid='';const pre=[],ing=[],steps=[],notes=[],meta={};
+ const NOISE=/^(print( recipe)?|pin( recipe| it)?|jump to (recipe|video)|save( recipe)?|saved!?|rate (this )?recipe|leave a (review|comment)|share|email|tweet|yum|cook mode|prevent your screen from going dark|advertisement|ad|scale|[123]x( [123]x)*|us customary|metric|equipment|video|author|show (full )?nutrition label|hide (full )?nutrition label)$/i;
+ let sec='pre',sawI=0,sawS=0,src='',vid='';const pre=[],ing=[],steps=[],notes=[],nut=[],meta={};let pend='';
  for(const l of J){if(!l||NOISE.test(l)||/^[\d.]+ (from|out of) \d+/i.test(l)||/^[\d.]+ stars?\b/i.test(l)||/^\(?\d+ (votes?|reviews?|ratings?|comments?)\)?$/i.test(l))continue;
   if(/^https?:\/\/\S+$/i.test(l)){if(VIDRE.test(l))vid=vid||l;else src=src||l;continue}
   let m;
+  // Nutrition: a "Nutrition" heading starts the section; a line with several nutrients counts anywhere
+  if(m=NUTH.exec(l)){sec='nut';pend='';if(m[1])nut.push(...(nutLine(m[1])||[]).map(x=>x.t));continue}
+  if(sec=='nut'){let x=nutLine(pend?pend+': '+l:l);pend='';
+   if(!x)x=nutLine(l);if(x){nut.push(...x.map(y=>y.t));continue}
+   if(new RegExp('^('+NUTN+')\\s*:?$','i').test(l)){pend=l.replace(/:$/,'');continue}
+   if(!(HI.test(l)||HS.test(l)||HN.test(l)||/^(course|cuisine|keywords?|category|meal)\s*:/i.test(l))){if(l.length>60&&!/daily value|calorie diet|estimate|calculated|approximat|nutrition/i.test(l))notes.push(l);continue}}
+  else if(sec!='steps'||/[|·]|^(?:amount )?per serving\b|^nutrition/i.test(l)){const x=nutLine(l);if(x&&(x.filter(y=>y.k).length>=2||(sec!='ing'&&x.length==1&&x[0].n=='Calories'))){nut.push(...x.map(y=>y.t));continue}}
+  if(/^calories\b/i.test(l))continue;
   if(sec!='steps'&&l.length<140&&/\b(prep|cook|total)(?:ing)? time\s*:/i.test(l)){let hit=0;
    [['prep','prep(?:aration)?'],['cook','cook(?:ing)?'],['total','total']]
     .forEach(([k,p])=>{const x=new RegExp(p+' time\\s*:\\s*((?:\\d+(?:\\.\\d+)?\\s*(?:hours?|hrs?|h|minutes?|mins?|m)\\b\\s*(?:and\\s*)?)+)','i').exec(l);if(x){const t=mins(x[1]);if(t){meta[k]=t;hit=1}}});if(hit)continue}
@@ -457,9 +490,9 @@ function parseRecipe(txt){
    if(m=/^cuisine\s*:?\s*(.+)$/i.exec(l)){meta.cuisine=m[1];continue}
    if(m=/^(?:course|meal|category)\s*:\s*(.+)$/i.exec(l)){meta.course=m[1];continue}
    if(m=/^keywords?\s*:\s*(.+)$/i.exec(l)){meta.kw=m[1];continue}}
-  if(/^(?:\d+\s+)?(ingredients?|what you('|’)?ll need|you('|’)?ll need)\s*(:|\(.*\)|\d+x.*)?$/i.test(l)){sec='ing';sawI=1;continue}
-  if(/^(?:\d+\s+)?(instructions?|directions?|method|steps|preparation|how to make( it)?|procedure)\s*(:|\(.*\))?$/i.test(l)){sec='steps';sawS=1;continue}
-  if(/^(?:\d+\s+)?(recipe )?(notes?|tips?|cook'?s notes?|variations?|storage)\s*:?$/i.test(l)){sec='notes';continue}
+  if(HI.test(l)){sec='ing';sawI=1;continue}
+  if(HS.test(l)){sec='steps';sawS=1;continue}
+  if(HN.test(l)){sec='notes';continue}
   if(sec=='ing'&&l.length>80&&/[.!)]$/.test(l)){sec='steps';sawS=1}
   ({pre,ing,steps,notes})[sec].push(l)}
  let title='',ti=pre.findIndex(l=>l.length<=90);if(ti>=0)title=pre[ti].replace(/^recipe\s*:\s*/i,'');
@@ -480,7 +513,7 @@ function parseRecipe(txt){
  const meal=[];if(meta.course){const c=meta.course.toLowerCase();[[/breakfast|brunch/,'Breakfast'],[/lunch/,'Lunch'],[/dinner|main|entr[eé]e|supper/,'Dinner'],[/side/,'Side'],[/snack|appetizer|starter/,'Snack'],[/dessert|sweet/,'Dessert']].forEach(([re,v])=>{const x=S.facets.meal.find(y=>y==v);if(x&&re.test(c)&&!meal.includes(x))meal.push(x)})}
  const g=guessFacets(title+'\n'+ingC.join('\n')+'\n'+stepC.join('\n'),ingC.join('\n'));
  const tags=meta.kw?[...new Set(meta.kw.split(/[,;]/).map(s=>s.trim().toLowerCase()).filter(s=>s&&s.length<25))].slice(0,6):[];
- return {title,cuisine,meal,protein:g.protein,method:g.method,diet:g.diet,tags,serves:meta.serves||'',time:(meta.total||(meta.prep||0)+(meta.cook||0))?fmtTime(meta.total||(meta.prep||0)+(meta.cook||0)):'',ingT:ingC.join('\n'),stepT:stepC.join('\n'),notes:notes.join('\n'),src,vid}}
+ return {title,cuisine,meal,protein:g.protein,method:g.method,diet:g.diet,tags,serves:meta.serves||'',time:(meta.total||(meta.prep||0)+(meta.cook||0))?fmtTime(meta.total||(meta.prep||0)+(meta.cook||0)):'',ingT:ingC.join('\n'),stepT:stepC.join('\n'),nutT:nutMerge(nut).join('\n'),notes:notes.join('\n'),src,vid}}
 
 // =====================================================================
 // 5. SHARED UI PIECES
@@ -541,6 +574,7 @@ function vRecipe(){const r=byId(RID);if(!r)return '';const i=S.recipes.indexOf(r
  h+=ingCard(r);
  h+=`<div class="card"><h3><span>Steps</span></h3>${r.steps.length?`<ol class="steps">${r.steps.map((s,j)=>`<li>${stepHtml(s,r,j)}</li>`).join('')}</ol>`:'<p class="mu" style="margin:0">No steps yet.</p>'}</div>`;
  if(r.notes)h+=`<div class="card"><h3><span>Notes</span></h3><p class="pre">${esc(r.notes)}</p></div>`;
+ h+=nutCard(r);
  const ord=r.cooked.map((d,j)=>[d,j]).sort((a,b)=>a[0]<b[0]?1:-1);
  h+=`<details class="card" ${O.log?'open':''} data-o="log"><summary><h3><span>Cook log</span><span class="mu">${r.cooked.length}</span></h3></summary><div>${ord.map(([d,j])=>`<div class="row ed">${IDate(p+'.cooked.'+j)}<span class="mu" style="flex:1">${ago(d)}</span>${X(p+'.cooked',j)}</div>`).join('')}<button class="g" data-a="logAdd" data-id="${esc(r.id)}">+ Add a date</button></div></details>`;
  return h+`<button class="x wide" data-a="delR" data-id="${esc(r.id)}" style="grid-column:1/-1;justify-self:center">Delete recipe</button>`}
@@ -549,6 +583,9 @@ const ICV='<svg class="ic" viewBox="0 0 16 16" width="14" height="14" aria-hidde
 const host=u=>u.replace(/^https?:\/\/(www\.|m\.)?/i,'').split(/[/?#]/)[0];
 function linkRow(r){const a=[];if(isUrl(r.src))a.push(`<a class="lbtn" href="${esc(r.src)}" target="_blank" rel="noopener">${ICL}${esc(host(r.src))}</a>`);if(isUrl(r.vid))a.push(`<a class="lbtn" href="${esc(r.vid)}" target="_blank" rel="noopener">${ICV}Watch video</a>`);
  return (a.length?`<div class="lrow">${a.join('')}</div>`:'')+(r.src&&!isUrl(r.src)?`<div class="mu" style="margin-top:6px">From ${esc(r.src)}</div>`:'')}
+// Optional nutrition card: folded away, with calories in the summary
+function nutCard(r){if(!r.nut.length)return '';const sp=t=>{const i=t.indexOf(':');return i<0?[t,'']:[t.slice(0,i).trim(),t.slice(i+1).trim()]},cal=r.nut.map(sp).find(x=>/^calories$/i.test(x[0]));
+ return `<details class="card" ${O.nut?'open':''} data-o="nut"><summary><h3><span>Nutrition</span><span class="mu">${cal&&cal[1]?esc(cal[1])+' cal':''}</span></h3></summary><div>${r.nut.map(sp).map(([n,v])=>`<div class="nrow"><span>${esc(n)}</span><b>${esc(v)}</b></div>`).join('')}<div class="hint">As listed in the recipe, usually per serving. Doesn't change when you scale.</div></div></details>`}
 // ---- Cook mode ----
 let WL=null,WP=0,WST='';
 const wakeTxt=()=>WST=='on'?'Screen stays on while you cook':WST=='no'?'Couldn\'t keep the screen on here. It should work once the app is hosted.':'';
@@ -589,7 +626,8 @@ function vAdd(){const d=S.draft,ed=!!d.id;
  <div class="sec">Tags</div>${d.tags.length?`<div class="chips">${d.tags.map(t=>`<button class="chip on" data-a="tagDel" data-v="${esc(t)}" aria-label="Remove tag ${esc(t)}">#${esc(t)} ${ICX}</button>`).join('')}</div>`:''}
  <input id="tagin" type="text" placeholder="Add tags, like weeknight or freezer-friendly" enterkeyhint="done" autocomplete="off" autocapitalize="none" data-a="tagIn">
  ${sugg.length?`<div class="chips" style="margin:8px 0 0">${sugg.map(t=>`<button class="chip add" data-a="tagAdd" data-v="${esc(t)}">+ ${esc(t)}</button>`).join('')}</div>`:''}</div>`;
- h+=`<div class="card"><h3><span>Notes and video</span></h3><textarea class="auto rx sm" data-p="draft.notes" data-t="s" placeholder="Swaps, storage, what to serve it with">${esc(d.notes)}</textarea>
+ h+=`<div class="card"><h3><span>Notes, nutrition and video</span></h3><textarea class="auto rx sm" data-p="draft.notes" data-t="s" placeholder="Swaps, storage, what to serve it with">${esc(d.notes)}</textarea>
+ <div class="sec" style="margin-top:12px">Nutrition · optional</div><textarea class="auto rx sm" data-p="draft.nutT" data-t="s" placeholder="Calories: 320&#10;Protein: 12 g&#10;Fat: 9 g">${esc(d.nutT)}</textarea><div class="hint">One per line. Filled in for you when a pasted recipe has it.</div>
  <div class="sec" style="margin-top:12px">Video link · optional</div><input type="url" inputmode="url" placeholder="Paste a YouTube, TikTok or other video link" value="${esc(d.vid)}" data-p="draft.vid" data-t="s" autocomplete="off" autocapitalize="none"></div>`;
  return h+`<div class="savebar"><button class="g bd" data-a="${ed?'edCancel':'clearD'}">${ed?'Cancel':'Clear'}</button><button data-a="saveD">${ed?'Save changes':'Save recipe'}</button></div>`}
 
@@ -684,8 +722,8 @@ function saveDraft(){pull();const d=S.draft,title=d.title.trim();if(!title){toas
  const tm=mins(d.time);if(String(d.time||'').trim()&&!tm){toast('Couldn\'t read that time. Try 45 min or 1:30');document.getElementById('tm')?.focus();return}
  const old=d.id&&byId(d.id);
  if(!old&&S.recipes.some(r=>r.title.trim().toLowerCase()==title.toLowerCase())&&!confirm(`You already have "${title}". Save another one?`))return;
- const ing=d.ingT.split('\n').map(l=>l.replace(/^\s*[-*+]\s*/,'').trim()).filter(Boolean),steps=stepsOf(d.stepT);
- const o=fix({id:old?old.id:uid('r'),title,cuisine:d.cuisine,meal:[...d.meal],protein:[...d.protein],method:[...d.method],diet:[...d.diet],tags:[...d.tags],serves:num(d.serves),time:tm,ing,steps,notes:d.notes.trim(),src:normUrl(d.src),vid:normUrl(d.vid)});
+ const ing=d.ingT.split('\n').map(l=>l.replace(/^\s*[-*+]\s*/,'').trim()).filter(Boolean),steps=stepsOf(d.stepT),nut=nutMerge((d.nutT||'').split('\n').map(l=>l.replace(/^\s*[-*•]\s*/,'').trim()).filter(Boolean).map(l=>{const x=nutPart(l);return x?x.t:l}));
+ const o=fix({id:old?old.id:uid('r'),title,cuisine:d.cuisine,meal:[...d.meal],protein:[...d.protein],method:[...d.method],diet:[...d.diet],tags:[...d.tags],serves:num(d.serves),time:tm,ing,steps,nut,notes:d.notes.trim(),src:normUrl(d.src),vid:normUrl(d.vid)});
  if(old)Object.assign(old,o,{cooked:old.cooked,added:old.added});else S.recipes.push(o);
  if(o.cuisine&&!S.facets.cuisine.includes(o.cuisine))S.facets.cuisine.push(o.cuisine);
  S.draft=blankD();PARSED='';AM='type';save();flush();openRecipe(o.id,'browse');toast(old?'Changes saved':'Recipe saved')}
@@ -750,7 +788,7 @@ const ACT={
  cook:d=>{if(S.cookId!=d.id){S.cookId=d.id;S.step=0}save();goTab('cook')},
  cooked:d=>{const r=byId(d.id);if(!r||!logCooked(r))return;afterCook(r);R();toast('Logged as cooked today',()=>{const i=r.cooked.lastIndexOf(tdy());if(i>=0)r.cooked.splice(i,1);commit()})},
  edit:d=>{const r=byId(d.id);if(!r)return;if(!dEmpty(S.draft)&&S.draft.id!=r.id&&!confirm('Discard the recipe you were adding?'))return;
-  S.draft=Object.assign(blankD(),{id:r.id,title:r.title,cuisine:r.cuisine,meal:[...r.meal],protein:[...r.protein],method:[...r.method],diet:[...r.diet],tags:[...r.tags],serves:r.serves||'',time:r.time?fmtTime(r.time):'',ingT:r.ing.join('\n'),stepT:r.steps.join('\n'),notes:r.notes,src:r.src,vid:r.vid});
+  S.draft=Object.assign(blankD(),{id:r.id,title:r.title,cuisine:r.cuisine,meal:[...r.meal],protein:[...r.protein],method:[...r.method],diet:[...r.diet],tags:[...r.tags],serves:r.serves||'',time:r.time?fmtTime(r.time):'',ingT:r.ing.join('\n'),stepT:r.steps.join('\n'),nutT:r.nut.join('\n'),notes:r.notes,src:r.src,vid:r.vid});
   AM='type';PARSED='';save();goTab('add')},
  delR:d=>{const i=S.recipes.findIndex(r=>r.id==d.id);if(i<0)return;const [x]=S.recipes.splice(i,1);if(S.cookId==x.id)S.cookId=null;if(S.shop.rids.includes(x.id))pruneShop();save();ACT.back();toast(`Deleted "${x.title}"`,()=>{S.recipes.splice(i,0,x);commit()})},
  addLink:d=>{const r=byId(d.id);if(!r)return;const u=normUrl(prompt('Paste the link to the original recipe')||'');if(!u)return;r.src=u;commit();toast('Link added')},
@@ -773,7 +811,7 @@ const ACT={
  parse:()=>{const t=(document.getElementById('pt')?.value||PT||'');if(!t.trim()){toast('Paste a recipe first');return}
   if(!dEmpty(S.draft)&&!confirm('Replace what you\'ve typed so far?'))return;
   const p=parseRecipe(t);S.draft=Object.assign(blankD(),p,{id:S.draft.id,src:(S.draft.src||'').trim()||p.src});const ni=p.ingT?p.ingT.split('\n').length:0,ns=p.stepT?p.stepT.split('\n').length:0;
-  PARSED=`Found ${ni} ingredient${ni==1?'':'s'} and ${ns} step${ns==1?'':'s'}`+(p.title?'':'. No name found, so add one');PT='';AM='type';commit();scrollTo(0,0)},
+  PARSED=`Found ${ni} ingredient${ni==1?'':'s'}${p.nutT?', ':' and '}${ns} step${ns==1?'':'s'}${p.nutT?' and nutrition':''}`+(p.title?'':'. No name found, so add one');PT='';AM='type';commit();scrollTo(0,0)},
  tog:d=>{const D=S.draft;if(d.k=='cuisine')D.cuisine=D.cuisine==d.v?'':d.v;else{const a=D[d.k],i=a.indexOf(d.v);i<0?a.push(d.v):a.splice(i,1)}commit()},
  facNew:d=>{const l=FAC.find(f=>f[0]==d.k)[1],v=(prompt('New '+l.toLowerCase()+' option')||'').trim();if(!v)return;let x=S.facets[d.k].find(y=>y.toLowerCase()==v.toLowerCase());if(!x){x=v;S.facets[d.k].push(v)}
   const D=S.draft;if(d.k=='cuisine')D.cuisine=x;else if(!D[d.k].includes(x))D[d.k].push(x);commit()},
