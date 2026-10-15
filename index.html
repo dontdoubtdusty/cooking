@@ -77,8 +77,8 @@ button.lnk{padding:0;color:var(--pc);font-weight:800;font-size:13px}
 .pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.pill{font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px;background:color-mix(in srgb,var(--pc) 12%,transparent);color:var(--pc)}.pill.tg{background:color-mix(in srgb,var(--ac) 15%,transparent);color:var(--ac)}
 .cnt{display:inline-grid;place-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:linear-gradient(135deg,var(--pc),var(--pc2));color:#fff;font:800 12px 'Nunito',sans-serif;margin-left:6px;vertical-align:2px}
 .fdet{margin-top:6px;border-top:1px solid var(--bd);padding-top:8px}.fdet>div{padding-top:4px}
-.frow{display:flex;align-items:center;gap:6px;overflow-x:auto;margin:0 -16px;padding:4px 16px;scrollbar-width:none;overscroll-behavior-x:contain}.frow::-webkit-scrollbar{display:none}
-.frow .sec{margin:0 4px 0 0;flex:none;min-width:58px}.frow .chip{flex:none;white-space:nowrap;padding:6px 12px}
+.frow{padding:3px 0}.frow .chips{margin:0;gap:4px;align-items:center}
+.frow .sec{display:inline;margin:0 4px 0 0;font-size:11px}.frow .chip{padding:4px 10px;font-size:12.5px}
 .fsum{font-weight:600;max-width:58%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 details[open] .fsum .ex,details:not([open]) .fsum .co{display:none}
 
@@ -106,10 +106,10 @@ body.hast #toast{bottom:calc(140px + env(safe-area-inset-bottom,0px))}
 
 /* ===== Greeting, search, recipe rows ===== */
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
-.ctl{position:relative;aspect-ratio:1;border-radius:18px;padding:0;overflow:hidden;color:#fff;box-shadow:var(--sh);display:block;text-align:left}
-.ctl i{position:absolute;inset:0 0 30px;display:grid;place-content:center;font-style:normal;font:600 40px/1 var(--fd);text-shadow:0 2px 6px #0003}
-.ctl span{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:6px;padding:7px 10px;background:#0000002e;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-.ctl b{flex:1;min-width:0;font-weight:800;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ctl em{font-style:normal;font-weight:800;font-size:12px;opacity:.9}
+.ctl{position:relative;aspect-ratio:1;border-radius:18px;padding:0;overflow:hidden;color:#fff;box-shadow:var(--sh);display:block;text-align:left;border:1px solid #0000000f}
+.ctl b{position:absolute;left:0;right:0;bottom:0;padding:22px 10px 9px;font:600 16px/1.15 var(--fd);text-shadow:0 1px 3px #0006;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctl.flag{border-color:var(--bd);background-clip:padding-box!important}.ctl.flag b{background:var(--card);color:var(--tx);text-shadow:none;padding:8px 10px;font-size:15px;border-top:1px solid var(--bd)}
+.ctl em{position:absolute;top:8px;right:8px;font-style:normal;font-weight:800;font-size:12px;min-width:24px;height:22px;padding:0 7px;display:grid;place-content:center;border-radius:99px;background:#00000059;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .ctl.all{background:linear-gradient(135deg,var(--pc),var(--pc2))}
 .ctl:active{transform:scale(.97)}
 .hello{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:4px 4px -2px}
@@ -134,7 +134,8 @@ body.hast #toast{bottom:calc(140px + env(safe-area-inset-bottom,0px))}
 .ingr span{padding-top:2px}.ingr b{font-weight:800}
 .ingr:has(input:checked) span{opacity:.45;text-decoration:line-through}
 .ih{margin:14px 0 2px}
-#app [data-ing]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.srow>.ied{flex:none;width:36px;height:36px;padding:0;display:grid;place-content:center;color:var(--mu);border-radius:12px}
+.ihr{border-top:0;margin-top:8px}.ihr .ih{flex:1;margin:0}
 .ifoot{margin-top:6px;flex-wrap:wrap;gap:4px 12px;align-items:center}.ifoot .mu{margin-left:auto;font-size:12px}
 ol.steps{margin:0;padding:0;list-style:none;counter-reset:s}ol.steps li{counter-increment:s;position:relative;padding:8px 0 8px 40px;line-height:1.55}
 ol.steps li:before{content:counter(s);position:absolute;left:0;top:8px;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--pc),var(--pc2));color:#fff;font:600 14px/28px var(--fd);text-align:center}
@@ -531,7 +532,7 @@ function parseRecipe(txt){
 // =====================================================================
 // 5. SHARED UI PIECES
 // =====================================================================
-const ICX='<svg class="ic" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+const ICP='<svg class="ic" viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M10.5 2.5l3 3L6 13H3v-3z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>',ICX='<svg class="ic" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
  ICK='<svg class="ic" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
  ICT='<svg class="ic" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><circle cx="8" cy="9" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 6.3V9l1.8 1.2M6.5 1.8h3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
  CHEV='<svg class="chev" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -548,19 +549,20 @@ const welcome=()=>`<div class="card wide"><h3><span>Welcome to Big Saucy</span><
 
 // Ingredients with checkboxes and a servings scaler (used on the recipe page and in cook mode)
 function ingCard(r){const f=SC[r.id]||1,ck=CK[r.id]||{},any=Object.values(ck).some(Boolean);
- const rows=r.ing.map((l,j)=>{if(/:$/.test(l))return `<div class="sec ih" data-ing="${j}" data-rid="${esc(r.id)}">${esc(l.slice(0,-1))}</div>`;const [q,rest]=scaleLine(l,f);
-  return `<label class="ingr" data-ing="${j}" data-rid="${esc(r.id)}"><input type="checkbox" data-a="ck" data-id="${esc(r.id)}" data-i="${j}" ${ck[j]?'checked':''}><span>${q?`<b>${esc(q)}</b> `:''}${esc(rest)}</span></label>`}).join('');
+ const rows=r.ing.map((l,j)=>{const pen=`<button class="g ied" data-a="ingEd" data-id="${esc(r.id)}" data-i="${j}" aria-label="Edit ${esc(l)}">${ICP}</button>`;
+  if(/:$/.test(l))return `<div class="srow ihr"><div class="sec ih">${esc(l.slice(0,-1))}</div>${pen}</div>`;const [q,rest]=scaleLine(l,f);
+  return `<div class="srow"><label class="ingr"><input type="checkbox" data-a="ck" data-id="${esc(r.id)}" data-i="${j}" ${ck[j]?'checked':''}><span>${q?`<b>${esc(q)}</b> `:''}${esc(rest)}</span></label>${pen}</div>`}).join('');
  const sv=r.serves?'Serves '+fmtQ(r.serves*f):(f==1?'Original':'×'+fmtQ(f));
  return `<div class="card"><h3><span>Ingredients</span><span class="scl"><button class="g sb" data-a="scale" data-id="${esc(r.id)}" data-d="-1" aria-label="Fewer servings">−</button><span class="b">${sv}</span><button class="g sb" data-a="scale" data-id="${esc(r.id)}" data-d="1" aria-label="More servings">+</button></span></h3>`
  +(f!=1?`<div class="mu" style="margin:-4px 0 6px">Amounts scaled ×${fmtQ(f)} · <button class="g lnk" data-a="scale" data-id="${esc(r.id)}" data-d="0">Reset</button></div>`:'')
- +(rows||'<p class="mu" style="margin:0">No ingredients listed.</p>')+`<div class="row ifoot">${any?`<button class="g" data-a="ckClr" data-id="${esc(r.id)}">Uncheck all</button>`:''}<button class="g lnk" data-a="ingNew" data-id="${esc(r.id)}">+ Add ingredient</button>${r.ing.length?'<span class="mu">Long-press one to edit</span>':''}</div></div>`}
+ +(rows||'<p class="mu" style="margin:0">No ingredients listed.</p>')+`<div class="row ifoot">${any?`<button class="g" data-a="ckClr" data-id="${esc(r.id)}">Uncheck all</button>`:''}<button class="g lnk" data-a="ingNew" data-id="${esc(r.id)}">+ Add ingredient</button></div></div>`}
 
 // =====================================================================
 // 6. VIEWS (one function per screen; each returns HTML for #app)
 // =====================================================================
 // ---- Recipes (browse) ----
 function vFind(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF(),tags=allTags().map(x=>x[0]);
- const chipsFor=(k,vals)=>`${vals.map(v=>`<button class="chip ${f[k].includes(v)?'on':''}" data-a="fil" data-k="${k}" data-v="${esc(v)}">${esc(k=='tags'?'#'+v:v)}</button>`).join('')}`,frow=(l,c)=>`<div class="frow"><span class="sec">${l}</span>${c}</div>`;
+ const chipsFor=(k,vals)=>`${vals.map(v=>`<button class="chip ${f[k].includes(v)?'on':''}" data-a="fil" data-k="${k}" data-v="${esc(v)}">${esc(k=='tags'?'#'+v:v)}</button>`).join('')}`,frow=(l,c)=>`<div class="frow"><div class="chips"><span class="sec">${l}</span>${c}</div></div>`;
  let h=hello()+(S.set.welcome?welcome():'');
  const LOW=pSorted().filter(p=>p.days!=null&&pLeft(p)<=5);if(LOW.length){h+=`<div class="card wide"><h3><span>Use it up</span><button class="g lnk" data-a="kitUse">Kitchen ›</button></h3>${LOW.slice(0,3).map(p=>{const n=pLeft(p);return `<button class="urow" data-a="kitUse"><span>${esc(p.name)}</span><span class="dl ${dlCls(n)}">${dlTxt(n)}</span></button>`}).join('')}</div>`}
  h+=`<div class="card wide"><div class="srch">${ICS}<input id="q" type="search" placeholder="Search names, ingredients, tags" value="${esc(f.q)}" autocomplete="off" enterkeyhint="search"></div>
@@ -577,10 +579,31 @@ function vFind(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF(),t
 // ---- Recipes (category grid) ----
 let BC=null;   // open category on the Recipes tab: {k,v} or {k:'all'}
 const BGS=[['meal','Meal'],['cuisine','Cuisine'],['protein','Protein'],['recent','Recent']];
-const EMO={breakfast:'🥞',brunch:'🍳',lunch:'🥪',dinner:'🍽️',side:'🥗',sides:'🥗',snack:'🍪',snacks:'🍪',dessert:'🍰',desserts:'🍰',drink:'🥤',drinks:'🥤',beverage:'🥤',appetizer:'🥟',soup:'🍲',salad:'🥗',sauce:'🫙',baking:'🥖',
- american:'🍔',chinese:'🥡',french:'🥐',greek:'🫒',indian:'🍛',italian:'🍝',japanese:'🍣',korean:'🍲',mediterranean:'🫒',mexican:'🌮','middle eastern':'🧆',thai:'🍜',vietnamese:'🍜',spanish:'🥘',caribbean:'🍍',german:'🥨',british:'🫖',cajun:'🦐',southern:'🍗',
- chicken:'🍗',beef:'🥩',pork:'🥓',fish:'🐟',seafood:'🦐',shrimp:'🦐',salmon:'🐟',turkey:'🦃',lamb:'🍖',eggs:'🥚',egg:'🥚',tofu:'🧈',tempeh:'🫘',seitan:'🌾',beans:'🫘',chickpeas:'🫘',lentils:'🫘',cheese:'🧀',sausage:'🌭',vegetables:'🥦',veggie:'🥦',none:'🥦'};
-const ctile=(k,v,n)=>`<button class="ctl" data-a="cat" data-k="${k}" data-v="${esc(v)}" style="background:${cgrad(v)}"><i aria-hidden="true">${EMO[v.toLowerCase()]||esc(inits(v))}</i><span><b>${esc(v)}</b><em>${n}</em></span></button>`;
+// Cuisine tiles wear the colors of the region's flag
+const st=(...c)=>c.map(([col,a,b])=>`${col} ${a}% ${b}%`).join(',');
+const H=(...c)=>`linear-gradient(${st(...c)})`,V=(...c)=>`linear-gradient(90deg,${st(...c)})`,dot=(c,at='50% 40%',r=17)=>`radial-gradient(circle at ${at},${c} 0 ${r}%,transparent ${r+.5}%)`;
+const FLAG={american:`linear-gradient(#3c3b6e,#3c3b6e) 0 0/44% 54% no-repeat,repeating-linear-gradient(#b22234 0 7.69%,#fff 7.69% 15.38%)`,
+ chinese:`${dot('#ffde00','24% 24%',11)},#de2910`,french:V(['#0055a4',0,33.3],['#fff',33.3,66.6],['#ef4135',66.6,100]),
+ greek:`linear-gradient(#fff,#fff) 15% 0/7% 44% no-repeat,linear-gradient(#fff,#fff) 0 17%/37% 10% no-repeat,linear-gradient(#0d5eaf,#0d5eaf) 0 0/37% 44% no-repeat,repeating-linear-gradient(#0d5eaf 0 11.1%,#fff 11.1% 22.2%)`,
+ indian:`${dot('#000080','50% 40%',9)},${H(['#ff9933',0,33.3],['#fff',33.3,66.6],['#138808',66.6,100])}`,italian:V(['#009246',0,33.3],['#fff',33.3,66.6],['#ce2b37',66.6,100]),
+ japanese:`${dot('#bc002d','50% 38%',19)},#fff`,korean:`radial-gradient(circle at 50% 38%,transparent 0 18%,#fff 18.5%),${H(['#cd2e3a',0,38],['#0047a0',38,100])}`,
+ mediterranean:H(['#1e5aa8',0,40],['#fff',40,55],['#6b8e23',55,100]),mexican:V(['#006847',0,33.3],['#fff',33.3,66.6],['#ce1126',66.6,100]),
+ 'middle eastern':`linear-gradient(90deg,#ce1126 0 24%,transparent 24%),${H(['#000',0,33.3],['#fff',33.3,66.6],['#007a3d',66.6,100])}`,
+ thai:H(['#a51931',0,16.6],['#f4f5f8',16.6,33.3],['#2d2a4a',33.3,66.6],['#f4f5f8',66.6,83.3],['#a51931',83.3,100]),vietnamese:`${dot('#ffcd00','50% 40%',14)},#da251d`,
+ spanish:H(['#aa151b',0,25],['#f1bf00',25,75],['#aa151b',75,100]),german:H(['#000',0,33.3],['#dd0000',33.3,66.6],['#ffce00',66.6,100]),
+ british:`linear-gradient(#c8102e,#c8102e) 50% 0/12% 100% no-repeat,linear-gradient(#c8102e,#c8102e) 0 50%/100% 12% no-repeat,linear-gradient(#fff,#fff) 50% 0/22% 100% no-repeat,linear-gradient(#fff,#fff) 0 50%/100% 22% no-repeat,#012169`,
+ irish:V(['#169b62',0,33.3],['#fff',33.3,66.6],['#ff883e',66.6,100]),caribbean:H(['#009b3a',0,40],['#fed100',40,60],['#000',60,100]),
+ cuban:`linear-gradient(90deg,#cf142b 0 30%,transparent 30%),repeating-linear-gradient(#002a8f 0 20%,#fff 20% 40%)`,brazilian:`${dot('#002776','50% 42%',15)},radial-gradient(ellipse 46% 36% at 50% 42%,#fedf00 98%,transparent),#009c3b`,
+ ethiopian:H(['#078930',0,33.3],['#fcdd09',33.3,66.6],['#da121a',66.6,100]),turkish:`${dot('#fff','36% 40%',14)},#e30a17`,peruvian:V(['#d91023',0,33.3],['#fff',33.3,66.6],['#d91023',66.6,100]),
+ filipino:`linear-gradient(90deg,#fff 0 30%,transparent 30%),${H(['#0038a8',0,50],['#ce1126',50,100])}`,moroccan:`#c1272d`,lebanese:`${dot('#00a651','50% 50%',13)},${H(['#ed1c24',0,25],['#fff',25,75],['#ed1c24',75,100])}`};
+// Meal tiles each get their own color
+const MEALC={breakfast:['#f6b23e','#e8792b'],brunch:['#f59a5a','#e0663f'],lunch:['#3bb08f','#1d8a72'],dinner:['#c8364f','#8f1f3c'],side:['#7cbf4f','#3f9a45'],sides:['#7cbf4f','#3f9a45'],
+ snack:['#9a6bd8','#6d43b5'],snacks:['#9a6bd8','#6d43b5'],dessert:['#f06aa0','#c93a7c'],desserts:['#f06aa0','#c93a7c'],drink:['#3f8fe0','#2563b8'],drinks:['#3f8fe0','#2563b8'],beverage:['#3f8fe0','#2563b8'],
+ appetizer:['#e8a23a','#c27525'],soup:['#d9733f','#a84c2b'],salad:['#5bb56a','#2f8a4a'],baking:['#c99a5b','#93653a']};
+const MEALX=[['#4aa3c9','#2a6f9a'],['#d17a3a','#a04f22'],['#6a7fd6','#4155a8'],['#c25a8e','#8f3466'],['#5aa58a','#357a61']];
+function tbg(k,v){const l=v.toLowerCase();if(k=='cuisine')return FLAG[l]||cgrad(v);
+ if(k=='meal'){const c=MEALC[l]||MEALX[hashS(l)%MEALX.length];return `linear-gradient(135deg,${c[0]},${c[1]})`}return cgrad(v)}
+const ctile=(k,v,n)=>`<button class="ctl${k=='cuisine'&&FLAG[v.toLowerCase()]?' flag':''}" data-a="cat" data-k="${k}" data-v="${esc(v)}" style="background:${tbg(k,v)}"><em>${n}</em><b>${esc(v)}</b></button>`;
 function vBrowse(){const g=S.set.bg||'meal',N=S.recipes.length;
  if(BC){const L=BC.k=='all'?S.recipes:S.recipes.filter(r=>BC.k=='cuisine'?r.cuisine==BC.v:(r[BC.k]||[]).includes(BC.v)),srt=sortList(L),t=BC.k=='all'?'All recipes':BC.v;
   return `<div class="bk"><button class="g" data-a="catX">‹ All categories</button></div><div class="hello"><b>${esc(t)}</b><span>${L.length} recipe${L.length==1?'':'s'}</span></div>`
@@ -591,7 +614,7 @@ function vBrowse(){const g=S.set.bg||'meal',N=S.recipes.length;
   return h+(c.length?`<div class="card wide"><div class="sec">Cooked recently</div>${c.slice(0,30).map(rRow).join('')}</div>`:'')+(nw.length?`<div class="card wide"><div class="sec">Not cooked yet</div>${nw.map(rRow).join('')}</div>`:'')}
  const cnt=new Map();S.recipes.forEach(r=>(g=='cuisine'?[r.cuisine].filter(Boolean):r[g]||[]).forEach(v=>cnt.set(v,(cnt.get(v)||0)+1)));
  const ord=[...S.facets[g].filter(v=>cnt.has(v)),...[...cnt.keys()].filter(v=>!S.facets[g].includes(v)).sort()];
- return h+`<div class="cgrid wide">${ord.map(v=>ctile(g,v,cnt.get(v))).join('')}<button class="ctl all" data-a="cat" data-k="all" data-v=""><i aria-hidden="true">📖</i><span><b>All</b><em>${N}</em></span></button></div>`
+ return h+`<div class="cgrid wide">${ord.map(v=>ctile(g,v,cnt.get(v))).join('')}<button class="ctl all" data-a="cat" data-k="all" data-v=""><em>${N}</em><b>All</b></button></div>`
   +(ord.length?'':`<p class="mu wide" style="margin:0 4px">No recipes have a ${g} picked yet. Edit a recipe and use <b>Sort it</b> to add one.</p>`)}
 
 // ---- Recipe page ----
@@ -602,7 +625,7 @@ function vRecipe(){const r=byId(RID);if(!r)return '';const i=S.recipes.indexOf(r
  h+=`<div class="card wide"><div class="hr">${tile(r,1)}<div style="min-width:0"><h2>${esc(r.title||'Untitled')}</h2><div class="mu">${esc(meta)}</div></div></div>`
  +(fac.length||r.tags.length?`<div class="pills">${fac.map(x=>`<span class="pill">${esc(x)}</span>`).join('')}${r.tags.map(x=>`<span class="pill tg">#${esc(x)}</span>`).join('')}</div>`:'')
  +`<div class="mu" style="margin-top:10px">${lc?`Last cooked ${ago(lc)} · ${r.cooked.length} time${r.cooked.length==1?'':'s'}`:'Not cooked yet'}</div>
- ${linkRow(r)}${r.src?'':`<button class="g lnk" data-a="addLink" data-id="${esc(r.id)}" style="margin-top:10px">+ Add link to original recipe</button>`}<div class="row acts"><button data-a="cook" data-id="${esc(r.id)}">Start cooking</button><button class="g bd" data-a="cooked" data-id="${esc(r.id)}">Cooked today</button><button class="g bd" data-a="listT" data-id="${esc(r.id)}">${S.shop.rids.includes(r.id)?'On the list ✓':'Add to list'}</button><button class="g bd" data-a="edit" data-id="${esc(r.id)}">Edit</button></div></div>`;
+ ${linkRow(r)}${r.src?'':`<button class="g lnk" data-a="addLink" data-id="${esc(r.id)}" style="margin-top:10px">+ Add link to original recipe</button>`}<div class="row acts"><button data-a="cook" data-id="${esc(r.id)}">Start cooking</button><button class="g bd" data-a="cooked" data-id="${esc(r.id)}">Cooked today</button><button class="g bd" data-a="listT" data-id="${esc(r.id)}">${S.shop.rids.includes(r.id)?'On the list':'Add to list'}</button><button class="g bd" data-a="edit" data-id="${esc(r.id)}">Edit</button></div></div>`;
  if(warn.length)h+=`<div class="card warn"><h3><span><i class="bang">!</i>Heads up</span></h3><div>This mentions ${esc(warn.join(', '))}.</div></div>`;
  h+=ingCard(r);
  h+=`<div class="card"><h3><span>Steps</span></h3>${r.steps.length?`<ol class="steps">${r.steps.map((s,j)=>`<li>${stepHtml(s,r,j)}</li>`).join('')}</ol>`:'<p class="mu" style="margin:0">No steps yet.</p>'}</div>`;
@@ -702,7 +725,7 @@ function vKit(){const P=pSorted(),sh=S.shop,rows=shopRows(),have=shopItems().fil
  if(KV=='use')return h+`<div class="card wide"><h3><span>In my kitchen</span><span class="mu">${P.length}</span></h3>`
   +(P.length?P.map(p=>{const n=pLeft(p);return `<div class="prow"><span class="pn"><b>${esc(p.name)}</b><span class="mu">Added ${ago(p.added)}</span></span><span class="stp"><button class="g sb" data-a="pDays" data-id="${esc(p.id)}" data-d="-1" aria-label="Sooner">−</button><span class="dl ${dlCls(n)}">${dlTxt(n)}</span><button class="g sb" data-a="pDays" data-id="${esc(p.id)}" data-d="1" aria-label="Later">+</button></span><button class="okb" data-a="pUse" data-id="${esc(p.id)}" aria-label="Used it">${ICK}</button></div>`}).join('')
    :`<p class="mu" style="margin:0 0 10px">Nothing here yet. Add what you have, and the shopping list will point out anything you already own. Items you buy can go here when you tap Done shopping.</p>`)
-  +`<div class="row" style="margin-top:10px"><input id="pin" type="text" placeholder="Rice, spinach, half a cabbage" enterkeyhint="done" autocomplete="off"><button data-a="pAdd" style="flex:none">Add</button></div><div class="hint">Add several at once with commas. Fresh things get a rough use-by date you can nudge with − and +. Tap ✓ when it's gone.</div></div>`;
+  +`<div class="row" style="margin-top:10px"><input id="pin" type="text" placeholder="Rice, spinach, half a cabbage" enterkeyhint="done" autocomplete="off"><button data-a="pAdd" style="flex:none">Add</button></div><div class="hint">Add several at once with commas. Fresh things get a rough use-by date you can nudge with − and +. Tap the check when it's gone.</div></div>`;
  if(!SEL)h+=`<div class="card wide"><h3><span>Cooking this week</span><span class="mu">${rs.length}</span></h3><div class="chips" style="margin:0">${rs.map(r=>`<span class="chip ed2"><button class="cn" data-a="open" data-id="${esc(r.id)}">${esc(short(r.title))}</button><button class="cx" data-a="rOff" data-id="${esc(r.id)}" aria-label="Take ${esc(r.title)} off the list">${ICX}</button></span>`).join('')}<button class="chip add" data-a="pick">+ ${rs.length?'Add recipes':'Pick recipes'}</button></div></div>`;
  h+=`<div class="card wide${SEL?' selm':''}"><h3><span>${SEL?(SEL.size?SEL.size+' selected':'Tap items to select'):'Shopping list'}</span>${SEL?(kit.length?`<button class="g lnk" data-a="sSelKit">Select kitchen items</button>`:''):`<span class="mu">${toBuy?toBuy+' left':''}</span>`}</h3>`
   +(!SEL&&kit.length?`<button class="khint" data-a="sReview"><span><b>${kit.length}</b> already in your kitchen</span>Review ›</button>`:'')
@@ -894,6 +917,7 @@ const ACT={
  shT:(d,el)=>{if(SH&&SH[d.g]&&SH[d.g][d.i])SH[d.g][d.i].on=el.checked},
  shSave:()=>{if(!SH)return;let n=0;(SH.used||[]).forEach(x=>{if(x.on){S.pantry=S.pantry.filter(p=>p.id!=x.id);n++}});SH.left.forEach(x=>{if(x.on){addPantry(x.name,x.days);n++}});SH=null;commit();toast(n?'Kitchen updated':'Nothing changed')},
  shClose:()=>{SH=null;R()},
+ ingEd:d=>{const r=byId(d.id);if(!r||r.ing[+d.i]==null)return;SH={kind:'ing',id:r.id,i:+d.i,t:r.ing[+d.i]};R();focusIng()},
  ingNew:d=>{SH={kind:'ing',id:d.id,i:-1,t:''};R();focusIng()},
  ingSave:()=>{const r=SH&&byId(SH.id),el=document.getElementById('ingE');if(!r||!el)return;const v=el.value.trim();
   if(!v){if(SH.i>=0)return ACT.ingDel();SH=null;return R()}
@@ -920,21 +944,12 @@ const ACT={
  // swallow the click that ends a long press
  document.addEventListener('click',e=>{if(LPX&&e.target.closest('#app .si')){e.preventDefault();e.stopPropagation();LPX=0}},true);
 })();
-// Long press on a recipe ingredient opens a quick edit sheet
+// Focus the ingredient edit box once its sheet is open
 const focusIng=()=>setTimeout(()=>{const el=document.getElementById('ingE');if(el){el.focus();const n=el.value.length;try{el.setSelectionRange(n,n)}catch(_){}}},60);
-(function(){let t=0,sx=0,sy=0,lp=0;const stop=()=>{clearTimeout(t);t=0};
- document.addEventListener('pointerdown',e=>{const row=e.target.closest('#app [data-ing]');if(!row||SH)return;sx=e.clientX;sy=e.clientY;stop();
-  t=setTimeout(()=>{t=0;const r=byId(row.dataset.rid),i=+row.dataset.ing;if(!r||r.ing[i]==null)return;lp=1;try{navigator.vibrate&&navigator.vibrate(15)}catch(_){}SH={kind:'ing',id:r.id,i,t:r.ing[i]};R();focusIng()},450)});
- document.addEventListener('pointerup',()=>{if(lp)setTimeout(()=>lp=0,80)},true);
- document.addEventListener('pointermove',e=>{if(t&&Math.hypot(e.clientX-sx,e.clientY-sy)>10)stop()});
- ['pointerup','pointercancel','scroll'].forEach(n=>document.addEventListener(n,stop,true));
- document.addEventListener('contextmenu',e=>{if(e.target.closest('#app [data-ing]'))e.preventDefault()});
- document.addEventListener('click',e=>{if(lp&&e.target.closest('#app [data-ing]')){e.preventDefault();e.stopPropagation();lp=0}},true);
-})();
 document.addEventListener('click',e=>{
  if(e.target.classList&&e.target.classList.contains('shbg')){ACT.shClose();return}
  const di=e.target.closest('.dt input');if(di){try{di.showPicker()}catch(_){}}
- const b=e.target.closest('button[data-a]');if(b&&!b.disabled&&ACT[b.dataset.a]){if(b.closest('summary'))e.preventDefault();ACT[b.dataset.a](b.dataset,b)}});
+ const b=e.target.closest('button[data-a]');if(b&&!b.disabled&&ACT[b.dataset.a]){if(b.closest('summary'))e.preventDefault();ACT[b.dataset.a]({...b.dataset},b)}});
 document.addEventListener('change',e=>{const t=e.target,d=t.dataset;
  if(d.p&&d.t&&t.type=='date'&&!t.value){t.value=get(d.p)||'';R()}
  else if(d.p&&d.t)up(d.p,t.type=='checkbox'?t.checked:t.value,d.t);
@@ -1031,7 +1046,7 @@ function mkPeek(id){let p=document.getElementById('peek');
 const rmPeek=()=>{const p=document.getElementById('peek');if(p)p.remove()};
 (function(){let sx=0,sy=0,lx=0,lt=0,vx=0,ax=null,ok=false,busy=false;const W=()=>innerWidth,nav=()=>document.getElementById('nav');
  const mv=(el,x,tr)=>{el.style.transition=tr||'none';el.style.transform=`translate3d(${x}px,0,0)`};
- document.addEventListener('touchstart',e=>{const t=e.target;ok=!busy&&!SH&&!SEL&&T!='more'&&T!='lists'&&T!='recipe'&&e.touches.length==1&&!t.closest('input,select,textarea,nav,header,#tdock,.savebar,#sheet,.frow');ax=null;if(!ok)return;sx=lx=e.touches[0].clientX;sy=e.touches[0].clientY;lt=performance.now();vx=0},{passive:true});
+ document.addEventListener('touchstart',e=>{const t=e.target;ok=!busy&&!SH&&!SEL&&T!='more'&&T!='lists'&&T!='recipe'&&e.touches.length==1&&!t.closest('input,select,textarea,nav,header,#tdock,.savebar,#sheet');ax=null;if(!ok)return;sx=lx=e.touches[0].clientX;sy=e.touches[0].clientY;lt=performance.now();vx=0},{passive:true});
  document.addEventListener('touchmove',e=>{if(!ok)return;const x=e.touches[0].clientX,y=e.touches[0].clientY,dx=x-sx,dy=y-sy;
   if(ax==null){if(Math.abs(dx)<8&&Math.abs(dy)<8)return;ax=Math.abs(dx)>Math.abs(dy)*1.2?'x':'y';if(ax=='x'){APP().style.willChange='transform';nav().classList.add('drag')}}
   if(ax!='x')return;e.preventDefault();const now=performance.now();vx=.7*vx+.3*((x-lx)/Math.max(1,now-lt));lx=x;lt=now;
