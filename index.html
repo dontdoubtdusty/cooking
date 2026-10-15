@@ -580,7 +580,7 @@ function vFind(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF(),t
 let BC=null;   // open category on the Recipes tab: {k,v} or {k:'all'}
 const BGS=[['meal','Meal'],['cuisine','Cuisine'],['protein','Protein'],['recent','Recent']];
 // Cuisine tiles show the region's flag from the flags/ folder (file name = cuisine, lowercase, hyphens for spaces)
-const FLAGS=new Set(["american", "brazilian", "british", "chinese", "cuban", "ethiopian", "filipino", "french", "german", "greek", "indian", "irish", "italian", "japanese", "korean", "lebanese", "mediterranean", "mexican", "middle-eastern", "moroccan", "peruvian", "spanish", "thai", "turkish", "vietnamese"]);
+const FLAGS=new Set(["american", "brazilian", "british", "chinese", "cuban", "ethiopian", "filipino", "french", "german", "greek", "indian", "irish", "italian", "japanese", "korean", "lebanese", "mediterranean", "mexican", "middle-eastern", "moroccan", "peruvian", "slovenian", "spanish", "thai", "turkish", "vietnamese"]);
 const fkey=v=>v.toLowerCase().trim().replace(/\s+/g,'-');
 // Regions without a single flag get their colors drawn instead
 const FLAGC={caribbean:'linear-gradient(#009b3a 0 40%,#fed100 40% 60%,#000 60%)'};
