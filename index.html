@@ -203,6 +203,21 @@ body.hast .savebar{bottom:calc(128px + env(safe-area-inset-bottom,0px))}
 .grab{width:42px;height:5px;border-radius:9px;background:var(--bd);margin:0 auto 14px}
 @keyframes sheetUp{from{transform:translateY(100%)}}@keyframes fadeIn{from{opacity:0}}
 body.shopen{overflow:hidden}
+/* ===== Recipe links inside ingredients: [[Pickled Onions]] ===== */
+button.rl{display:inline;background:none;box-shadow:none;padding:0;border-radius:0;color:var(--pc);font:inherit;font-weight:800;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px;cursor:pointer;text-align:left}
+.rl.no{text-decoration:underline dotted color-mix(in srgb,var(--mu) 70%,transparent);text-underline-offset:3px}
+/* ===== Plan: calendar, meals and leftovers ===== */
+.calh{display:flex;align-items:center;gap:4px}.calh b{flex:1;text-align:center;font:600 18px var(--fd)}.calh .g{font-size:20px;padding:4px 12px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:8px}
+.cal .wd{text-align:center;font-size:11px;font-weight:800;color:var(--mu);text-transform:uppercase;padding-bottom:2px}
+button.cd{aspect-ratio:1/1.08;min-width:0;background:var(--fld);color:var(--tx);border:2px solid transparent;border-radius:12px;padding:5px 0 0;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:700;font-size:14px;box-shadow:none}
+button.cd.out{background:none;color:var(--mu);opacity:.55}
+button.cd.td{color:var(--pc);font-weight:800}
+button.cd.on{border-color:var(--pc);background:var(--card)}
+.cd i{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;max-width:30px}.cd u{width:6px;height:6px;border-radius:50%;background:var(--pc)}.cd u.l{background:var(--ac)}
+.lo{flex:none;font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px;background:color-mix(in srgb,var(--ac) 15%,transparent);color:var(--ac);white-space:nowrap}.lo.neg{background:color-mix(in srgb,var(--neg) 14%,transparent);color:var(--neg)}
+.leg{display:flex;gap:14px;margin-top:10px;font-size:12px;color:var(--mu);font-weight:700}.leg span{display:inline-flex;align-items:center;gap:5px}.leg u{width:8px;height:8px;border-radius:50%;background:var(--pc)}.leg u.l{background:var(--ac)}
+.pr .rcn b,.pr .rcn .mu,.pr .pn b,.pr .pn .mu{white-space:normal}.sbig{min-width:30px;text-align:center;font:600 18px var(--fd)}
 @media(prefers-reduced-motion:reduce){*,*:after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
 </style></head><body><header class="top"><span class="tt"><svg class="logo" viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><circle cx="16" cy="18" r="12" fill="#ff4d5e"/><ellipse cx="11" cy="15" rx="3" ry="2" fill="#fff" opacity=".35"/><path d="M16 9l-5-3 3.6 4.2L10 11.5l5 .3L16 16l1-4.2 5-.3-4.6-1.3L21 6z" fill="#1fa971"/><path d="M16 9V4" stroke="#1fa971" stroke-width="2" stroke-linecap="round"/></svg><span><span class="jz">Big Saucy</span> Recipes</span></span><button id="gear" class="gear" aria-label="Settings" data-a="gear"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></header><div class="vclip"><main id="app" class="view"></main></div><div id="tdock"></div><nav id="nav"></nav><div id="toast" role="status" aria-live="polite"></div><div id="sheet"></div>
 <script>
@@ -220,10 +235,10 @@ const DEFF={cuisine:['American','Chinese','French','Greek','Indian','Italian','J
 const TIMES=[0,20,30,45,60];
 const SORTS=[['az','A to Z'],['stale','Not cooked lately'],['new','Newest first'],['quick','Quickest first'],['most','Most cooked']];
 // Tab colors: [light, dark]
-const TC={browse:[['#ff4d5e','#e8336b'],['#ff6b76','#ff4f86']],kit:[['#f57c1f','#e8435a'],['#ff9a4d','#ff6b6b']],cook:[['#17a06a','#0f8463'],['#22b07a','#13916c']],add:[['#ff4d5e','#e8336b'],['#ff6b76','#ff4f86']],hist:[['#8e3fd0','#d6338a'],['#b57be0','#ff5fa2']],find:[['#f2994a','#e8435a'],['#ffab5e','#ff6b6b']],lists:[['#8e3fd0','#ff4d5e'],['#b57be0','#ff6b76']],more:[['#8e3fd0','#ff4d5e'],['#b57be0','#ff6b76']]};
+const TC={browse:[['#ff4d5e','#e8336b'],['#ff6b76','#ff4f86']],kit:[['#f57c1f','#e8435a'],['#ff9a4d','#ff6b6b']],cook:[['#17a06a','#0f8463'],['#22b07a','#13916c']],plan:[['#2f7fe0','#7a4fd6'],['#5aa0ff','#a07ff0']],add:[['#ff4d5e','#e8336b'],['#ff6b76','#ff4f86']],hist:[['#8e3fd0','#d6338a'],['#b57be0','#ff5fa2']],find:[['#f2994a','#e8435a'],['#ffab5e','#ff6b6b']],lists:[['#8e3fd0','#ff4d5e'],['#b57be0','#ff6b76']],more:[['#8e3fd0','#ff4d5e'],['#b57be0','#ff6b76']]};
 // Recipe tile gradients, picked by cuisine
 const CG=[['#ff4d5e','#e8336b'],['#1fa971','#0f8463'],['#ff7a59','#e8435a'],['#e8336b','#b8234f'],['#5aa85a','#1fa971'],['#d9534f','#a8323f'],['#f2994a','#e05a47'],['#17a589','#1f8a70'],['#ff6f91','#e8336b'],['#b5655a','#8a3f3a'],['#7bbf5a','#3a9a5a'],['#e8435a','#ff8a5c']],CGN=['#c4a5a0','#8e716c'];
-const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],MOL=['January','February','March','April','May','June','July','August','September','October','November','December'],WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],MOL=['January','February','March','April','May','June','July','August','September','October','November','December'],WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],WDL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
 // =====================================================================
 // 2. GENERAL UTILITIES
@@ -236,6 +251,9 @@ const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice
 const tdy=()=>iso(new Date());
 const sd=v=>{const m=/^(\d{4})-(\d\d)-(\d\d)/.exec(v||'');return m?MO[+m[2]-1]+' '+(+m[3]):'—'};
 const dayDiff=d=>Math.round((new Date(d+'T00:00')-new Date(tdy()+'T00:00'))/864e5);
+const addD=(d,n)=>{const x=new Date(d+'T00:00');x.setDate(x.getDate()+n);return iso(x)};
+const dBetween=(a,b)=>Math.round((new Date(b+'T00:00')-new Date(a+'T00:00'))/864e5);
+const dlab=d=>WD[new Date(d+'T00:00').getDay()]+', '+sd(d);
 function ago(d){const n=-dayDiff(d);if(n<=0)return 'today';if(n==1)return 'yesterday';if(n<7)return n+' days ago';if(n<14)return 'last week';if(n<60)return Math.floor(n/7)+' weeks ago';if(n<365)return Math.floor(n/30)+' months ago';return 'over a year ago'}
 const fmtTime=m=>{m=num(m);if(!m)return '';const h=Math.floor(m/60),r=m%60;return h?h+' hr'+(r?' '+r+' min':''):r+' min'};
 const clock=s=>{const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60,p=v=>String(v).padStart(2,'0');return h?h+':'+p(m)+':'+p(x):m+':'+p(x)};
@@ -288,6 +306,9 @@ const MIGRATIONS=[
  S=>{S.recipes.forEach(r=>r.nut=Array.isArray(r.nut)?r.nut:[]);S.draft.nutT=S.draft.nutT||''},
  // v7: a second ingredient list saved as a plain line ("Ingredients for the bath") becomes a heading
  S=>{S.recipes.forEach(r=>{r.ing=r.ing.map(subHead)})},
+ // v8: a meal calendar. Each entry is a cook day {k:'cook', mk: servings made, eat: servings eaten that day}
+ // or a leftovers meal {k:'left', src: the cook entry it comes from, eat}
+ S=>{S.plan=Array.isArray(S.plan)?S.plan:[]},
 ];
 // A brand-new setup: run every migration, then put back the sample's stated time
 function fresh(){S=seed();migrate();S.recipes.forEach(r=>r.time=num(sample().time))}
@@ -314,6 +335,27 @@ function toast(msg,undo){const el=document.getElementById('toast');el.innerHTML=
 // =====================================================================
 const byId=id=>id?S.recipes.find(r=>r.id==id):null;
 const last=r=>r.cooked.reduce((m,d)=>d>m?d:m,'');
+
+// ---- Links to other recipes: write [[Pickled Onions]] in an ingredient line ----
+const LRE=/\[\[([^\[\]]+)\]\]/g;
+const tkey=t=>(t||'').trim().toLowerCase().replace(/\s+/g,' ');
+const byTitle=t=>{const k=tkey(t);return k?S.recipes.find(r=>tkey(r.title)==k):null};
+const linksIn=l=>[...String(l||'').matchAll(LRE)].map(m=>m[1]);
+// Text with [[links]] -> HTML. Links to recipes you have open them; others show dotted until that recipe exists.
+function linkHtml(s){let o='',i=0;String(s).replace(LRE,(m,t,off)=>{const r=byTitle(t);
+ o+=esc(s.slice(i,off))+(r?`<button class="rl" data-a="open" data-id="${esc(r.id)}">${esc(t.trim())}</button>`:`<span class="rl no" title="No recipe with this name yet">${esc(t.trim())}</span>`);i=off+m.length;return m});return o+esc(s.slice(i))}
+// Recipes whose ingredients link to this one
+const usedIn=r=>S.recipes.filter(x=>x.id!=r.id&&x.ing.some(l=>linksIn(l).some(t=>tkey(t)==tkey(r.title))));
+
+// ---- Plan: cook days, servings eaten, and the leftovers they leave ----
+const planOk=()=>S.plan.filter(e=>byId(e.rid)&&(e.k=='cook'||S.plan.some(b=>b.id==e.src)));
+const batch=id=>S.plan.find(e=>e.id==id&&e.k=='cook');
+// Servings of a cook batch still left at the end of day X (no X: after everything planned). skip: leave one entry out.
+function remAt(b,X,skip){if(b.gone&&(!X||X>=b.gone))return 0;return (b.mk||0)-sum(S.plan.filter(e=>(e.id==b.id||e.src==b.id)&&e.id!=skip&&(!X||e.d<=X)),e=>e.eat||0)}
+// Cook batches with leftovers at the end of day X, no more than a week old
+const leftAt=X=>S.plan.filter(b=>b.k=='cook'&&byId(b.rid)&&b.d<=X&&dBetween(b.d,X)<=7).map(b=>({b,n:remAt(b,X)})).filter(x=>x.n>0).sort((x,y)=>x.b.d<y.b.d?-1:1);
+const ageTxt=n=>n<=0?'Made today':n==1?'1 day old':n+' days old';
+const ageCls=n=>n>=5?'late':n>=3?'soon':'ok';
 function allTags(){const m={};S.recipes.forEach(r=>r.tags.forEach(t=>m[t]=(m[t]||0)+1));return Object.entries(m).sort((a,b)=>b[1]-a[1]||(a[0]<b[0]?-1:1))}
 function countFac(k){const m={};S.recipes.forEach(r=>(k=='cuisine'?[r.cuisine]:r[k]).forEach(v=>{if(v)m[v]=(m[v]||0)+1}));return m}
 function match(r){const f=S.f;
@@ -383,7 +425,7 @@ function perish(line){let t=' '+(line||'').toLowerCase()+' ';
 const CONT=/^(cans?|tins?|cloves?|bunch(?:es)?|heads?|packages?|pkgs?|packets?|jars?|bottles?|sticks?|slices?|pieces?|sprigs?|stalks?|handfuls?|pinch(?:es)?|dash(?:es)?|blocks?|bags?|boxes?|cartons?|containers?)\.?(?![a-z])\s*(?:\([^)]*\)\s*)?(?:of\s+)?/i;
 const DROPW=new Set('fresh freshly chopped diced minced large medium small ripe whole finely roughly coarsely thinly sliced grated packed cooked uncooked raw peeled shredded crumbled halved quartered firm extra organic about plus more optional loosely lightly drained rinsed of a an the half leftover leftovers some bit little open opened remaining bunch head bag jar package box carton container'.split(' '));
 const sing=w=>w.length<4||/(ss|us)$/.test(w)?w:/ies$/.test(w)?w.slice(0,-3)+'y':/(o|sh|ch|x)es$/.test(w)?w.slice(0,-2):/s$/.test(w)?w.slice(0,-1):w;
-const cleanName=s=>(s||'').replace(/\([^)]*\)/g,' ').split(/,|;|\bfor (?:serving|garnish)\b|\bto taste\b|\bor more\b|\bplus more\b/i)[0].replace(/^\s*(of|-)\s+/i,'').replace(/\s+/g,' ').trim();
+const cleanName=s=>(s||'').replace(/\[\[|\]\]/g,'').replace(/\([^)]*\)/g,' ').split(/,|;|\bfor (?:serving|garnish)\b|\bto taste\b|\bor more\b|\bplus more\b/i)[0].replace(/^\s*(of|-)\s+/i,'').replace(/\s+/g,' ').trim();
 const nkey=s=>cleanName(s).toLowerCase().replace(/[^\p{L}\s-]/gu,' ').split(/[\s-]+/).filter(w=>w&&!DROPW.has(w)).map(sing).join(' ');
 function ingInfo(l){const p=parseIng(l);let rest=p?p.rest:l,cu='';
  if(p&&!p.u){const m=CONT.exec(rest);if(m){cu=sing(m[1].toLowerCase());rest=rest.slice(m[0].length)}}
@@ -564,7 +606,7 @@ const welcome=()=>`<div class="card wide"><h3><span>Welcome to Big Saucy</span><
 function ingCard(r){const f=SC[r.id]||1,ck=CK[r.id]||{},any=Object.values(ck).some(Boolean);
  const rows=r.ing.map((l,j)=>{const pen=`<button class="g ied" data-a="ingEd" data-id="${esc(r.id)}" data-i="${j}" aria-label="Edit ${esc(l)}">${ICP}</button>`;
   if(/:$/.test(l))return `<div class="srow ihr"><div class="sec ih">${esc(l.slice(0,-1))}</div>${pen}</div>`;const [q,rest]=scaleLine(l,f);
-  return `<div class="srow"><label class="ingr"><input type="checkbox" data-a="ck" data-id="${esc(r.id)}" data-i="${j}" ${ck[j]?'checked':''}><span>${q?`<b>${esc(q)}</b> `:''}${esc(rest)}</span></label>${pen}</div>`}).join('');
+  return `<div class="srow"><label class="ingr"><input type="checkbox" data-a="ck" data-id="${esc(r.id)}" data-i="${j}" ${ck[j]?'checked':''}><span>${q?`<b>${esc(q)}</b> `:''}${linkHtml(rest)}</span></label>${pen}</div>`}).join('');
  const sv=r.serves?'Serves '+fmtQ(r.serves*f):(f==1?'Original':'×'+fmtQ(f));
  return `<div class="card"><h3><span>Ingredients</span><span class="scl"><button class="g sb" data-a="scale" data-id="${esc(r.id)}" data-d="-1" aria-label="Fewer servings">−</button><span class="b">${sv}</span><button class="g sb" data-a="scale" data-id="${esc(r.id)}" data-d="1" aria-label="More servings">+</button></span></h3>`
  +(f!=1?`<div class="mu" style="margin:-4px 0 6px">Amounts scaled ×${fmtQ(f)} · <button class="g lnk" data-a="scale" data-id="${esc(r.id)}" data-d="0">Reset</button></div>`:'')
@@ -623,16 +665,18 @@ function vBrowse(){const g=S.set.bg||'meal',N=S.recipes.length;
 // ---- Recipe page ----
 function vRecipe(){const r=byId(RID);if(!r)return '';const i=S.recipes.indexOf(r),p='recipes.'+i,lc=last(r),fac=[...r.meal,...r.protein,...r.method,...r.diet];
  const meta=[r.cuisine,r.time?fmtTime(r.time):'',r.serves?'serves '+r.serves:''].filter(Boolean).join(' · '),warn=dietWarn(r.ing.join('\n'));
- let h=`<div class="bk"><button class="g" data-a="back">‹ Back</button></div>`;
+ const up=RST.length?byId(RST[RST.length-1]):null,nx=planOk().filter(e=>e.rid==r.id&&e.d>=tdy()).sort((a,b)=>a.d<b.d?-1:1)[0],ui=usedIn(r);
+ let h=`<div class="bk"><button class="g" data-a="back">‹ ${up?esc(short(up.title)):'Back'}</button></div>`;
  if(SUR==r.id)h+=`<div class="card wide okc"><div class="row"><span style="flex:1"><b>Surprise pick</b><br><span class="mu">From ${SURN} matching recipe${SURN==1?'':'s'}, favoring ones you haven't made lately.</span></span><button data-a="surprise" style="flex:none">Try another</button></div></div>`;
  h+=`<div class="card wide"><div class="hr">${tile(r,1)}<div style="min-width:0"><h2>${esc(r.title||'Untitled')}</h2><div class="mu">${esc(meta)}</div></div></div>`
  +(fac.length||r.tags.length?`<div class="pills">${fac.map(x=>`<span class="pill">${esc(x)}</span>`).join('')}${r.tags.map(x=>`<span class="pill tg">#${esc(x)}</span>`).join('')}</div>`:'')
- +`<div class="mu" style="margin-top:10px">${lc?`Last cooked ${ago(lc)} · ${r.cooked.length} time${r.cooked.length==1?'':'s'}`:'Not cooked yet'}</div>
- ${linkRow(r)}${r.src?'':`<button class="g lnk" data-a="addLink" data-id="${esc(r.id)}" style="margin-top:10px">+ Add link to original recipe</button>`}<div class="row acts"><button data-a="cook" data-id="${esc(r.id)}">Start cooking</button><button class="g bd" data-a="cooked" data-id="${esc(r.id)}">Cooked today</button><button class="g bd" data-a="listT" data-id="${esc(r.id)}">${S.shop.rids.includes(r.id)?'On the list':'Add to list'}</button><button class="g bd" data-a="edit" data-id="${esc(r.id)}">Edit</button></div></div>`;
+ +`<div class="mu" style="margin-top:10px">${lc?`Last cooked ${ago(lc)} · ${r.cooked.length} time${r.cooked.length==1?'':'s'}`:'Not cooked yet'}${nx?` · <button class="g lnk" data-a="plGo" data-d="${nx.d}">${nx.d==tdy()?'On the calendar today':'Next on the calendar '+esc(dlab(nx.d))}</button>`:''}</div>
+ ${linkRow(r)}${r.src?'':`<button class="g lnk" data-a="addLink" data-id="${esc(r.id)}" style="margin-top:10px">+ Add link to original recipe</button>`}<div class="row acts"><button data-a="cook" data-id="${esc(r.id)}">Start cooking</button><button class="g bd" data-a="cooked" data-id="${esc(r.id)}">Cooked today</button><button class="g bd" data-a="plCal" data-id="${esc(r.id)}">Add to calendar</button><button class="g bd" data-a="listT" data-id="${esc(r.id)}">${S.shop.rids.includes(r.id)?'On the list':'Add to list'}</button><button class="g bd" data-a="edit" data-id="${esc(r.id)}">Edit</button></div></div>`;
  if(warn.length)h+=`<div class="card warn"><h3><span><i class="bang">!</i>Heads up</span></h3><div>This mentions ${esc(warn.join(', '))}.</div></div>`;
  h+=ingCard(r);
  h+=`<div class="card"><h3><span>Steps</span></h3>${r.steps.length?`<ol class="steps">${r.steps.map((s,j)=>`<li>${stepHtml(s,r,j)}</li>`).join('')}</ol>`:'<p class="mu" style="margin:0">No steps yet.</p>'}</div>`;
  if(r.notes)h+=`<div class="card"><h3><span>Notes</span></h3><p class="pre">${esc(r.notes)}</p></div>`;
+ if(ui.length)h+=`<div class="card"><h3><span>Used in</span><span class="mu">${ui.length}</span></h3>${ui.map(rRow).join('')}</div>`;
  h+=nutCard(r);
  const ord=r.cooked.map((d,j)=>[d,j]).sort((a,b)=>a[0]<b[0]?1:-1);
  h+=`<details class="card" ${O.log?'open':''} data-o="log"><summary><h3><span>Cook log</span><span class="mu">${r.cooked.length}</span></h3></summary><div>${ord.map(([d,j])=>`<div class="row ed">${IDate(p+'.cooked.'+j)}<span class="mu" style="flex:1">${ago(d)}</span>${X(p+'.cooked',j)}</div>`).join('')}<button class="g" data-a="logAdd" data-id="${esc(r.id)}">+ Add a date</button></div></details>`;
@@ -678,7 +722,7 @@ function vAdd(){const d=S.draft,ed=!!d.id;
  h+=`<div class="card"><h3><span>Basics</span></h3><input id="ttl" type="text" class="ttl" placeholder="Recipe name" value="${esc(d.title)}" data-p="draft.title" data-t="s" enterkeyhint="next" autocomplete="off" autocapitalize="words">
  <input type="url" inputmode="url" placeholder="Link to the original recipe (optional)" value="${esc(d.src)}" data-p="draft.src" data-t="s" autocomplete="off" autocapitalize="none" style="margin-top:8px">
  <div class="g2f"><label>Total time<input id="tm" type="text" placeholder="45 min" value="${esc(d.time)}" data-p="draft.time" data-t="s" autocomplete="off"></label><label>Serves<input type="number" inputmode="numeric" min="0" placeholder="4" value="${esc(d.serves)}" data-p="draft.serves" data-t="n"></label></div><div class="hint" id="ctm">${ctmSug(d)}</div></div>`;
- h+=`<div class="card"><h3><span>Ingredients</span></h3><textarea class="auto rx" data-p="draft.ingT" data-t="s" placeholder="2 cups basmati rice&#10;1 can coconut milk&#10;3 cloves garlic, minced&#10;For the sauce:&#10;2 tbsp soy sauce">${esc(d.ingT)}</textarea><div class="hint">One per line. A line ending in a colon becomes a heading.</div></div>`;
+ h+=`<div class="card"><h3><span>Ingredients</span></h3><textarea class="auto rx" data-p="draft.ingT" data-t="s" placeholder="2 cups basmati rice&#10;1 can coconut milk&#10;3 cloves garlic, minced&#10;For the sauce:&#10;2 tbsp soy sauce">${esc(d.ingT)}</textarea><div class="row ifoot" style="margin-top:4px"><button class="g lnk" data-a="lnkPick">+ Link one of your recipes</button></div><div class="hint">One per line. A line ending in a colon becomes a heading. Put one of your recipe names in double brackets, like <b>1/2 cup [[Pickled Onions]]</b>, to link to it.</div></div>`;
  h+=`<div class="card"><h3><span>Steps</span></h3><textarea class="auto rx" data-p="draft.stepT" data-t="s" placeholder="Rinse the rice and drain.&#10;Simmer the sauce for 10 minutes.&#10;Serve hot.">${esc(d.stepT)}</textarea><div class="hint">One step per line. Times like "10 minutes" become timers you can tap to start, if you want them.</div></div>`;
  if(warn.length)h+=`<div class="card warn"><h3><span><i class="bang">!</i>Heads up</span></h3><div>This mentions ${esc(warn.join(', '))}. Swap or skip as needed.</div></div>`;
  h+=`<div class="card"><h3><span>Sort it</span></h3>${FAC.map(([k,l,one])=>`<div class="sec">${l}${one?' · pick one':''}</div>${fchips(k,one)}`).join('')}
@@ -689,6 +733,34 @@ function vAdd(){const d=S.draft,ed=!!d.id;
  <div class="sec" style="margin-top:12px">Nutrition · optional</div><textarea class="auto rx sm" data-p="draft.nutT" data-t="s" placeholder="Calories: 320&#10;Protein: 12 g&#10;Fat: 9 g">${esc(d.nutT)}</textarea><div class="hint">One per line. Filled in for you when a pasted recipe has it.</div>
  <div class="sec" style="margin-top:12px">Video link · optional</div><input type="url" inputmode="url" placeholder="Paste a YouTube, TikTok or other video link" value="${esc(d.vid)}" data-p="draft.vid" data-t="s" autocomplete="off" autocapitalize="none"></div>`;
  return h+`<div class="savebar"><button class="g bd" data-a="${ed?'edCancel':'clearD'}">${ed?'Cancel':'Clear'}</button><button data-a="saveD">${ed?'Save changes':'Save recipe'}</button></div>`}
+
+// ---- Plan: a month calendar, the picked day's meals, and leftovers ----
+let PD=null,PM=null;   // picked day, shown month (YYYY-MM)
+function planRow(e,X){const r=byId(e.rid);let sub,pill='';
+ if(e.k=='cook'){const n=remAt(e,X);sub=`Cooking · makes ${fmtQ(e.mk)} · eating ${e.eat||'none'}`;
+  pill=n>0?`<span class="lo">${fmtQ(n)} left over</span>`:n<0?`<span class="lo neg">${fmtQ(-n)} short</span>`:''}
+ else{const b=batch(e.src),n=remAt(b,X);sub=`Leftovers from ${b.d==X?'today':dlab(b.d)} · eating ${e.eat}`;
+  pill=n<0?`<span class="lo neg">${fmtQ(-n)} short</span>`:n>0?`<span class="lo">${fmtQ(n)} left</span>`:`<span class="lo" style="opacity:.7">All gone</span>`}
+ return `<button class="rc pr" data-a="plEd" data-id="${esc(e.id)}">${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${esc(sub)}</span></span>${pill}</button>`}
+function vPlan(){const t=tdy();PD=PD||t;PM=PM||PD.slice(0,7);const X=PD,P=planOk(),byD={};P.forEach(e=>(byD[e.d]=byD[e.d]||[]).push(e));
+ const [y,m]=PM.split('-').map(Number),first=new Date(y,m-1,1),dim=new Date(y,m,0).getDate(),wk=Math.ceil((first.getDay()+dim)/7),start=addD(iso(first),-first.getDay());
+ let cells='';for(let i=0;i<wk*7;i++){const d=addD(start,i),es=byD[d]||[],cls=[d.slice(0,7)!=PM?'out':'',d==t?'td':'',d==X?'on':''].filter(Boolean).join(' ');
+  cells+=`<button class="cd ${cls}" data-a="plDay" data-d="${d}" aria-label="${esc(dlab(d))}${es.length?', '+es.length+' meal'+(es.length==1?'':'s'):''}">${+d.slice(8)}<i>${es.slice(0,6).map(e=>`<u${e.k=='left'?' class="l"':''}></u>`).join('')}</i></button>`}
+ let h=`<div class="card wide"><div class="calh"><button class="g" data-a="plMo" data-d="-1" aria-label="Previous month">‹</button><b>${MOL[m-1]} ${y}</b><button class="g" data-a="plMo" data-d="1" aria-label="Next month">›</button></div>
+ <div class="cal">${WD.map(w=>`<span class="wd">${w.slice(0,2)}</span>`).join('')}${cells}</div>
+ <div class="leg"><span><u></u>Cooking</span><span><u class="l"></u>Leftovers</span>${X!=t||PM!=t.slice(0,7)?`<button class="g lnk" data-a="plToday" style="margin-left:auto">Today</button>`:''}</div></div>`;
+ const es=byD[X]||[],ttl=X==t?'Today':X==addD(t,1)?'Tomorrow':X==addD(t,-1)?'Yesterday':WDL[new Date(X+'T00:00').getDay()],srv=sum(es,e=>e.eat||0);
+ h+=`<div class="card"><h3><span>${ttl}<span class="mu" style="font:600 13px Nunito,sans-serif;margin-left:8px">${esc(sd(X))}</span></span><span class="mu">${srv?fmtQ(srv)+' serving'+(srv==1?'':'s'):''}</span></h3>`
+  +(es.length?es.map(e=>planRow(e,X)).join(''):`<p class="mu" style="margin:0 0 6px">Nothing planned${X<t?'':' yet'}.</p>`)
+  +`<div class="row"><button data-a="plAdd" data-d="${X}">+ Add a meal</button></div></div>`;
+ const L=leftAt(X);
+ h+=`<div class="card"><h3><span>${X==t?'Leftovers in the fridge':'Leftovers after '+esc(X==addD(t,1)?'tomorrow':dlab(X))}</span><span class="mu">${L.length?fmtQ(sum(L,x=>x.n))+' serving'+(sum(L,x=>x.n)==1?'':'s'):''}</span></h3>`
+  +(L.length?L.map(({b,n})=>{const r=byId(b.rid),a=dBetween(b.d,X);return `<div class="prow pr"><span class="pn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${fmtQ(n)} serving${n==1?'':'s'} · made ${b.d==X?'this day':esc(dlab(b.d))}</span></span><span class="dl ${ageCls(a)}">${ageTxt(a)}</span><button class="g lnk" data-a="plEat" data-id="${esc(b.id)}" style="padding:6px">Eat</button><button class="g" data-a="plGone" data-id="${esc(b.id)}" aria-label="Leftovers gone" style="padding:6px">${ICX}</button></div>`}).join('')
+   +`<div class="hint">Counts what's cooked by the end of this day minus what's eaten. Tap Eat to plan a leftovers meal, or ✕ if they're gone.</div>`
+   :`<p class="mu" style="margin:0">None. When you cook more servings than you eat, the rest shows up here.</p>`)+`</div>`;
+ const wkC=P.filter(e=>e.k=='cook'&&e.d>=t&&e.d<=addD(t,6));
+ h+=`<div class="card wide"><div class="row"><span style="flex:1;min-width:0"><b>Shopping for the week</b><br><span class="mu">${wkC.length?`${new Set(wkC.map(e=>e.rid)).size} recipe${new Set(wkC.map(e=>e.rid)).size==1?'':'s'} to cook in the next 7 days`:'Nothing to cook in the next 7 days yet'}</span></span><button class="g bd" data-a="plShop" style="flex:none" ${wkC.length?'':'disabled'}>Add to list</button></div></div>`;
+ return h}
 
 // ---- Cooked (history) ----
 function vHist(){const ev=[];S.recipes.forEach(r=>r.cooked.forEach(d=>ev.push([d,r])));ev.sort((a,b)=>a[0]<b[0]?1:a[0]>b[0]?-1:0);
@@ -743,9 +815,40 @@ function vKit(){const P=pSorted(),sh=S.shop,rows=shopRows(),have=shopItems().fil
 // ---- Bottom sheet: recipe picker, and the "what's left?" prompts ----
 function vSheet(){if(!SH)return '';let b='';
  if(SH.kind=='ing'){const nw=SH.i<0;
-  b=`<h2>${nw?'Add ingredient':'Edit ingredient'}</h2><p class="mu" style="margin:0 0 8px">${nw?'Added to the end of the list.':'A line ending in a colon becomes a heading.'}</p><input id="ingE" type="text" value="${esc(SH.t)}" placeholder="2 cloves garlic, minced" enterkeyhint="done" autocomplete="off">
+  b=`<h2>${nw?'Add ingredient':'Edit ingredient'}</h2><p class="mu" style="margin:0 0 8px">${nw?'Added to the end of the list.':'A line ending in a colon becomes a heading.'}</p><input id="ingE" type="text" value="${esc(SH.t)}" placeholder="2 cloves garlic, minced" enterkeyhint="done" autocomplete="off"><button class="g lnk" data-a="lnkPickI" style="margin-top:8px">+ Link one of your recipes</button>
   <div class="row" style="margin-top:12px">${nw?'<button class="g bd" data-a="shClose">Cancel</button>':'<button class="x" data-a="ingDel">Remove</button>'}<button data-a="ingSave" style="flex:1">${nw?'Add':'Save'}</button></div>`;
   return `<div class="shbg"></div><div class="shp" role="dialog" aria-modal="true"><div class="grab"></div>${b}</div>`}
+ const wrap=x=>`<div class="shbg"></div><div class="shp" role="dialog" aria-modal="true"><div class="grab"></div>${x}</div>`;
+ const byT=(a,b)=>(a.title||'').toLowerCase()<(b.title||'').toLowerCase()?-1:1,qOk=(x,q)=>!q||(x.title+' '+x.cuisine+' '+x.tags.join(' ')).toLowerCase().includes(q);
+ const pRow=(r,a,extra='')=>`<button class="rc" data-a="${a}" data-id="${esc(r.id)}"${extra}>${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${esc([r.cuisine,r.serves?'serves '+r.serves:'',fmtTime(r.time)].filter(Boolean).join(' · ')||' ')}</span></span>${CHEV}</button>`;
+ const srch=(id,v,ph)=>`<div class="srch" style="margin:8px 0 4px">${ICS}<input id="${id}" type="search" placeholder="${ph}" value="${esc(v||'')}" autocomplete="off" enterkeyhint="search"></div>`;
+ // Pick a recipe to link from an ingredient
+ if(SH.kind=='link'){const q=tkey(SH.q),own=SH.back?SH.back.id:S.draft.id,L=S.recipes.filter(r=>r.id!=own&&r.title.trim()&&qOk(r,q)).sort(byT);
+  return wrap(`<h2>Link a recipe</h2><p class="mu" style="margin:0">Adds its name in [[double brackets]]. Type the amount in front, like 1/2 cup.</p>${srch('lnq',SH.q,'Search your recipes')}`
+   +(L.length?L.map(r=>pRow(r,'lnkPut')).join(''):'<p class="mu">No other recipes found.</p>')+`<div class="row" style="margin-top:12px"><button class="g bd" data-a="lnkX" style="flex:1">Cancel</button></div>`)}
+ // Add a meal to the calendar, or edit one
+ if(SH.kind=='plan'){
+  if(SH.st=='pick'){const q=tkey(SH.q),LO=q?[]:S.plan.filter(b=>b.k=='cook'&&byId(b.rid)&&b.d<=SH.d&&dBetween(b.d,SH.d)<=7&&remAt(b)>0),L=S.recipes.filter(r=>qOk(r,q)).sort(byT);
+   return wrap(`<h2>Add to ${esc(dlab(SH.d))}</h2>`
+    +(LO.length?`<div class="sec" style="margin-top:10px">Leftovers</div>${LO.map(b=>{const r=byId(b.rid),n=remAt(b);return `<button class="rc" data-a="plPickL" data-id="${esc(b.id)}">${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">From ${b.d==SH.d?'this day':esc(dlab(b.d))}</span></span><span class="lo">${fmtQ(n)} left</span></button>`}).join('')}`:'')
+    +`<div class="sec" style="margin-top:12px">Cook something</div>${srch('plq',SH.q,'Search your recipes')}`
+    +(L.length?L.map(r=>pRow(r,'plPick')).join(''):`<p class="mu">${S.recipes.length?'Nothing matches.':'No recipes yet.'}</p>`)
+    +`<div class="row" style="margin-top:12px"><button class="g bd" data-a="shClose" style="flex:1">Cancel</button></div>`)}
+  const r=byId(SH.rid);if(!r){SH=null;return ''}
+  const isL=!!SH.src,b=isL?batch(SH.src):null,st=(f,v,mn)=>`<span class="stp"><button class="g sb" data-a="plN" data-f="${f}" data-d="-1" aria-label="Fewer" ${v<=mn?'disabled':''}>−</button><b class="sbig">${fmtQ(v)||0}</b><button class="g sb" data-a="plN" data-f="${f}" data-d="1" aria-label="More">+</button></span>`;
+  let hint;
+  if(isL){const mx=remAt(b,null,SH.id);hint=mx-SH.eat>0?`${fmtQ(mx-SH.eat)} serving${mx-SH.eat==1?'':'s'} left after this`:'That finishes them off'}
+  else{const cl=SH.id?sum(S.plan.filter(e=>e.src==SH.id),e=>e.eat||0):0,n=SH.mk-SH.eat-cl;
+   hint=(SH.mk-SH.eat>0?`Leaves <b>${fmtQ(SH.mk-SH.eat)} serving${SH.mk-SH.eat==1?'':'s'}</b> for leftovers`:'No leftovers')+(cl?` · ${fmtQ(cl)} already planned`+(n<0?`, <b style="color:var(--neg)">${fmtQ(-n)} more than you'll have</b>`:''):'')
+    +(r.serves&&SH.mk!=r.serves?` · that's ×${fmtQ(SH.mk/r.serves)} the recipe`:'')}
+  return wrap(`<h2>${SH.id?'Edit meal':'Add to calendar'}</h2>`
+   +(SH.from&&!SH.id?`<button class="g lnk" data-a="plBack" style="margin:0 0 4px">‹ Pick something else</button>`:'')
+   +`<div class="row" style="margin:4px 0 6px">${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${isL?'Leftovers from '+esc(dlab(b.d)):'Cooking it'+(r.serves?' · serves '+r.serves+' as written':'')}</span></span></div>`
+   +`<div class="prow"><span class="pn"><b>Day</b></span>${DT(SH.d,'data-a="plDate"')}</div>`
+   +(isL?'':`<div class="prow"><span class="pn"><b>Servings made</b><span class="mu">Scale up to have leftovers</span></span>${st('mk',SH.mk,1)}</div>`)
+   +`<div class="prow"><span class="pn"><b>Servings eaten that day</b>${isL?'':'<span class="mu">0 if it\'s all for later</span>'}</span>${st('eat',SH.eat,isL?1:0)}</div>`
+   +`<div class="hint" style="margin-top:8px">${hint}</div>`
+   +`<div class="row" style="margin-top:12px">${SH.id?`<button class="x" data-a="plDel">Remove</button><button class="g bd" data-a="plOpen" data-id="${esc(r.id)}">Recipe</button>`:'<button class="g bd" data-a="shClose">Cancel</button>'}<button data-a="plSave" style="flex:1">${SH.id?'Save':'Add'}</button></div>`)}
  const row=(g,x,i,sub)=>`<label class="chk"><input type="checkbox" data-a="shT" data-g="${g}" data-i="${i}" ${x.on?'checked':''}><span>${esc(x.name)}${sub?` <span class="mu">· ${esc(sub)}</span>`:''}</span></label>`;
  if(SH.kind=='pick'){const L=[...S.recipes].sort((a,b)=>(a.title||'').toLowerCase()<(b.title||'').toLowerCase()?-1:1);
   b=`<h2>Plan your shopping</h2><p class="mu" style="margin:0 0 8px">Pick what you'll cook. Their ingredients merge into one list.</p>`
@@ -770,8 +873,9 @@ function vMore(){const kb=Math.round(((localStorage.getItem(LS)||'').length)/102
 // =====================================================================
 // 7. ACTIONS (buttons/selects/checkboxes with data-a="name" call ACT.name(dataset, element))
 // =====================================================================
-function openRecipe(id,prev){if(T!='recipe'){PREV=prev||T;try{history.pushState({r:1},'')}catch(_){}}RID=id;T='recipe';R();scrollTo(0,0);slideIn(1)}
-function closeRecipe(){T=TABS.some(t=>t[0]==PREV)||PREV=='more'||PREV=='lists'?PREV:'browse';R();scrollTo(0,0);slideIn(-1)}
+let RST=[];   // recipes opened through a link, so Back returns to the one you came from
+function openRecipe(id,prev){if(T!='recipe'){PREV=prev||T;RST=[];try{history.pushState({r:1},'')}catch(_){}}RID=id;T='recipe';R();scrollTo(0,0);slideIn(1)}
+function closeRecipe(){while(RST.length){RID=RST.pop();if(byId(RID)){R();scrollTo(0,0);slideIn(-1);return}}T=TABS.some(t=>t[0]==PREV)||PREV=='more'||PREV=='lists'?PREV:'browse';R();scrollTo(0,0);slideIn(-1)}
 let SKIP=0;   // set when we pop the recipe's history entry ourselves
 addEventListener('popstate',()=>{if(SKIP){SKIP=0;return}if(T=='recipe')closeRecipe()});
 function surprise(){const L=S.recipes.filter(match);if(!L.length){toast('No recipes match these filters');return}
@@ -783,11 +887,13 @@ function addTags(inp,focus=true){const v=inp.value.split(',').map(s=>s.trim().to
 function pull(){document.querySelectorAll('#app [data-p^="draft."]').forEach(el=>setQ(el.dataset.p,el.value,el.dataset.t));const ti=document.getElementById('tagin');if(ti&&ti.value.trim()){ti.value.split(',').map(s=>s.trim().toLowerCase().replace(/^#+/,'')).filter(Boolean).forEach(t=>{if(!S.draft.tags.includes(t))S.draft.tags.push(t)});ti.value=''}}
 function saveDraft(){pull();const d=S.draft,title=d.title.trim();if(!title){toast('Give it a name first');document.getElementById('ttl')?.focus();return}
  const tm=mins(d.time);if(String(d.time||'').trim()&&!tm){toast('Couldn\'t read that time. Try 45 min or 1:30');document.getElementById('tm')?.focus();return}
- const old=d.id&&byId(d.id);
+ const old=d.id&&byId(d.id),oldT=old?old.title:'';
  if(!old&&S.recipes.some(r=>r.title.trim().toLowerCase()==title.toLowerCase())&&!confirm(`You already have "${title}". Save another one?`))return;
  const ing=d.ingT.split('\n').map(l=>l.replace(/^\s*[-*+]\s*/,'').trim()).filter(Boolean),steps=stepsOf(d.stepT),nut=nutMerge((d.nutT||'').split('\n').map(l=>l.replace(/^\s*[-*•]\s*/,'').trim()).filter(Boolean).map(l=>{const x=nutPart(l);return x?x.t:l}));
  const o=fix({id:old?old.id:uid('r'),title,cuisine:d.cuisine,meal:[...d.meal],protein:[...d.protein],method:[...d.method],diet:[...d.diet],tags:[...d.tags],serves:num(d.serves),time:tm,ing,steps,nut,notes:d.notes.trim(),src:normUrl(d.src),vid:normUrl(d.vid)});
  if(old)Object.assign(old,o,{cooked:old.cooked,added:old.added});else S.recipes.push(o);
+ // Renamed: point [[links]] to the new name
+ if(old&&tkey(oldT)&&tkey(oldT)!=tkey(title))S.recipes.forEach(r=>{r.ing=r.ing.map(l=>l.replace(LRE,(m,t)=>tkey(t)==tkey(oldT)?'[['+title+']]':m))});
  if(o.cuisine&&!S.facets.cuisine.includes(o.cuisine))S.facets.cuisine.push(o.cuisine);
  S.draft=blankD();PARSED='';AM='type';save();flush();openRecipe(o.id,'browse');toast(old?'Changes saved':'Recipe saved')}
 function renameVal(k,from,to){if(k!='tags'){const L=S.facets[k],ex=L.find(y=>y.toLowerCase()==to.toLowerCase()&&y!=from);if(ex){L.splice(L.indexOf(from),1);to=ex}else L[L.indexOf(from)]=to}
@@ -838,7 +944,7 @@ async function wakeSync(){const want=T=='cook'&&!!byId(S.cookId)&&!document.hidd
 const ACT={
  // navigation
  tab:d=>{if(d.id=='browse'&&T=='browse'&&BC)return ACT.catX();goTab(d.id)}, gear:()=>goTab(T=='more'||T=='lists'?'browse':'more'),
- open:d=>{SUR=null;if(T=='recipe'){RID=d.id;R();scrollTo(0,0)}else openRecipe(d.id)},
+ open:d=>{SUR=null;if(T=='recipe'){if(d.id==RID)return;RST.push(RID);try{history.pushState({r:1},'')}catch(_){}RID=d.id;R();scrollTo(0,0);slideIn(1)}else openRecipe(d.id)},
  bg:d=>{S.set.bg=d.k;commit()},
  cat:d=>{BC=d.k=='all'?{k:'all'}:{k:d.k,v:d.v};R();scrollTo(0,0);slideIn(1)},
  catX:()=>{BC=null;R();scrollTo(0,0);slideIn(-1)},
@@ -919,7 +1025,7 @@ const ACT={
  shopDone,
  shT:(d,el)=>{if(SH&&SH[d.g]&&SH[d.g][d.i])SH[d.g][d.i].on=el.checked},
  shSave:()=>{if(!SH)return;let n=0;(SH.used||[]).forEach(x=>{if(x.on){S.pantry=S.pantry.filter(p=>p.id!=x.id);n++}});SH.left.forEach(x=>{if(x.on){addPantry(x.name,x.days);n++}});SH=null;commit();toast(n?'Kitchen updated':'Nothing changed')},
- shClose:()=>{SH=null;R()},
+ shClose:()=>{if(SH&&SH.kind=='link'&&SH.back)return ACT.lnkX();SH=null;R()},
  ingEd:d=>{const r=byId(d.id);if(!r||r.ing[+d.i]==null)return;SH={kind:'ing',id:r.id,i:+d.i,t:r.ing[+d.i]};R();focusIng()},
  ingNew:d=>{SH={kind:'ing',id:d.id,i:-1,t:''};R();focusIng()},
  ingSave:()=>{const r=SH&&byId(SH.id),el=document.getElementById('ingE');if(!r||!el)return;const v=el.value.trim();
@@ -928,6 +1034,45 @@ const ACT={
  ingDel:()=>{const r=SH&&byId(SH.id);if(!r||SH.i<0)return;const i=SH.i,old=r.ing[i],ck=CK[r.id];SH=null;
   r.ing.splice(i,1);if(ck){const n={};Object.keys(ck).forEach(k=>{k=+k;if(k<i)n[k]=ck[k];else if(k>i)n[k-1]=ck[k]});CK[r.id]=n}commit();
   toast('Removed '+old.replace(/:$/,''),()=>{const r2=byId(r.id);if(!r2)return;r2.ing.splice(i,0,old);CK[r.id]=ck||{};commit()})},
+ // links to other recipes
+ lnkPick:()=>{pull();const ta=document.querySelector('#app [data-p="draft.ingT"]');SH={kind:'link',q:'',pos:ta?ta.selectionStart:S.draft.ingT.length};R()},
+ lnkPickI:()=>{const el=document.getElementById('ingE');if(!SH||!el)return;SH={kind:'link',q:'',back:{...SH,t:el.value},pos:el.selectionStart??el.value.length};R()},
+ lnkX:()=>{const b=SH&&SH.back;SH=b||null;R();if(b)focusIng()},
+ lnkPut:d=>{const r=byId(d.id);if(!r||!SH)return;const tag='[['+r.title.trim()+']]',b=SH.back;
+  const ins=(v,p)=>{p=Math.max(0,Math.min(p==null?v.length:p,v.length));const pre=v.slice(0,p),post=v.slice(p),a=pre&&!/\s$/.test(pre)?' ':'',z=post&&!/^\s/.test(post)?' ':'';return [pre+a+tag+z+post,(pre+a+tag).length]};
+  if(b){const [v,c]=ins(b.t,SH.pos);b.t=v;SH=b;R();setTimeout(()=>{const el=document.getElementById('ingE');if(el){el.focus();try{el.setSelectionRange(c,c)}catch(_){}}},60);return}
+  const [v,c]=ins(S.draft.ingT,SH.pos);S.draft.ingT=v;SH=null;commit();
+  setTimeout(()=>{const ta=document.querySelector('#app [data-p="draft.ingT"]');if(ta){ta.value=v;grow1(ta);ta.focus();try{ta.setSelectionRange(c,c)}catch(_){}}},60)},
+ // plan
+ plDay:d=>{PD=d.d;PM=d.d.slice(0,7);R()},
+ plMo:d=>{const [y,m]=PM.split('-').map(Number);PM=iso(new Date(y,m-1+(+d.d),1)).slice(0,7);R()},
+ plToday:()=>{PD=tdy();PM=PD.slice(0,7);R()},
+ plGo:d=>{PD=d.d;PM=d.d.slice(0,7);goTab('plan')},
+ plAdd:d=>{SH={kind:'plan',st:'pick',d:d.d||PD||tdy(),q:''};R()},
+ plPick:d=>{const r=byId(d.id);if(!r||!SH)return;const e=S.set.eat||2;Object.assign(SH,{st:'amt',rid:r.id,src:null,eat:e,mk:Math.max(r.serves||e,e),from:1});R()},
+ plPickL:d=>{const b=batch(d.id);if(!b||!SH)return;const mx=remAt(b);Object.assign(SH,{st:'amt',rid:b.rid,src:b.id,eat:Math.max(1,Math.min(S.set.eat||2,mx)),from:1});R()},
+ plBack:()=>{if(SH){SH.st='pick';R()}},
+ plCal:d=>{const r=byId(d.id);if(!r)return;const e=S.set.eat||2;SH={kind:'plan',st:'amt',d:tdy(),rid:r.id,src:null,eat:e,mk:Math.max(r.serves||e,e)};R()},
+ plEat:d=>{const b=batch(d.id);if(!b)return;const X=PD||tdy(),mx=remAt(b);if(mx<=0){toast('Those are all planned already');return}
+  SH={kind:'plan',st:'amt',d:X,rid:b.rid,src:b.id,eat:Math.max(1,Math.min(S.set.eat||2,mx))};R()},
+ plEd:d=>{const e=S.plan.find(x=>x.id==d.id);if(!e)return;SH={kind:'plan',st:'amt',id:e.id,d:e.d,rid:e.rid,src:e.src||null,eat:e.eat||0,mk:e.mk||0};R()},
+ plN:d=>{if(!SH)return;const k=d.f,mn=k=='mk'||SH.src?1:0;let v=Math.max(mn,(SH[k]||0)+(+d.d));
+  if(k=='eat'&&SH.src){const mx=remAt(batch(SH.src),null,SH.id);if(v>mx){toast(mx>0?'Only '+fmtQ(mx)+' left':'None left');return}}
+  SH[k]=v;if(!SH.src){if(k=='eat'&&SH.eat>SH.mk)SH.mk=SH.eat;if(k=='mk'&&SH.mk<SH.eat)SH.eat=SH.mk}R()},
+ plDate:(d,el)=>{if(SH&&el.value)SH.d=el.value;R()},
+ plOpen:d=>{SH=null;if(T=='recipe')ACT.open(d);else openRecipe(d.id)},
+ plSave:()=>{if(!SH)return;const r=byId(SH.rid);if(!r){SH=null;return R()}
+  if(SH.src){const b=batch(SH.src);if(!b){SH=null;return R()}if(SH.d<b.d){toast('That\'s before it gets cooked ('+dlab(b.d)+')');return}}
+  const o={d:SH.d,eat:SH.eat};if(!SH.src)o.mk=SH.mk;
+  if(SH.id){const e=S.plan.find(x=>x.id==SH.id);if(e)Object.assign(e,o)}else S.plan.push(Object.assign(SH.src?{id:uid('m'),k:'left',rid:r.id,src:SH.src}:{id:uid('m'),k:'cook',rid:r.id},o));
+  if(SH.eat)S.set.eat=SH.eat;const nw=!SH.id,src=SH.src;PD=o.d;PM=PD.slice(0,7);SH=null;commit();
+  toast(nw?(src?'Leftovers planned for ':'Added to ')+dlab(o.d)+(!src&&o.mk>o.eat?' · '+fmtQ(o.mk-o.eat)+' left over':''):'Saved')},
+ plDel:()=>{if(!SH||!SH.id)return;const s=snap(),e=S.plan.find(x=>x.id==SH.id);if(!e)return;const n=e.k=='cook'?S.plan.filter(x=>x.src==e.id).length:0;
+  S.plan=S.plan.filter(x=>x.id!=e.id&&x.src!=e.id);SH=null;commit();toast('Removed'+(n?' with '+n+' leftovers meal'+(n==1?'':'s'):''),()=>restore(s))},
+ plGone:d=>{const b=batch(d.id);if(!b)return;const s=snap(),r=byId(b.rid);b.gone=PD||tdy();commit();toast((r?r.title:'Leftovers')+' leftovers cleared',()=>restore(s))},
+ plShop:()=>{const t=tdy(),ids=[...new Set(planOk().filter(e=>e.k=='cook'&&e.d>=t&&e.d<=addD(t,6)).map(e=>e.rid))],nw=ids.filter(id=>!S.shop.rids.includes(id));
+  if(!ids.length){toast('Nothing to cook in the next 7 days');return}if(!nw.length){toast('Already on your shopping list');return}
+  S.shop.rids.push(...nw);commit();toast(`Added ${nw.length} recipe${nw.length==1?'':'s'} to your shopping list`,()=>{S.shop.rids=S.shop.rids.filter(x=>!nw.includes(x));pruneShop();commit()})},
  // settings
  share:shareData, export:exportData, pickFile:()=>document.getElementById('bkf').click(),
  importFile:(d,el)=>importFile(el),
@@ -962,6 +1107,7 @@ document.addEventListener('input',e=>{const t=e.target,d=t.dataset;
  if(t.matches('.dt input')&&!d.p)t.previousElementSibling.textContent=sd(t.value);
  if(t.id=='q'){S.f.q=t.value;save();clearTimeout(QT);QT=setTimeout(R,150);return}
  if(t.id=='pt')PT=t.value;
+ if((t.id=='plq'||t.id=='lnq')&&SH){SH.q=t.value;R();return}
  if(d.nk!=null){if(t.value.trim())S.shop.note[d.nk]=t.value;else delete S.shop.note[d.nk];save();return}
  if(d.nx!=null){const x=S.shop.extra.find(y=>y.id==d.nx);if(x){x.note=t.value;save()}return}
  if(t.id=='tagin'&&t.value.includes(',')){addTags(t);return}
@@ -975,7 +1121,7 @@ document.addEventListener('keydown',e=>{const t=e.target;if(e.key!='Enter'||e.is
  else if(t.id=='pin'){e.preventDefault();ACT.pAdd()}
  else if(t.id=='ingE'){e.preventDefault();ACT.ingSave()}
  else if(t.id=='xin'){e.preventDefault();ACT.xAdd()}
- else if(t.id=='q'||t.dataset.nk!=null||t.dataset.nx!=null)t.blur()});
+ else if(t.id=='q'||t.id=='plq'||t.id=='lnq'||t.dataset.nk!=null||t.dataset.nx!=null)t.blur()});
 document.addEventListener('toggle',e=>{const k=e.target.dataset&&e.target.dataset.o;if(k!=null){O[k]=e.target.open;if(k=='bk'&&O.bk)R()}},true);
 
 // =====================================================================
@@ -985,9 +1131,10 @@ const ICON={browse:'<path d="M4 19.5V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2v0a2 2
  cook:'<path d="M4 10h16v7a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z"/><path d="M2 10h20"/><path d="M9 6.5c0-1.2 1-1.3 1-2.5M14 6.5c0-1.2 1-1.3 1-2.5"/>',
  kit:'<path d="M5 9h14l-1.5 10.3a2 2 0 0 1-2 1.7h-7a2 2 0 0 1-2-1.7z"/><path d="M9 9l3-5.5L15 9M10 13v4M14 13v4"/>',
  find:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
- hist:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'};
-const TABS=[['browse','Recipes'],['find','Find'],['add','Add'],['kit','Kitchen'],['cook','Cook']];
-const VIEW={kit:vKit,browse:vBrowse,find:vFind,cook:vCook,add:vAdd,hist:vHist,lists:vLists,more:vMore,recipe:vRecipe};
+ hist:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ plan:'<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/>'};
+const TABS=[['browse','Recipes'],['find','Find'],['plan','Plan'],['add','Add'],['kit','Kitchen'],['cook','Cook']];
+const VIEW={plan:vPlan,kit:vKit,browse:vBrowse,find:vFind,cook:vCook,add:vAdd,hist:vHist,lists:vLists,more:vMore,recipe:vRecipe};
 const navId=()=>T=='recipe'?(TABS.some(t=>t[0]==PREV)?PREV:'browse'):T;
 const tabCols=id=>(TC[id]||TC.browse)[document.documentElement.dataset.theme=='dark'?1:0];
 
@@ -1033,7 +1180,7 @@ function slideIn(dir){const m=APP(),w=innerWidth;m.style.willChange='transform,o
  m.style.transition=`transform .22s ${EZ_IN},opacity .16s ease-out`;m.style.transform='translate3d(0,0,0)';m.style.opacity='1';
  setTimeout(()=>{m.style.transition='';m.style.transform='';m.style.opacity='';m.style.willChange=''},240)}
 function goTab(id){if(id==T){scrollTo({top:0,behavior:'smooth'});return}
- if(T=='recipe'&&history.state&&history.state.r){SKIP=1;try{history.back()}catch(_){SKIP=0}}
+ if(T=='recipe'&&history.state&&history.state.r){SKIP=1;try{history.go(-(RST.length+1))}catch(_){SKIP=0}}RST=[];
 const o=TABS.map(t=>t[0]),dir=o.indexOf(id)>o.indexOf(navId())?1:-1;T=id;R();scrollTo(0,0);slideIn(T=='more'||T=='lists'?1:dir)}
 
 // =====================================================================
