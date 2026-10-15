@@ -257,6 +257,10 @@ const blankD=()=>({id:'',title:'',cuisine:'',meal:[],protein:[],method:[],diet:[
 const blankShop=()=>({rids:[],extra:[],ck:{},got:{},have:{},need:{},note:{}});
 const blankF=()=>({q:'',time:0,sort:'az',tags:[],cuisine:[],meal:[],protein:[],method:[],diet:[]});
 const dEmpty=d=>!((d.title||'').trim()||(d.ingT||'').trim()||(d.stepT||'').trim()||(d.notes||'').trim());
+// "Ingredients for the baking soda bath" saved as an ingredient line -> a "Baking soda bath:" heading
+function subHead(l){if(typeof l!='string'||l.length>60||/:$/.test(l))return l;
+ const m=/^(?:ingredients?|what you('|’)?ll need)\s+(?:for|to make)\s+(?:the\s+|your\s+)?(.{2,50}?)\s*$/i.exec(l)||/^([a-z][a-z &'’-]{1,40}?)\s+ingredients?$/i.exec(l);
+ if(!m)return l;const n=(m[2]||m[1]).trim();return n.charAt(0).toUpperCase()+n.slice(1)+':'}
 function fix(r){const A=x=>Array.isArray(x)?x:[];r.id=r.id||uid('r');r.title=r.title||'';r.cuisine=r.cuisine||'';
  ['meal','protein','method','diet','tags','ing','steps','cooked','nut'].forEach(k=>r[k]=A(r[k]));
  r.time=num(r.time);r.serves=num(r.serves);r.notes=r.notes||'';r.src=r.src||'';r.vid=r.vid||'';r.added=r.added||tdy();return r}
@@ -282,6 +286,8 @@ const MIGRATIONS=[
  S=>{S.draft.time=S.draft.time||'';S.recipes.forEach(r=>r.time=stepsTime(r.steps))},
  // v6: optional nutrition, one "Name: value" line each, as the recipe lists it
  S=>{S.recipes.forEach(r=>r.nut=Array.isArray(r.nut)?r.nut:[]);S.draft.nutT=S.draft.nutT||''},
+ // v7: a second ingredient list saved as a plain line ("Ingredients for the bath") becomes a heading
+ S=>{S.recipes.forEach(r=>{r.ing=r.ing.map(subHead)})},
 ];
 // A brand-new setup: run every migration, then put back the sample's stated time
 function fresh(){S=seed();migrate();S.recipes.forEach(r=>r.time=num(sample().time))}
@@ -455,6 +461,10 @@ const mins=s=>{s=String(s||'').trim();let m=/^(\d+):([0-5]?\d)$/.exec(s);if(m)re
 const HI=/^(?:\d+\s+)?(ingredients?|what you('|’)?ll need|you('|’)?ll need)\s*(:|\(.*\)|\d+x.*)?$/i,
  HS=/^(?:\d+\s+)?(instructions?|directions?|method|steps|preparation|how to make( it)?|procedure)\s*(:|\(.*\))?$/i,
  HN=/^(?:\d+\s+)?(recipe )?(notes?|tips?|cook'?s notes?|variations?|storage)\s*:?$/i,
+ // A second ingredient list: "Ingredients for the baking soda bath", "Baking soda bath ingredients", "For the topping"
+ HIS=/^(?:\d+\s+)?(?:ingredients?|what you('|’)?ll need|you('|’)?ll need)\s+(?:for|to make)\s+(?:the\s+|your\s+)?(.{2,50}?)\s*:?$/i,
+ HIP=/^(?:\d+\s+)?([a-z][a-z &'’-]{1,40}?)\s+ingredients?\s*:?$/i,HFOR=/^for (?:the |your )?([a-z][a-z &'’-]{1,40})$/i,
+ HSS=/^(?:\d+\s+)?(?:instructions?|directions?|method|steps)\s+(?:for|to make)\s+.{2,50}$/i,
  NUTH=/^(?:\d+\s+)?nutrition(?:al)?(?: facts| information| info| estimates?| label)?\s*(?:\([^)]*\))?\s*(?::\s*(.+)|:)?$/i;
 // ---- Nutrition: "Calories: 320kcal | Protein: 12g", "350 Calories", "Total Fat 12g 15%" ----
 const NUTN='calories|energy|total carbohydrates?|carbohydrates?|carbs|net carbs|dietary fib(?:er|re)|fib(?:er|re)|total sugars?|added sugars?|sugars?|protein|total fat|saturated fat|trans fat|polyunsaturated fat|monounsaturated fat|unsaturated fat|fat|cholesterol|sodium|salt|potassium|calcium|iron|magnesium|zinc|vitamin [a-z]\\d*|serving size|serving',
@@ -505,6 +515,9 @@ function parseRecipe(txt){
    if(m=/^(?:course|meal|category)\s*:\s*(.+)$/i.exec(l)){meta.course=m[1];continue}
    if(m=/^keywords?\s*:\s*(.+)$/i.exec(l)){meta.kw=m[1];continue}}
   if(HI.test(l)){sec='ing';sawI=1;continue}
+  if(l.length<60&&((m=HIS.exec(l))||(m=HIP.exec(l)))){const n=(m[3]||m[1]).trim();sec='ing';sawI=1;ing.push(n.charAt(0).toUpperCase()+n.slice(1)+':');continue}
+  if(sec=='ing'&&(m=HFOR.exec(l))&&!/\d/.test(l)){ing.push(m[1].charAt(0).toUpperCase()+m[1].slice(1)+':');continue}
+  if(l.length<70&&HSS.test(l)){sec='steps';sawS=1;continue}
   if(HS.test(l)){sec='steps';sawS=1;continue}
   if(HN.test(l)){sec='notes';continue}
   if(sec=='ing'&&l.length>80&&/[.!)]$/.test(l)){sec='steps';sawS=1}
