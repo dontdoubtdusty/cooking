@@ -849,14 +849,30 @@ async function cropExport(){const m=Math.min(SH.w,SH.h),sw=m/SH.z,sx=SH.w/2-SH.o
   for(const q of [.8,.7,.6,.5,.42,.35]){const b=q==.8&&t=='image/webp'?probe:await enc(c,t,q);if(!b)continue;if(!best||b.size<best.size)best=b;if(b.size<=26000)return b}
   if(best&&best.size<=32000)return best}
  return best}
+// Open a picked or pasted image in the cropper
+function phOpen(file,rid){const u=URL.createObjectURL(file),im=new Image();
+ im.onload=()=>{CIMG=im;SH={kind:'crop',id:rid,src:u,w:im.naturalWidth,h:im.naturalHeight,z:1,ox:0,oy:0};R()};
+ im.onerror=()=>{URL.revokeObjectURL(u);toast('Couldn’t open that image. Try a JPEG or PNG.')};im.src=u}
 function phPick(id){let f=document.getElementById('phf');
  if(!f){f=document.createElement('input');f.type='file';f.accept='image/*';f.id='phf';f.hidden=true;document.body.appendChild(f);
-  f.addEventListener('change',()=>{const file=f.files&&f.files[0],rid=f.dataset.id;f.value='';if(!file)return;const u=URL.createObjectURL(file),im=new Image();
-   im.onload=()=>{CIMG=im;SH={kind:'crop',id:rid,src:u,w:im.naturalWidth,h:im.naturalHeight,z:1,ox:0,oy:0};R()};
-   im.onerror=()=>{URL.revokeObjectURL(u);toast('Couldn’t open that photo. Try a JPEG or PNG.')};im.src=u})}
+  f.addEventListener('change',()=>{const file=f.files&&f.files[0],rid=f.dataset.id;f.value='';if(file)phOpen(file,rid)})}
  f.dataset.id=id;f.click()}
-function phSheet(){const r=byId(SH.id);if(!r)return '';
- return `<h2>Recipe photo</h2><div style="display:flex;justify-content:center;margin:4px 0 14px">${tile(r,2)}</div><div class="row"><button class="x" data-a="phDel" data-id="${esc(r.id)}">Remove</button><button data-a="phNew" data-id="${esc(r.id)}" style="flex:1">Change photo</button></div>`}
+const HOVER=matchMedia('(hover:hover) and (pointer:fine)').matches,MODK=/Mac|iPhone|iPad/.test(navigator.platform)?'⌘':'Ctrl+';
+// Paste button: read an image from the clipboard (the phone may ask to allow it first)
+async function phPaste(id){
+ if(!navigator.clipboard||!navigator.clipboard.read){toast(HOVER?'Copy an image, then press '+MODK+'V on the recipe page':'Pasting images isn’t supported in this browser. Choose a photo instead.');return}
+ try{for(const it of await navigator.clipboard.read()){const t=it.types.find(x=>x.startsWith('image/'));if(t){phOpen(await it.getType(t),id);return}}
+  toast('There’s no image on the clipboard. Copy one first.')}
+ catch(e){toast(e&&e.name=='NotAllowedError'?'Pasting was blocked. Allow it, or choose a photo instead.':'There’s no image on the clipboard. Copy one first.')}}
+// Ctrl+V / ⌘V with an image copied, on a recipe page (not while typing in a box)
+document.addEventListener('paste',e=>{if(T!='recipe'||(SH&&SH.kind!='photo')||e.target.closest&&e.target.closest('input,textarea,[contenteditable]'))return;
+ const f=[...(e.clipboardData&&e.clipboardData.items||[])].find(x=>x.kind=='file'&&x.type.startsWith('image/'));if(!f)return;
+ const file=f.getAsFile();if(!file)return;e.preventDefault();phOpen(file,RID)});
+function phSheet(){const r=byId(SH.id);if(!r)return '';const has=!!(r.img&&IMG[r.img]);
+ return `<h2>Recipe photo</h2>${has?`<div style="display:flex;justify-content:center;margin:4px 0 14px">${tile(r,2)}</div>`:'<p class="mu" style="margin:0 0 12px">Shown on the recipe, in your lists and on shared links.</p>'}
+ <div class="row"><button data-a="phNew" data-id="${esc(r.id)}" style="flex:1">${has?'Choose new photo':'Choose photo'}</button><button class="g bd" data-a="phPaste" data-id="${esc(r.id)}" style="flex:1">Paste photo</button></div>
+ ${has?`<button class="x" data-a="phDel" data-id="${esc(r.id)}" style="width:100%;margin-top:8px">Remove photo</button>`:''}
+ ${HOVER?`<div class="hint" style="text-align:center;margin-top:10px">Or copy an image and press ${MODK}V on the recipe page.</div>`:''}`}
 function cropSheet(){return `<h2>Position photo</h2><p class="mu" style="margin:0 0 4px">Drag to move it. Pinch, scroll or use the slider to zoom.</p><div class="crop" id="crop"><img id="cropI" src="${esc(SH.src)}" style="${cropCss()}" alt="" draggable="false"><div class="cropO"></div></div>
  <input type="range" id="cropZ" min="1" max="5" step="0.01" value="${SH.z}" aria-label="Zoom"><div class="row" style="margin-top:12px"><button class="g bd" data-a="shClose">Cancel</button><button data-a="cropSave" style="flex:1">Use photo</button></div>`}
 
@@ -1219,7 +1235,8 @@ const ACT={
   S.draft=Object.assign(blankD(),{id:r.id,title:r.title,cuisine:r.cuisine,meal:[...r.meal],protein:[...r.protein],method:[...r.method],diet:[...r.diet],tags:[...r.tags],serves:r.serves||'',time:r.time?fmtTime(r.time):'',ingT:r.ing.join('\n'),stepT:r.steps.join('\n'),nutT:r.nut.join('\n'),notes:r.notes,src:r.src,vid:r.vid});
   AM='type';PARSED='';save();goTab('add')},
  delR:d=>{const i=S.recipes.findIndex(r=>r.id==d.id);if(i<0)return;const [x]=S.recipes.splice(i,1);if(x.share)S.shareGone=[...(S.shareGone||[]),x.share];if(S.cookId==x.id)S.cookId=null;if(S.shop.rids.includes(x.id))pruneShop();save();ACT.back();toast(`Deleted “${x.title}”`,()=>{S.recipes.splice(i,0,x);if(x.share)S.shareGone=(S.shareGone||[]).filter(id=>id!=x.share);commit()},'del')},
- phTap:d=>{const r=byId(d.id);if(!r)return;if(r.img&&IMG[r.img]){SH={kind:'photo',id:r.id};R()}else phPick(r.id)},
+ phTap:d=>{if(byId(d.id)){SH={kind:'photo',id:d.id};R()}},
+ phPaste:d=>{SH=null;R();phPaste(d.id)},
  phNew:d=>{SH=null;R();phPick(d.id)},
  phDel:d=>{const r=byId(d.id);if(!r)return;const old=r.img;r.img='';SH=null;commit();toast('Photo removed',()=>{r.img=old;commit()})},
  cropSave:async()=>{if(!SH||SH.kind!='crop'||!CIMG)return;const r=byId(SH.id),src=SH.src;if(!r){SH=null;R();return}

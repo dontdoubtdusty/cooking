@@ -26,7 +26,7 @@ body{margin:0;background:var(--bg);color:var(--tx);font:500 16px/1.55 'Nunito',-
 a{color:var(--pc2);font-weight:700;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;overflow-wrap:anywhere}
 .top{display:flex;align-items:center;justify-content:center;gap:7px;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;background:var(--card);border-bottom:1px solid var(--bd);font:600 20px/1.2 var(--fd);letter-spacing:-.2px;white-space:nowrap}
 .jz{background:linear-gradient(90deg,#ff4d5e,#e8336b 55%,#1fa971);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
-main{max-width:1000px;margin:0 auto;padding:24px 16px 8px}
+main{max-width:1000px;margin:0 auto;padding:24px 16px calc(40px + env(safe-area-inset-bottom,0px))}
 .head{display:flex;gap:28px;align-items:center;margin-bottom:28px}
 .ph{flex:none;width:200px;height:200px;border-radius:50%;object-fit:cover;background:var(--fld);box-shadow:0 0 0 5px var(--card),0 0 0 6px var(--bd)}
 h1{margin:0 0 6px;font:600 34px/1.15 var(--fd);color:var(--pc2);letter-spacing:-.3px}
@@ -45,7 +45,7 @@ section ul,section ol{margin:0;padding:0;list-style:none}
 .nut li{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-bottom:1px solid var(--bd)}.nut li:last-child{border-bottom:0}
 .nut .hint{display:block;font-size:13px;color:var(--mu);border:0;padding-bottom:6px}
 .msg{text-align:center;padding:60px 0;color:var(--mu)}.msg h1{margin-bottom:8px}
-footer{text-align:center;color:var(--mu);font-size:14px;padding:30px 16px calc(30px + env(safe-area-inset-bottom,0px))}
+.sw{font:700 13px 'Nunito',sans-serif;color:var(--mu);letter-spacing:.02em;margin-right:2px}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;transition:.2s;background:#2b1618;color:#fff;font-weight:700;padding:10px 18px;border-radius:99px;pointer-events:none}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 @media (max-width:720px){
@@ -58,9 +58,8 @@ footer{text-align:center;color:var(--mu);font-size:14px;padding:30px 16px calc(3
 </style>
 </head>
 <body>
-<header class="top"><svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#e8333f"/><circle cx="16" cy="16" r="12.2" fill="#ffe0dc"/><circle cx="16" cy="16" r="10.6" fill="#ff6b6b"/><path d="M16 6v20M6 16h20M8.6 8.6l14.8 14.8M23.4 8.6 8.6 23.4" stroke="#ffe0dc" stroke-width="1.7" stroke-linecap="round"/><circle cx="16" cy="16" r="2.2" fill="#ffe0dc"/></svg><span><span class="jz">Big Saucy</span> Recipes</span></header>
+<header class="top"><span class="sw">Shared with</span><svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#e8333f"/><circle cx="16" cy="16" r="12.2" fill="#ffe0dc"/><circle cx="16" cy="16" r="10.6" fill="#ff6b6b"/><path d="M16 6v20M6 16h20M8.6 8.6l14.8 14.8M23.4 8.6 8.6 23.4" stroke="#ffe0dc" stroke-width="1.7" stroke-linecap="round"/><circle cx="16" cy="16" r="2.2" fill="#ffe0dc"/></svg><span><span class="jz">Big Saucy</span> Recipes</span></header>
 <main id="m"><p class="msg">Loading the recipe…</p></main>
-<footer>Shared from Big Saucy Recipes</footer>
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 (function(){
@@ -97,7 +96,7 @@ function show(r){const A=k=>Array.isArray(r[k])?r[k]:[];['meal','cuisine','prote
  document.title=(r.title||'Recipe')+' · Big Saucy';
  m.innerHTML=`<div class="head">${/^data:image\//.test(r.img||'')?`<img class="ph" src="${esc(r.img)}" alt="${esc(r.title)}">`:''}<div>
   <h1>${esc(r.title||'Untitled')}</h1>${cat?`<p class="cat">${esc(cat)}</p>`:''}${facts?`<ul class="facts">${facts}</ul>`:''}
-  <button id="cp" type="button">Copy recipe</button></div></div>
+  <button id="cp" type="button">Copy as plain text</button></div></div>
  <div class="body"><div class="col">
   <section class="ing"><h2>Ingredients</h2><ul>${r.ing.map(l=>/:$/.test(l)?`<li class="sub">${esc(l.slice(0,-1))}</li>`:`<li>${linky(l)}</li>`).join('')||'<li>None listed.</li>'}</ul></section>
   ${r.nut.length?`<section class="nut"><h2>Nutrition</h2><ul><li class="hint">Per serving, as listed in the recipe</li>${r.nut.map(sp).map(([n,v])=>`<li><span>${esc(n)}</span><b>${esc(v)}</b></li>`).join('')}</ul></section>`:''}
@@ -110,8 +109,8 @@ function show(r){const A=k=>Array.isArray(r[k])?r[k]:[];['meal','cuisine','prote
 
 function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),1800)}
 function copy(t){const old=()=>{const a=document.createElement('textarea');a.value=t;a.setAttribute('readonly','');a.style.cssText='position:fixed;opacity:0;top:0';document.body.appendChild(a);a.select();
-  let ok=false;try{ok=document.execCommand('copy')}catch(e){}a.remove();toast(ok?'Recipe copied':'Couldn’t copy. Select the text and copy it instead.')};
- if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(t).then(()=>toast('Recipe copied'),old);else old()}
+  let ok=false;try{ok=document.execCommand('copy')}catch(e){}a.remove();toast(ok?'Copied as plain text':'Couldn’t copy. Select the text and copy it instead.')};
+ if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(t).then(()=>toast('Copied as plain text'),old);else old()}
 
 const id=new URLSearchParams(location.search).get('r')||'';
 if(!/^[A-Za-z0-9]{6,32}$/.test(id))return fail('Recipe not found','This link isn’t complete. Ask for the link again.');
