@@ -458,12 +458,14 @@ function ingInfo(l){const p=parseIng(l);let rest=p?p.rest:l,cu='';
 const toks=s=>(s||'').split(' ').filter(Boolean);
 const pm=(pname,key)=>{const a=toks(nkey(pname)),b=toks(key);if(!a.length||!b.length)return false;const has=(x,y)=>x.every(w=>y.includes(w));
  return has(a,b)||(has(b,a)&&a[a.length-1]==b[b.length-1])};
+// Plain water in any temperature ("warm water", "very hot tap water") never goes on the shopping list; coconut, tonic or rose water still do
+const WATER=/^(?:(?:very|warm|hot|cold|cool|boiling|boiled|lukewarm|tepid|ice|iced|icy|filtered|tap|plain|room|temperature|temp)\s+)*water$/;
 const STAPLE=/^(water|ice|(kosher |sea |table |fine )?salt|((ground |cracked )?black )?pepper|salt and (black )?pepper)$/;
 const plu=(u,q)=>q>1&&!/s$/.test(u)&&u!='fl oz'?u+(/(ch|sh|x)$/.test(u)?'es':'s'):u;
 // Merge the ingredients of every recipe on the list, adding up amounts that share a unit type
 const shopItems=()=>SI||(SI=calcShop());
 function calcShop(){const m=new Map();
- S.shop.rids.forEach(id=>{const r=byId(id);if(!r)return;r.ing.forEach(l=>{if(/:$/.test(l))return;const x=ingInfo(l);if(!x.key)return;
+ S.shop.rids.forEach(id=>{const r=byId(id);if(!r)return;r.ing.forEach(l=>{if(/:$/.test(l))return;const x=ingInfo(l);if(!x.key||WATER.test(x.key))return;
   let e=m.get(x.key);if(!e){e={k:x.key,name:cap(x.name),src:l,v:0,w:0,c:{},rs:[]};m.set(x.key,e)}
   if(!e.rs.includes(r.title))e.rs.push(r.title);
   const p=x.p;if(p&&p.q>0){const q=p.q2!=null?p.q2:p.q;
@@ -530,7 +532,7 @@ const kFind=k=>S.pantry.find(p=>kHas(p,k));
 const KOPT=/\b(optional|for (?:serving|garnish|topping)|to serve|to garnish|if desired|if you like|as desired)\b/i;
 function kNeed(r){let opt=false;const out=[];
  r.ing.forEach(l=>{if(/:$/.test(l)){opt=/serv|garnish|topping|optional|extra|on the side/i.test(l);return}if(opt||KOPT.test(l))return;
-  const x=ingInfo(l),lk=linksIn(l),t=kType(x.name,l)||(lk.length?'made':null);if(!t)return;
+  const x=ingInfo(l);if(WATER.test(x.key))return;const lk=linksIn(l),t=kType(x.name,l)||(lk.length?'made':null);if(!t)return;
   const alts=t=='sauce'&&KCT.test(' '+l.toLowerCase()+' ')&&!/paste|puree|purée|passata/i.test(l)?['canned tomato']:x.name.split(/\s+or\s+|\s*\/\s*/).map(a=>nkey(a)).filter(Boolean);if(!alts.length)return;
   const nm=cleanName(x.name.split(/\s+or\s+/)[0])||x.name,w=nm.split(' ');while(w.length>1&&DROPW.has(w[0].toLowerCase()))w.shift();
   out.push({name:alts[0]=='canned tomato'?'Canned tomatoes':cap(w.join(' ')),alts,t})});return out}
@@ -1289,7 +1291,10 @@ function morphNode(a,b){
  else if(tag=='DETAILS')a.open=b.hasAttribute('open')}
 function morphKids(a,b){const A=[...a.childNodes],B=[...b.childNodes];B.forEach((n,i)=>i<A.length?morphNode(A[i],n):a.appendChild(n));for(let i=B.length;i<A.length;i++)A[i].remove()}
 function patch(el,html,full){if(full){el.innerHTML=html;return}const t=document.createElement('template');t.innerHTML=html;morphKids(el,t.content)}
-const grow1=t=>{t.style.height='auto';t.style.height=(t.scrollHeight+2)+'px'};
+// Fit a textarea to its text. Collapsing it to measure briefly shortens the page, and the browser
+// then clamps the scroll position (jumping toward the tags at the bottom), so hold the page height and scroll steady
+const grow1=t=>{const de=document.documentElement,mh=de.style.minHeight,y=scrollY;de.style.minHeight=de.scrollHeight+'px';
+ t.style.height='auto';t.style.height=(t.scrollHeight+2)+'px';de.style.minHeight=mh;if(scrollY!==y)scrollTo(scrollX,y)};
 
 const DARK=matchMedia('(prefers-color-scheme: dark)');DARK.addEventListener?.('change',()=>S.set.theme=='system'&&R());
 let RK='';
