@@ -16,10 +16,12 @@
   // Paste the firebaseConfig from Firebase console → Project settings → Your apps. These values are public by design;
   // the Firestore security rules are what keep each person's data private.
   const CONFIG = {
-    apiKey: '',
-    authDomain: '',
-    projectId: '',
-    appId: ''
+    apiKey: 'AIzaSyB-qolJOepAn64lFq56Qv4ZwddZBOnbMCo',
+    authDomain: 'big-juicy-apps.firebaseapp.com',
+    projectId: 'big-juicy-apps',
+    storageBucket: 'big-juicy-apps.firebasestorage.app',
+    messagingSenderId: '691629121069',
+    appId: '1:691629121069:web:77c59965c13d6a211022a4'
   };
   const SDK = 'https://www.gstatic.com/firebasejs/12.19.0/';
   const ON = 'cloudsync:on';   // shared by all three apps (same site), so signing in on one wakes sync in the others
