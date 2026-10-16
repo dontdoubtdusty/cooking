@@ -44,6 +44,7 @@ section ul,section ol{margin:0;padding:0;list-style:none}
 .ing li{padding:5px 0;border-bottom:1px solid var(--bd)}.ing li:last-child{border-bottom:0}
 .ing .sub{border:0;padding:12px 0 2px;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}
 .dir li{margin:0 0 14px}
+.dir .sub{margin:20px 0 8px;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}.dir .sub:first-child{margin-top:0}
 .notes p{margin:0;white-space:pre-wrap}
 .nut li{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-bottom:1px solid var(--bd)}.nut li:last-child{border-bottom:0}
 .nut .hint{display:block;font-size:13px;color:var(--mu);border:0;padding-bottom:6px}
@@ -84,7 +85,7 @@ const obj=f=>Object.fromEntries(Object.entries(f).map(([k,v])=>[k,val(v)]));
 function recipeText(r){const L=[r.title||'Untitled'];if(r.serves)L.push('Serves '+r.serves);if(r.time)L.push(fmtTime(r.time));
  const sec=(h,a)=>{if(a.length)L.push('',h,...a)};
  sec('Ingredients',r.ing);
- sec('Directions',r.steps.map((x,i)=>(i+1)+'. '+x));
+ {let c=0;sec('Directions',r.steps.map(x=>/:$/.test(x)?x:(++c)+'. '+x))}
  sec('Notes',String(r.notes||'').split('\n').map(x=>x.trim()).filter(Boolean));
  sec('Nutrition',r.nut);
  const ln=[isUrl(r.src)?'Source: '+r.src:r.src?'From: '+r.src:'',isUrl(r.vid)?'Video: '+r.vid:''].filter(Boolean);if(ln.length)L.push('',...ln);
@@ -104,7 +105,7 @@ function show(r){const A=k=>Array.isArray(r[k])?r[k]:[];['meal','cuisine','prote
   <section class="ing"><h2>Ingredients</h2><ul>${r.ing.map(l=>/:$/.test(l)?`<li class="sub">${esc(l.slice(0,-1))}</li>`:`<li>${linky(l)}</li>`).join('')||'<li>None listed.</li>'}</ul></section>
   ${r.nut.length?`<section class="nut"><h2>Nutrition</h2><ul><li class="hint">Per serving, as listed in the recipe</li>${r.nut.map(sp).map(([n,v])=>`<li><span>${esc(n)}</span><b>${esc(v)}</b></li>`).join('')}</ul></section>`:''}
  </div><div class="col">
-  <section class="dir"><h2>Directions</h2><ol>${r.steps.map((x,i)=>`<li>${i+1}. ${linky(x)}</li>`).join('')||'<li>None listed.</li>'}</ol></section>
+  <section class="dir"><h2>Directions</h2><ol>${(()=>{let c=0;return r.steps.map(x=>/:$/.test(x)?`<li class="sub">${esc(x.slice(0,-1))}</li>`:`<li>${++c}. ${linky(x)}</li>`).join('')})()||'<li>None listed.</li>'}</ol></section>
   ${r.notes?`<section class="notes"><h2>Notes</h2><p>${linky(r.notes)}</p></section>`:''}
  </div></div>`;
  const text=recipeText(r);

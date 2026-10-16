@@ -159,6 +159,7 @@ img.rt.ph{border-radius:50%;object-fit:cover;background:var(--fld)}img.rt.huge{w
 .ihr{border-top:0;margin-top:8px}.ihr .ih{flex:1;margin:0}
 .ifoot{margin-top:6px;flex-wrap:wrap;gap:4px 12px;align-items:center}.ifoot .mu{margin-left:auto;font-size:12px}
 ol.steps{margin:0;padding:0;list-style:none;counter-reset:s}ol.steps li{counter-increment:s;position:relative;padding:8px 0 8px 40px;line-height:1.55}
+ol.steps li.sh{counter-increment:none;padding:14px 0 2px}ol.steps li.sh:before{content:none}ol.steps li.sh .ih{margin:0}
 ol.steps li:before{content:counter(s);position:absolute;left:0;top:8px;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--pc),var(--pc2));color:#fff;font:600 14px/28px var(--fd);text-align:center}
 .tmr{display:inline-flex;align-items:center;gap:4px;vertical-align:baseline;padding:1px 10px 1px 7px;margin:0 1px;border-radius:99px;font-size:.93em;font-weight:800;line-height:1.5;background:color-mix(in srgb,var(--ac) 16%,transparent);color:var(--ac)}
 
@@ -167,6 +168,7 @@ ol.steps li:before{content:counter(s);position:absolute;left:0;top:8px;width:28p
 
 .nv button{flex:1}
 .sl{display:flex;gap:12px;width:100%;text-align:left;background:none;color:var(--tx);font-weight:500;padding:9px 6px;border-radius:12px;align-items:flex-start;line-height:1.45}
+.slh{margin:12px 0 2px}
 .sl.dn{opacity:.5}.sl:active{transform:scale(.98)}
 .slnum{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-content:center;background:var(--fld);font:600 13px var(--fd)}
 #tdock{position:fixed;z-index:7;left:0;right:0;bottom:calc(82px + env(safe-area-inset-bottom,0px));display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:0 10px;pointer-events:none}
@@ -447,6 +449,8 @@ function scaleLine(l,f){const p=parseIng(l);if(!p||!(p.q>0))return ['',l];let q=
 // ---- Timers inside step text ("simmer 15 minutes") ----
 const TRE=/(\d+(?:\.\d+)?)(?:\s*(?:-|–|to)\s*\d+(?:\.\d+)?)?\s*(seconds?|secs?|minutes?|mins?|hours?|hrs?)\b/gi;
 function stepsTime(steps){let t=0;(steps||[]).forEach(s=>{const re=new RegExp(TRE.source,'gi');let m;while(m=re.exec(s)){if(/\b(every|up to|or|at least|as long as|no more than|optional(ly)?[^.]*)\s*$/i.test(s.slice(0,m.index)))continue;t+=parseFloat(m[1])*(/^h/i.test(m[2])?60:/^s/i.test(m[2])?1/60:1)}});return Math.round(t)}
+// A step line ending in ":" is a section heading (like "For the sauce:"), the same as in ingredients
+const isHd=l=>/:$/.test(l),realSteps=r=>r.steps.filter(l=>!isHd(l));
 const stepsOf=t=>(t||'').split('\n').map(l=>l.trim().replace(/^(step\s*)?\d+\s*[.):]\s+/i,'').trim()).filter(Boolean);
 const VIDRE=/youtu\.?be|vimeo\.com|tiktok\.com|instagram\.com\/(reel|p)\/|facebook\.com\/.*video|fb\.watch/i;
 const normUrl=u=>{u=(u||'').trim();if(!u)return '';if(!/^[a-z]+:\/\//i.test(u)&&/^[\w-]+(\.[\w-]+)+(\/|$)/.test(u))u='https://'+u;return u};
@@ -609,6 +613,7 @@ function joinLines(L,isSteps){const o=[];let cur=null,last=0;
  L.forEach(l=>{let m;
   if(m=/^(?:step\s*)?(\d+)[.):]?$/i.exec(l)){push();cur='';last=+m[1];return}
   if((m=/^(?:step\s*)?(\d+)\s*([.):])?\s+(\S.*)$/i.exec(l))&&(m[2]||(num&&isSteps&&/^[A-Z]/.test(m[3])&&(+m[1]==last+1||+m[1]==last+2)))){push();cur=m[3];last=+m[1];return}
+  if(isSteps&&l.length<60&&/:$/.test(l)&&!/^(?:step\s*)?\d/i.test(l)){push();o.push(l);return}
   if(cur===null)cur=l;
   else if(num||cur===''||!/[.!?:)]$/.test(cur)||/^[a-z(]/.test(l))cur+=(cur?' ':'')+l;
   else{push();cur=l}});
@@ -626,6 +631,7 @@ const HI=/^(?:\d+\s+)?(ingredients?|what you('|’)?ll need|you('|’)?ll need)\
  HIS=/^(?:\d+\s+)?(?:ingredients?|what you('|’)?ll need|you('|’)?ll need)\s+(?:for|to make)\s+(?:the\s+|your\s+)?(.{2,50}?)\s*:?$/i,
  HIP=/^(?:\d+\s+)?([a-z][a-z &'’-]{1,40}?)\s+ingredients?\s*:?$/i,HFOR=/^for (?:the |your )?([a-z][a-z &'’-]{1,40})$/i,
  HSS=/^(?:\d+\s+)?(?:instructions?|directions?|method|steps)\s+(?:for|to make)\s+.{2,50}$/i,
+ HSS2=/^(?:\d+\s+)?(?:instructions?|directions?|method|steps)\s+(?:for|to make)\s+(?:the\s+|your\s+)?(.{2,50}?)\s*:?$/i,
  NUTH=/^(?:\d+\s+)?nutrition(?:al)?(?: facts| information| info| estimates?| label)?\s*(?:\([^)]*\))?\s*(?::\s*(.+)|:)?$/i;
 // ---- Nutrition: "Calories: 320kcal | Protein: 12g", "350 Calories", "Total Fat 12g 15%" ----
 const NUTN='calories|energy|total carbohydrates?|carbohydrates?|carbs|net carbs|dietary fib(?:er|re)|fib(?:er|re)|total sugars?|added sugars?|sugars?|protein|total fat|saturated fat|trans fat|polyunsaturated fat|monounsaturated fat|unsaturated fat|fat|cholesterol|sodium|salt|potassium|calcium|iron|magnesium|zinc|vitamin [a-z]\\d*|serving size|serving',
@@ -681,7 +687,9 @@ function parseRecipe(txt){
   if(HI.test(l)){sec='ing';sawI=1;continue}
   if(l.length<60&&((m=HIS.exec(l))||(m=HIP.exec(l)))){const n=(m[3]||m[1]).trim();sec='ing';sawI=1;ing.push(n.charAt(0).toUpperCase()+n.slice(1)+':');continue}
   if(sec=='ing'&&(m=HFOR.exec(l))&&!/\d/.test(l)){ing.push(m[1].charAt(0).toUpperCase()+m[1].slice(1)+':');continue}
+  if(l.length<70&&(m=HSS2.exec(l))){sec='steps';sawS=1;steps.push(m[1].charAt(0).toUpperCase()+m[1].slice(1)+':');continue}
   if(l.length<70&&HSS.test(l)){sec='steps';sawS=1;continue}
+  if(sec=='steps'&&(m=HFOR.exec(l))){steps.push(m[1].charAt(0).toUpperCase()+m[1].slice(1)+':');continue}
   if(HS.test(l)){sec='steps';sawS=1;continue}
   if(HN.test(l)){sec='notes';continue}
   if(sec=='ing'&&l.length>80&&/[.!)]$/.test(l)){sec='steps';sawS=1}
@@ -812,7 +820,7 @@ function vRecipe(){const r=byId(RID);if(!r)return '';const i=S.recipes.indexOf(r
  ${linkRow(r)}${r.src?'':`<button class="g lnk" data-a="addLink" data-id="${esc(r.id)}" style="margin-top:10px">+ Add link to original recipe</button>`}<div class="row acts"><button data-a="cook" data-id="${esc(r.id)}">Start cooking</button><button class="g bd" data-a="cooked" data-id="${esc(r.id)}">Cooked today</button><button class="g bd" data-a="plCal" data-id="${esc(r.id)}">Add to calendar</button><button class="g bd" data-a="listT" data-id="${esc(r.id)}">${S.shop.rids.includes(r.id)?'On the list':'Add to list'}</button><button class="g bd" data-a="rShare" data-id="${esc(r.id)}">Share</button><button class="g bd" data-a="edit" data-id="${esc(r.id)}">Edit</button></div></div>`;
  if(warn.length)h+=`<div class="card warn"><h3><span><i class="bang">!</i>Heads up</span></h3><div>This mentions ${esc(warn.join(', '))}.</div></div>`;
  h+=ingCard(r);
- h+=`<div class="card"><h3><span>Steps</span></h3>${r.steps.length?`<ol class="steps">${r.steps.map((s,j)=>`<li>${stepHtml(s,r,j)}</li>`).join('')}</ol>`:'<p class="mu" style="margin:0">No steps yet.</p>'}</div>`;
+ h+=`<div class="card"><h3><span>Steps</span></h3>${r.steps.length?`<ol class="steps">${(()=>{let c=0;return r.steps.map(s=>isHd(s)?`<li class="sh"><div class="sec ih">${esc(s.slice(0,-1))}</div></li>`:`<li>${stepHtml(s,r,c++)}</li>`).join('')})()}</ol>`:'<p class="mu" style="margin:0">No steps yet.</p>'}</div>`;
  if(r.notes)h+=`<div class="card"><h3><span>Notes</span></h3><p class="pre">${esc(r.notes)}</p></div>`;
  if(ui.length)h+=`<div class="card"><h3><span>Used in</span><span class="mu">${ui.length}</span></h3>${ui.map(rRow).join('')}</div>`;
  h+=nutCard(r);
@@ -955,7 +963,7 @@ async function pubSync(){if(PBUSY)return;PBUSY=1;
 function recipeText(r){const L=[r.title||'Untitled'];if(r.serves)L.push('Serves '+r.serves);if(r.time)L.push(fmtTime(r.time));
  const sec=(h,a)=>{if(a.length)L.push('',h,...a)};
  sec('Ingredients',r.ing.map(plainL));
- sec('Directions',r.steps.map((x,i)=>(i+1)+'. '+plainL(x)));
+ {let c=0;sec('Directions',r.steps.map(x=>isHd(x)?plainL(x):(++c)+'. '+plainL(x)))}
  sec('Notes',plainL(r.notes).split('\n').map(x=>x.trim()).filter(Boolean));
  sec('Nutrition',r.nut);
  const ln=[isUrl(r.src)?'Source: '+r.src:r.src?'From: '+r.src:'',isUrl(r.vid)?'Video: '+r.vid:''].filter(Boolean);if(ln.length)L.push('',...ln);
@@ -979,11 +987,11 @@ function vCook(){const r=byId(S.cookId);
  if(!r){const rec=S.recipes.filter(x=>last(x)).sort((a,b)=>last(a)<last(b)?1:-1).slice(0,5);
   return `<div class="card wide"><h2>Cook mode</h2><p class="mu" style="margin:0 0 12px">Open a recipe and tap Start cooking. Your screen stays on, times in the steps become one-tap timers, and you can check off ingredients as you go.</p><button data-a="tab" data-id="browse">Browse recipes</button></div>`
   +(rec.length?`<div class="card wide"><div class="sec">Cooked recently</div>${rec.map(rRow).join('')}</div>`:'')}
- const n=r.steps.length,k=Math.min(S.step||0,Math.max(0,n-1));
+ const n=realSteps(r).length,k=Math.min(S.step||0,Math.max(0,n-1));let c=0;
  let h=`<div class="card wide"><div class="row">${r.img&&IMG[r.img]?tile(r):''}<div style="flex:1;min-width:0"><span class="sec" style="margin:0">Cooking</span><b class="ct">${esc(r.title)}</b></div><button class="g bd" data-a="cookExit">Exit</button></div>${linkRow(r)}<div class="mu" id="wks" style="margin-top:6px">${wakeTxt()}</div></div>`;
  if(n)h+=`<div class="card wide stepc"><h3><span>Steps</span><span class="mu">Step ${k+1} of ${n}</span></h3><div class="bar" style="margin-bottom:8px"><i style="width:${(k+1)/n*100}%"></i></div>`
-  +r.steps.map((s,j)=>j==k?`<div class="sl cur"><span class="slnum">${j+1}</span><div style="flex:1;min-width:0"><div class="st">${stepHtml(s,r,j)}</div><div class="row nv"><button class="g bd" data-a="stp" data-d="-1" ${k?'':'disabled'}>‹ Back</button>${k>=n-1?`<button data-a="finish">Finish and log it</button>`:`<button data-a="stp" data-d="1">Next step ›</button>`}</div></div></div>`
-   :`<button class="sl ${j<k?'dn':''}" data-a="stp" data-to="${j}"><span class="slnum">${j<k?ICK:j+1}</span><span>${esc(s)}</span></button>`).join('')+`</div>`;
+  +r.steps.map(s=>{if(isHd(s))return `<div class="sec slh">${esc(s.slice(0,-1))}</div>`;const j=c++;return j==k?`<div class="sl cur"><span class="slnum">${j+1}</span><div style="flex:1;min-width:0"><div class="st">${stepHtml(s,r,j)}</div><div class="row nv"><button class="g bd" data-a="stp" data-d="-1" ${k?'':'disabled'}>‹ Back</button>${k>=n-1?`<button data-a="finish">Finish and log it</button>`:`<button data-a="stp" data-d="1">Next step ›</button>`}</div></div></div>`
+   :`<button class="sl ${j<k?'dn':''}" data-a="stp" data-to="${j}"><span class="slnum">${j<k?ICK:j+1}</span><span>${esc(s)}</span></button>`}).join('')+`</div>`;
  else h+=`<div class="card wide"><p class="mu" style="margin:0 0 10px">This recipe has no steps.</p><button data-a="finish">Log it as cooked</button></div>`;
  h+=ingCard(r);
  if(r.notes)h+=`<div class="card"><h3><span>Notes</span></h3><p class="pre">${esc(r.notes)}</p></div>`;
@@ -1414,7 +1422,7 @@ const ACT={
  timer:d=>{audio();const s=+d.s;if(!s)return;TM.push({id:uid('t'),l:d.l,end:Date.now()+s*1000});saveT();dock();toast('Timer started: '+clock(s))},
  tmX:d=>{TM=TM.filter(t=>t.id!=d.id);saveT();dock()}, tmOk:d=>ACT.tmX(d),
  tmAdd:d=>{const t=TM.find(x=>x.id==d.id);if(t){t.end+=60000;saveT();dock()}},
- stp:d=>{const r=byId(S.cookId);if(!r)return;const n=r.steps.length;S.step=Math.max(0,Math.min(n-1,d.to!=null?+d.to:(S.step||0)+(+d.d)));commit();document.querySelector('#app .sl.cur')?.scrollIntoView({behavior:'smooth',block:'center'})},
+ stp:d=>{const r=byId(S.cookId);if(!r)return;const n=realSteps(r).length;S.step=Math.max(0,Math.min(n-1,d.to!=null?+d.to:(S.step||0)+(+d.d)));commit();document.querySelector('#app .sl.cur')?.scrollIntoView({behavior:'smooth',block:'center'})},
  finish:()=>{const r=byId(S.cookId);if(!r)return;const t=tdy(),added=!r.cooked.includes(t);if(added)r.cooked.push(t);S.cookId=null;S.step=0;CK[r.id]={};save();afterCook(r);openRecipe(r.id,'browse');
   if(added){confetti();toast('Nice. Logged as cooked today.',()=>{const i=r.cooked.lastIndexOf(t);if(i>=0)r.cooked.splice(i,1);commit()})}else toast('Already logged for today')},
  cookExit:()=>{S.cookId=null;S.step=0;commit()},
