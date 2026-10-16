@@ -1,0 +1,9 @@
+// For hosting this folder as a Cloudflare Worker (Workers & Pages → Create → Workers → Import a repository, Path: /share).
+// Files in public/ are served as they are; anything else, like /r/<id>, goes to worker.js.
+// Cloudflare Pages ignores this file (it has no pages_build_output_dir) and uses functions/ instead.
+{
+  "name": "big-saucy",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "./public", "binding": "ASSETS" }
+}

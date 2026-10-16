@@ -57,6 +57,8 @@ The `share/` folder is a tiny separate site for share links, hosted free on Clou
 
 Setup, once: in Cloudflare, **Workers & Pages → Create → Pages → Connect to Git**, pick this repo, then set **Root directory** to `share`, leave the build command empty, and set **Build output directory** to `public`. Optionally set build watch paths to `share/*`.
 
+Or as a Worker (**Workers & Pages → Create → Import a repository**): set **Path** to `/share`, leave the build command empty and keep the deploy command `npx wrangler deploy`. The Worker's name must match `name` in `share/wrangler.jsonc`, and its address will be `<name>.<your-account>.workers.dev`.
+
 ### Files
 
 | File | What it does |
