@@ -81,6 +81,7 @@
   function onUser(u) {
     if (unsub) { unsub(); unsub = null }
     user = u; known = true; clearTimeout(timer);
+    try { o.onUser && o.onUser(!!u) } catch (e) {}
     if (!u) { ls.del(ON); status = ''; draw(); return }
     ls.set(ON, '1'); status = 'syncing'; draw();
     ref = F.doc(db, 'users', u.uid, 'apps', o.app);
@@ -205,7 +206,7 @@
   document.head.appendChild(style);
 
   window.CloudSync = {
-    // opts: {app, name, key, version(), apply(obj), render(), card(body), btn, btn2, what}
+    // opts: {app, name, key, version(), apply(obj), render(), card(body), btn, btn2, what, onUser(signedIn)}
     init(opts) {
       o = opts;
       try { M = JSON.parse(ls.get(metaKey())) || {} } catch (e) { M = {} }
@@ -213,6 +214,16 @@
       if (ls.get(ON)) start().catch(() => {}); else known = true;
       addEventListener('online', () => { if (user && (M.dirty || status == 'offline')) push() });
       document.addEventListener('visibilitychange', () => { if (document.hidden && user && M.dirty) push() });
+    },
+    // Whether someone is signed in, and whether Firebase is still finding out
+    signedIn() { return !!user },
+    pending() { return !known },
+    // Public copies that anyone with the link can read, at shared/{id}: {...data, uid, at}.
+    // Only the signed-in owner can write or delete them (see the Firestore rules in the README).
+    pub: {
+      async get(id) { await start(); const s = await F.getDoc(F.doc(db, 'shared', id)); return s.exists() ? s.data() : null },
+      async put(id, data) { if (!user) throw { code: 'signed-out' }; await F.setDoc(F.doc(db, 'shared', id), { ...data, uid: user.uid, at: Date.now() }) },
+      async del(id) { if (!user) throw { code: 'signed-out' }; await F.deleteDoc(F.doc(db, 'shared', id)) }
     },
     // Call after every successful write of the app's data to localStorage, with the text that was written
     saved(txt) {

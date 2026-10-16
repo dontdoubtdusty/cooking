@@ -162,6 +162,7 @@ ol.steps li:before{content:counter(s);position:absolute;left:0;top:8px;width:28p
 .g2f{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.g2f label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:800;color:var(--mu)}.g2f input{font:600 15px 'Nunito',sans-serif;color:var(--tx)}
 .nrow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--bd)}.nrow:first-of-type{border-top:0}.nrow b{font-weight:800;text-align:right}
 .hint{font-size:12px;color:var(--mu);margin:6px 2px 0}
+body.shv #nav,body.shv #gear,body.shv #tdock{display:none}body.shv{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
 .savebar{position:sticky;bottom:calc(80px + env(safe-area-inset-bottom,0px));z-index:3;display:flex;gap:8px;padding:8px;background:color-mix(in srgb,var(--card) 90%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--bd);border-radius:20px;box-shadow:var(--sh)}
 body.hast .savebar{bottom:calc(128px + env(safe-area-inset-bottom,0px))}
 .savebar button:last-child{flex:1}
@@ -331,7 +332,7 @@ function migrate(){S.set=S.set||{};for(let v=S.v||0;v<MIGRATIONS.length;v++)MIGR
 function load(){try{S=JSON.parse(localStorage.getItem(LS))}catch(e){}if(!S)fresh();else migrate();try{TM=JSON.parse(localStorage.getItem(LST))||[]}catch(e){TM=[]}}
 let SVT=0,SI=null,SVFAIL=0;   // SI: merged shopping items, rebuilt after each save
 // Saving can fail (storage full, private browsing, blocked site data). Say so once instead of failing silently.
-function flush(){clearTimeout(SVT);SVT=0;let t;try{t=JSON.stringify(S);localStorage.setItem(LS,t);SVFAIL=0}catch(e){if(!SVFAIL){SVFAIL=1;setTimeout(()=>toast('Couldn’t save on this device. Download a backup in Settings.'),0)}return}window.CloudSync&&CloudSync.saved(t)}
+function flush(){clearTimeout(SVT);SVT=0;let t;try{t=JSON.stringify(S);localStorage.setItem(LS,t);SVFAIL=0}catch(e){if(!SVFAIL){SVFAIL=1;setTimeout(()=>toast('Couldn’t save on this device. Download a backup in Settings.'),0)}return}window.CloudSync&&CloudSync.saved(t);pubLater()}
 const save=()=>{SI=null;KC=null;clearTimeout(SVT);SVT=setTimeout(flush,400)};
 const commit=()=>{save();R()};
 const saveT=()=>{try{localStorage.setItem(LST,JSON.stringify(TM))}catch(e){}};
@@ -765,7 +766,7 @@ function vRecipe(){const r=byId(RID);if(!r)return '';const i=S.recipes.indexOf(r
  h+=`<div class="card wide"><div class="hr">${tile(r,1)}<div style="min-width:0"><h2>${esc(r.title||'Untitled')}</h2><div class="mu">${esc(meta)}</div></div></div>`
  +(fac.length||r.tags.length?`<div class="pills">${fac.map(x=>`<span class="pill">${esc(x)}</span>`).join('')}${r.tags.map(x=>`<span class="pill tg">#${esc(x)}</span>`).join('')}</div>`:'')
  +`<div class="mu" style="margin-top:10px">${lc?`Last cooked ${ago(lc)} · ${r.cooked.length} time${r.cooked.length==1?'':'s'}`:'Not cooked yet'}${nx?` · <button class="g lnk" data-a="plGo" data-d="${nx.d}">${nx.d==tdy()?'On the calendar today':'Next on the calendar '+esc(dlab(nx.d))}</button>`:''}</div>
- ${linkRow(r)}${r.src?'':`<button class="g lnk" data-a="addLink" data-id="${esc(r.id)}" style="margin-top:10px">+ Add link to original recipe</button>`}<div class="row acts"><button data-a="cook" data-id="${esc(r.id)}">Start cooking</button><button class="g bd" data-a="cooked" data-id="${esc(r.id)}">Cooked today</button><button class="g bd" data-a="plCal" data-id="${esc(r.id)}">Add to calendar</button><button class="g bd" data-a="listT" data-id="${esc(r.id)}">${S.shop.rids.includes(r.id)?'On the list':'Add to list'}</button><button class="g bd" data-a="edit" data-id="${esc(r.id)}">Edit</button></div></div>`;
+ ${linkRow(r)}${r.src?'':`<button class="g lnk" data-a="addLink" data-id="${esc(r.id)}" style="margin-top:10px">+ Add link to original recipe</button>`}<div class="row acts"><button data-a="cook" data-id="${esc(r.id)}">Start cooking</button><button class="g bd" data-a="cooked" data-id="${esc(r.id)}">Cooked today</button><button class="g bd" data-a="plCal" data-id="${esc(r.id)}">Add to calendar</button><button class="g bd" data-a="listT" data-id="${esc(r.id)}">${S.shop.rids.includes(r.id)?'On the list':'Add to list'}</button><button class="g bd" data-a="rShare" data-id="${esc(r.id)}">Share</button><button class="g bd" data-a="edit" data-id="${esc(r.id)}">Edit</button></div></div>`;
  if(warn.length)h+=`<div class="card warn"><h3><span><i class="bang">!</i>Heads up</span></h3><div>This mentions ${esc(warn.join(', '))}.</div></div>`;
  h+=ingCard(r);
  h+=`<div class="card"><h3><span>Steps</span></h3>${r.steps.length?`<ol class="steps">${r.steps.map((s,j)=>`<li>${stepHtml(s,r,j)}</li>`).join('')}</ol>`:'<p class="mu" style="margin:0">No steps yet.</p>'}</div>`;
@@ -783,6 +784,71 @@ function linkRow(r){const a=[];if(isUrl(r.src))a.push(`<a class="lbtn" href="${e
 // Optional nutrition card: folded away, with calories in the summary
 function nutCard(r){if(!r.nut.length)return '';const sp=t=>{const i=t.indexOf(':');return i<0?[t,'']:[t.slice(0,i).trim(),t.slice(i+1).trim()]},cal=r.nut.map(sp).find(x=>/^calories$/i.test(x[0]));
  return `<details class="card" ${O.nut?'open':''} data-o="nut"><summary><h3><span>Nutrition</span><span class="mu">${cal&&cal[1]?esc(cal[1])+' cal':''}</span></h3></summary><div>${r.nut.map(sp).map(([n,v])=>`<div class="nrow"><span>${esc(n)}</span><b>${esc(v)}</b></div>`).join('')}<div class="hint">As listed in the recipe, usually per serving. Doesn't change when you scale.</div></div></details>`}
+// ---- Sharing: a short link to a recipe card, or plain text ----
+// A shared recipe gets r.share (an id). Its public copy lives at shared/{id} in Firebase and is re-uploaded whenever
+// the recipe changes, so the link always shows the latest version. Deleting the recipe deletes the copy.
+const LSH='saucy-shared';   // this device: share id -> fingerprint of the copy it last uploaded
+var PST=0,PBUSY=0;          // var, not let: flush() can run before this part of the script does
+const fp=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)+':'+s.length};
+const plainL=l=>String(l||'').replace(LRE,(m,t)=>t.trim());   // [[Linked recipe]] -> Linked recipe
+const pubOf=r=>({app:'cooking',v:1,title:r.title,cuisine:r.cuisine,meal:r.meal,protein:r.protein,method:r.method,diet:r.diet,tags:r.tags,serves:r.serves,time:r.time,
+ ing:r.ing.map(plainL),steps:r.steps.map(plainL),nut:r.nut,notes:plainL(r.notes),src:r.src,vid:r.vid});
+const shareUrl=id=>location.origin+location.pathname.replace(/index\.html$/,'')+'?r='+id;
+const newShareId=()=>{const a='abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';return [...crypto.getRandomValues(new Uint8Array(10))].map(x=>a[x%a.length]).join('')};
+const pubMap=()=>{try{return JSON.parse(localStorage.getItem(LSH))||{}}catch(e){return {}}};
+const pubKeep=m=>{try{localStorage.setItem(LSH,JSON.stringify(m))}catch(e){}};
+function pubLater(){clearTimeout(PST);PST=setTimeout(pubSync,2000)}
+async function pubSync(){const C=window.CloudSync;if(PBUSY||!C||!C.pub||!C.signedIn())return;PBUSY=1;const m=pubMap();
+ try{for(const id of [...(S.shareGone||[])]){try{await C.pub.del(id)}catch(e){if(!/permission|not-found/.test(e&&e.code||''))throw e}
+   S.shareGone=S.shareGone.filter(x=>x!=id);delete m[id];pubKeep(m);save()}
+  for(const r of S.recipes){if(!r.share)continue;const d=pubOf(r),f=fp(JSON.stringify(d));if(m[r.share]===f)continue;await C.pub.put(r.share,d);m[r.share]=f;pubKeep(m)}}
+ catch(e){}   // offline or refused: tried again after the next save or sign-in
+ PBUSY=0}
+// The recipe as plain lines: title, servings and time, then each section under a header line
+function recipeText(r){const L=[r.title||'Untitled'];if(r.serves)L.push('Serves '+r.serves);if(r.time)L.push(fmtTime(r.time));
+ const sec=(h,a)=>{if(a.length)L.push('',h,...a)};
+ sec('Ingredients',r.ing.map(plainL));
+ sec('Directions',r.steps.map((x,i)=>(i+1)+'. '+plainL(x)));
+ sec('Notes',plainL(r.notes).split('\n').map(x=>x.trim()).filter(Boolean));
+ sec('Nutrition',r.nut);
+ const ln=[isUrl(r.src)?'Source: '+r.src:r.src?'From: '+r.src:'',isUrl(r.vid)?'Video: '+r.vid:''].filter(Boolean);if(ln.length)L.push('',...ln);
+ return L.join('\n')}
+// The phone's share sheet; on computers without one, the clipboard; failing both, a box to copy from
+async function sendOut(o,what){
+ if(navigator.share){try{await navigator.share(o);return}catch(e){if(e&&e.name=='AbortError')return}}
+ const t=o.url||o.text;try{await navigator.clipboard.writeText(t);toast(what+' copied');return}catch(e){}
+ SH={kind:'shout',t,what};R()}
+const ICSH='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>',
+ ICTX='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 6h14M5 10h14M5 14h14M5 18h9"/></svg>';
+function shareSheet(){const r=byId(SH.id);if(!r)return '';const opt=(a,ic,t,sub)=>`<button class="rc" data-a="${a}" data-id="${esc(r.id)}"><span class="rt" style="background:linear-gradient(135deg,var(--pc),var(--pc2))">${ic}</span><span class="rcn"><b>${t}</b><span class="mu" style="white-space:normal">${sub}</span></span>${CHEV}</button>`;
+ return `<h2>Share recipe</h2><p class="mu" style="margin:0 0 8px">${esc(r.title||'Untitled')}</p>`
+  +(SH.need?`<div class="card okc" style="margin:0 0 8px;padding:12px"><b>Sign in to share links</b><p class="mu" style="margin:4px 0 10px">Shared recipes are kept with your account, so the link can stay up to date when you edit. Plain text works without signing in.</p><button data-a="shSignIn" style="width:100%">Sign in</button></div>`:'')
+  +opt('shLink',ICSH,'Share link','A recipe card anyone can open. It updates when you edit the recipe.')
+  +opt('shText',ICTX,'Share as text','Plain lines with no formatting, for copying and pasting.')}
+// ---- A recipe someone shared with a link (?r=id) ----
+let SHV=null;   // {id, st:'load'|'ok'|'gone'|'err', d: the recipe, f: servings scale}
+function loadShared(){const C=window.CloudSync;if(!/^[A-Za-z0-9]{6,32}$/.test(SHV.id)){SHV.st='gone';R();return}
+ if(!C||!C.pub){SHV.st='err';R();return}SHV.st='load';R();
+ C.pub.get(SHV.id).then(d=>{if(!d||d.app!='cooking'||!Array.isArray(d.ing))SHV.st='gone';else{SHV.st='ok';SHV.d=fix({...d,id:'shared'});document.title=(d.title||'Recipe')+' · Big Saucy'}R()},()=>{SHV.st='err';R()})}
+function vShared(){const v=SHV,mineBtn='<button class="g bd" data-a="shvExit">Open my recipes</button>';
+ if(v.st=='load')return `<div class="card wide"><p class="mu" style="margin:0">Loading the recipe…</p></div>`;
+ if(v.st!='ok')return `<div class="card wide"><h2>${v.st=='gone'?'Recipe not found':'Couldn’t load this recipe'}</h2><p class="mu">${v.st=='gone'?'This link doesn’t lead to a recipe any more. It may have been deleted.':'Check your connection and try again.'}</p><div class="row">${v.st=='err'?'<button data-a="shvRetry">Try again</button>':''}${HAD?mineBtn:''}</div></div>`;
+ const r=v.d,f=v.f||1,fac=[...r.meal,...r.protein,...r.method,...r.diet],mine=S.recipes.find(x=>x.from==v.id||x.share==v.id);
+ const meta=[r.cuisine,r.time?fmtTime(r.time):'',r.serves?'serves '+r.serves:''].filter(Boolean).join(' · ');
+ let h=`<div class="card wide"><div class="hr">${tile(r,1)}<div style="min-width:0"><h2>${esc(r.title||'Untitled')}</h2><div class="mu">${esc(meta)}</div></div></div>`
+  +(fac.length||r.tags.length?`<div class="pills">${fac.map(x=>`<span class="pill">${esc(x)}</span>`).join('')}${r.tags.map(x=>`<span class="pill tg">#${esc(x)}</span>`).join('')}</div>`:'')
+  +linkRow(r)
+  +(HAD?`<div class="row acts">${mine?`<button data-a="shvOpen" data-id="${esc(mine.id)}">Open in my recipes</button>`:`<button data-a="shvSave">Save to my recipes</button>`}${mine?'':mineBtn}</div>`:'')+`</div>`;
+ const sv=r.serves?'Serves '+fmtQ(r.serves*f):(f==1?'Original':'×'+fmtQ(f));
+ h+=`<div class="card"><h3><span>Ingredients</span><span class="scl"><button class="g sb" data-a="shvScale" data-d="-1" aria-label="Fewer servings">−</button><span class="b">${sv}</span><button class="g sb" data-a="shvScale" data-d="1" aria-label="More servings">+</button></span></h3>`
+  +(f!=1?`<div class="mu" style="margin:-4px 0 6px">Amounts scaled ×${fmtQ(f)} · <button class="g lnk" data-a="shvScale" data-d="0">Reset</button></div>`:'')
+  +(r.ing.map(l=>{if(/:$/.test(l))return `<div class="srow ihr"><div class="sec ih">${esc(l.slice(0,-1))}</div></div>`;const [q,rest]=scaleLine(l,f);
+   return `<div class="srow"><span class="ingr" style="cursor:default"><span>${q?`<b>${esc(q)}</b> `:''}${esc(rest)}</span></span></div>`}).join('')||'<p class="mu" style="margin:0">No ingredients listed.</p>')+`</div>`;
+ h+=`<div class="card"><h3><span>Directions</span></h3>${r.steps.length?`<ol class="steps">${r.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`:'<p class="mu" style="margin:0">No steps listed.</p>'}</div>`;
+ if(r.notes)h+=`<div class="card"><h3><span>Notes</span></h3><p class="pre">${esc(r.notes)}</p></div>`;
+ if(r.nut.length){const sp=t=>{const i=t.indexOf(':');return i<0?[t,'']:[t.slice(0,i).trim(),t.slice(i+1).trim()]};
+  h+=`<div class="card"><h3><span>Nutrition</span></h3>${r.nut.map(sp).map(([n,x])=>`<div class="nrow"><span>${esc(n)}</span><b>${esc(x)}</b></div>`).join('')}<div class="hint">As listed in the recipe, usually per serving.</div></div>`}
+ return h+`<p class="mu wide" style="text-align:center;margin:4px 0 0">Shared from Big Saucy Recipes</p>`}
 // ---- Cook mode ----
 let WL=null,WP=0,WST='';
 const wakeTxt=()=>WST=='on'?'Screen stays on while you cook':WST=='no'?'Couldn\'t keep the screen on here. It should work once the app is hosted.':'';
@@ -931,6 +997,8 @@ function vSheet(){if(!SH)return '';let b='';
   <div class="row" style="margin-top:12px">${nw?'<button class="g bd" data-a="shClose">Cancel</button>':'<button class="x" data-a="ingDel">Remove</button>'}<button data-a="ingSave" style="flex:1">${nw?'Add':'Save'}</button></div>`;
   return `<div class="shbg"></div><div class="shp" role="dialog" aria-modal="true" tabindex="-1"><div class="grab"></div>${b}</div>`}
  const wrap=x=>`<div class="shbg"></div><div class="shp" role="dialog" aria-modal="true" tabindex="-1"><div class="grab"></div>${x}</div>`;
+ if(SH.kind=='share')return wrap(shareSheet());
+ if(SH.kind=='shout')return wrap(`<h2>Copy ${SH.what=='Link'?'the link':'the recipe'}</h2><p class="mu" style="margin:0 0 8px">Sharing isn't available here, so copy it and paste it wherever you like.</p><textarea id="shoT" class="rx" readonly>${esc(SH.t)}</textarea><div class="row" style="margin-top:12px"><button class="g bd" data-a="shClose">Close</button><button data-a="shoCopy" style="flex:1">Copy</button></div>`);
  const byT=(a,b)=>(a.title||'').toLowerCase()<(b.title||'').toLowerCase()?-1:1,qOk=(x,q)=>!q||(x.title+' '+x.cuisine+' '+x.tags.join(' ')).toLowerCase().includes(q);
  const pRow=(r,a,extra='')=>`<button class="rc" data-a="${a}" data-id="${esc(r.id)}"${extra}>${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${esc([r.cuisine,r.serves?'serves '+r.serves:'',fmtTime(r.time)].filter(Boolean).join(' · ')||' ')}</span></span>${CHEV}</button>`;
  const srch=(id,v,ph)=>`<div class="srch" style="margin:8px 0 4px">${ICS}<input id="${id}" type="search" placeholder="${ph}" value="${esc(v||'')}" autocomplete="off" enterkeyhint="search"></div>`;
@@ -1082,7 +1150,29 @@ const ACT={
  edit:d=>{const r=byId(d.id);if(!r)return;if(!dEmpty(S.draft)&&S.draft.id!=r.id&&!confirm('Discard the recipe you were adding?'))return;
   S.draft=Object.assign(blankD(),{id:r.id,title:r.title,cuisine:r.cuisine,meal:[...r.meal],protein:[...r.protein],method:[...r.method],diet:[...r.diet],tags:[...r.tags],serves:r.serves||'',time:r.time?fmtTime(r.time):'',ingT:r.ing.join('\n'),stepT:r.steps.join('\n'),nutT:r.nut.join('\n'),notes:r.notes,src:r.src,vid:r.vid});
   AM='type';PARSED='';save();goTab('add')},
- delR:d=>{const i=S.recipes.findIndex(r=>r.id==d.id);if(i<0)return;const [x]=S.recipes.splice(i,1);if(S.cookId==x.id)S.cookId=null;if(S.shop.rids.includes(x.id))pruneShop();save();ACT.back();toast(`Deleted “${x.title}”`,()=>{S.recipes.splice(i,0,x);commit()},'del')},
+ delR:d=>{const i=S.recipes.findIndex(r=>r.id==d.id);if(i<0)return;const [x]=S.recipes.splice(i,1);if(x.share)S.shareGone=[...(S.shareGone||[]),x.share];if(S.cookId==x.id)S.cookId=null;if(S.shop.rids.includes(x.id))pruneShop();save();ACT.back();toast(`Deleted “${x.title}”`,()=>{S.recipes.splice(i,0,x);if(x.share)S.shareGone=(S.shareGone||[]).filter(id=>id!=x.share);commit()},'del')},
+ rShare:d=>{if(byId(d.id)){SH={kind:'share',id:d.id};R()}},
+ shLink:d=>{const r=byId(d.id),C=window.CloudSync;if(!r)return;
+  if(!C||!C.pub){toast('Sharing links needs sync, which isn’t set up here');return}
+  if(C.pending()){toast('Still connecting to sync. Try again in a moment.');return}
+  if(!C.signedIn()){SH={kind:'share',id:r.id,need:1};R();return}
+  if(!r.share){r.share=newShareId();save()}
+  const id=r.share,data=pubOf(r);SH=null;R();
+  sendOut({title:r.title||'Recipe',url:shareUrl(id)},'Link');   // first, while the tap still counts for the share sheet
+  C.pub.put(id,data).then(()=>{const m=pubMap();m[id]=fp(JSON.stringify(data));pubKeep(m)},
+   e=>toast(/permission/.test(e&&e.code||'')?'The link couldn’t be published: the sync service refused it. Check the Firestore rules.':'The link will start working once you’re back online.'))},
+ shText:d=>{const r=byId(d.id);if(!r)return;SH=null;R();sendOut({text:recipeText(r)},'Recipe')},
+ shSignIn:()=>{SH=null;goTab('more');setTimeout(()=>{const f=document.querySelector('[data-cs-form]');if(f){f.scrollIntoView({block:'center',behavior:'smooth'});f.email&&f.email.focus({preventScroll:true})}},450)},
+ shoCopy:()=>{const t=document.getElementById('shoT');if(!t)return;t.select();const ok=()=>{toast('Copied');SH=null;R()};
+  if(navigator.clipboard)navigator.clipboard.writeText(t.value).then(ok,()=>{try{document.execCommand('copy')&&ok()}catch(_){}});else{try{document.execCommand('copy')&&ok()}catch(_){}}},
+ shvScale:d=>{if(!SHV||!SHV.d)return;const r=SHV.d,f=SHV.f||1,s=+d.d;SHV.f=!s?1:r.serves?Math.max(1,Math.round(r.serves*f)+s)/r.serves:Math.max(.5,f+s*.5);R()},
+ shvRetry:()=>loadShared(),
+ shvSave:()=>{if(!SHV||SHV.st!='ok')return;const d=SHV.d;
+  if(S.recipes.some(x=>tkey(x.title)==tkey(d.title))&&!confirm(`You already have "${d.title}". Save another one?`))return;
+  S.recipes.push(fix({title:d.title,cuisine:d.cuisine,meal:[...d.meal],protein:[...d.protein],method:[...d.method],diet:[...d.diet],tags:[...d.tags],serves:d.serves,time:d.time,
+   ing:[...d.ing],steps:[...d.steps],nut:[...d.nut],notes:d.notes,src:d.src,vid:d.vid,from:SHV.id}));commit();toast('Saved to your recipes')},
+ shvOpen:d=>{shvLeave();openRecipe(d.id)},
+ shvExit:()=>{shvLeave();R();scrollTo(0,0)},
  addLink:d=>{const r=byId(d.id);if(!r)return;const u=normUrl(prompt('Paste the link to the original recipe')||'');if(!u)return;r.src=u;commit();toast('Link added')},
  logAdd:d=>{const r=byId(d.id);if(!r)return;r.cooked.push(tdy());O.log=1;commit()},
  del:d=>del(d.p,+d.i),
@@ -1301,6 +1391,8 @@ let RK='';
 function R(){const de=document.documentElement,th=S.set.theme||'system';de.dataset.theme=th=='system'?(DARK.matches?'dark':'light'):th;
  if(T=='recipe'&&!byId(RID))T='browse';
  const c=tabCols(T=='recipe'?navId():T);de.style.setProperty('--pc',c[0]);de.style.setProperty('--pc2',c[1]);
+ document.body.classList.toggle('shv',!!SHV);
+ if(SHV){const f=RK!=='shv';RK='shv';patch(APP(),vShared(),f);const sh=document.getElementById('sheet');if(SH||sh.firstChild)patch(sh,vSheet());document.body.classList.toggle('shopen',!!SH);sheetFocus(sh);return}
  if(SEL&&T=='kit'){const ids=new Set(shopRows().map(r=>r.id));[...SEL].forEach(id=>{if(!ids.has(id))SEL.delete(id)})}
  const key=T+'|'+(T=='recipe'?RID:''),full=key!==RK;RK=key;
  patch(APP(),VIEW[T](),full);
@@ -1366,10 +1458,15 @@ const rmPeek=()=>{const p=document.getElementById('peek');if(p)p.remove()};
 // 10. START
 // =====================================================================
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+const HAD=(()=>{try{return localStorage.getItem(LS)!=null}catch(e){return false}})();   // already uses Big Saucy in this browser
+const TITLE0=document.title,SHQ=new URLSearchParams(location.search).get('r');
+function shvLeave(){SHV=null;document.title=TITLE0;try{history.replaceState(null,'',location.pathname)}catch(_){}}
 load();
+if(SHQ)SHV={id:SHQ,st:'load',f:1};
 R();
 // Sync across devices (sync.js). Timers stay on each device; only the recipes, pantry and settings sync.
 window.CloudSync&&CloudSync.init({app:'cooking',name:'Big Saucy',key:LS,what:'your recipes',version:()=>MIGRATIONS.length,btn:'',btn2:'g bd',
  card:b=>`<div class="card"><h2>Sync across devices</h2>${b}</div>`,
- apply:obj=>{if(!obj||!Array.isArray(obj.recipes))throw 0;S=obj;migrate();save();flush();R()},render:()=>R()});
+ apply:obj=>{if(!obj||!Array.isArray(obj.recipes))throw 0;S=obj;migrate();save();flush();R()},render:()=>R(),onUser:u=>{if(u)pubLater()}});
+if(SHV)loadShared();
 </script></body></html>

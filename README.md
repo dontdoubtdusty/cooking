@@ -13,6 +13,7 @@ A recipe box, cook mode and shopping list that runs in your browser. It's part o
 - A Kitchen tab for what you have on hand, recipes you can make without shopping, and a merged shopping list
 - A cooking log with what's due for a comeback
 - Light, dark and automatic themes
+- Sharing a recipe as a short link to a recipe card that stays up to date, or as plain text
 - Backups you can share, download and import, with a weekly reminder
 - Optional sync across devices with an email sign-in
 
@@ -27,6 +28,24 @@ Turn on GitHub Pages for this repo (**Settings → Pages → Deploy from a branc
 - **Computer (Chrome or Edge):** click the install icon at the right end of the address bar.
 
 Once it's installed, it opens full screen with its own icon and works without an internet connection.
+
+### Sharing recipes
+
+Tap **Share** on a recipe to send it as a link or as plain text. A link opens a recipe card anyone can view, and anyone who also uses Big Saucy can save it to their own recipes.
+
+Links need you signed in to sync, and one addition to the Firestore rules (Firebase console → Firestore Database → Rules). Add this inside `match /databases/{database}/documents { … }`, next to the existing `users` rule, then click **Publish**:
+
+```
+match /shared/{id} {
+  allow read: if true;
+  allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+  allow update: if request.auth != null && resource.data.uid == request.auth.uid
+                && request.resource.data.uid == request.auth.uid;
+  allow delete: if request.auth != null && (resource == null || resource.data.uid == request.auth.uid);
+}
+```
+
+Anyone with a link can read that one recipe; only the person who shared it can change or remove it. Editing a recipe updates its link, and deleting the recipe takes the link down.
 
 ### Files
 
