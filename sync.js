@@ -225,6 +225,12 @@
       async put(id, data) { if (!user) throw { code: 'signed-out' }; await F.setDoc(F.doc(db, 'shared', id), { ...data, uid: user.uid, at: Date.now() }) },
       async del(id) { if (!user) throw { code: 'signed-out' }; await F.deleteDoc(F.doc(db, 'shared', id)) }
     },
+    // Small documents of the signed-in person's own, at users/{uid}/{path} (for example 'photos/abc'): {d, at}
+    mine: {
+      async get(path) { if (!user) throw { code: 'signed-out' }; const s = await F.getDoc(F.doc(db, 'users', user.uid, ...path.split('/'))); return s.exists() ? s.data() : null },
+      async put(path, data) { if (!user) throw { code: 'signed-out' }; await F.setDoc(F.doc(db, 'users', user.uid, ...path.split('/')), { ...data, at: Date.now() }) },
+      async del(path) { if (!user) throw { code: 'signed-out' }; await F.deleteDoc(F.doc(db, 'users', user.uid, ...path.split('/'))) }
+    },
     // Call after every successful write of the app's data to localStorage, with the text that was written
     saved(txt) {
       if (!o || applying || typeof txt != 'string') return;

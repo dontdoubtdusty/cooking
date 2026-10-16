@@ -13,7 +13,8 @@ A recipe box, cook mode and shopping list that runs in your browser. It's part o
 - A Kitchen tab for what you have on hand, recipes you can make without shopping, and a merged shopping list
 - A cooking log with what's due for a comeback
 - Light, dark and automatic themes
-- Sharing a recipe as a short link to a recipe card that stays up to date, or as plain text
+- Recipe photos, cropped to a circle
+- Sharing a recipe as a short link to a simple recipe page that stays up to date, or as plain text
 - Backups you can share, download and import, with a weekly reminder
 - Optional sync across devices with an email sign-in
 
@@ -29,13 +30,18 @@ Turn on GitHub Pages for this repo (**Settings → Pages → Deploy from a branc
 
 Once it's installed, it opens full screen with its own icon and works without an internet connection.
 
-### Sharing recipes
+### Sharing recipes and photos
 
-Tap **Share** on a recipe to send it as a link or as plain text. A link opens a recipe card anyone can view, and anyone who also uses Big Saucy can save it to their own recipes.
+Tap the badge next to a recipe's name to add a photo, then drag and pinch it into the circle. Photos are saved small (600px, about 25 KB) and kept apart from the rest of your data, so they don't count toward sync's 1 MB limit.
 
-Links need you signed in to sync, and one addition to the Firestore rules (Firebase console → Firestore Database → Rules). Add this inside `match /databases/{database}/documents { … }`, next to the existing `users` rule, then click **Publish**:
+Tap **Share** on a recipe to send it as a link or as plain text. The link opens `share.html`, a simple page anyone can view with the recipe, its photo and a **Copy recipe** button. The copied text pastes straight into Big Saucy's Add tab. Editing a recipe updates its link, and deleting the recipe takes the link down.
+
+Links and synced photos need you signed in, plus these rules in Firestore (Firebase console → Firestore Database → Rules), inside `match /databases/{database}/documents { … }`:
 
 ```
+match /users/{uid}/photos/{id} {
+  allow read, write: if request.auth != null && request.auth.uid == uid;
+}
 match /shared/{id} {
   allow read: if true;
   allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
@@ -45,13 +51,12 @@ match /shared/{id} {
 }
 ```
 
-Anyone with a link can read that one recipe; only the person who shared it can change or remove it. Editing a recipe updates its link, and deleting the recipe takes the link down.
-
 ### Files
 
 | File | What it does |
 | --- | --- |
 | `index.html` | The whole app |
+| `share.html` | The page a shared recipe link opens |
 | `sync.js` | Optional sync across devices (shared by all the Big apps) |
 | `manifest.webmanifest` | The app's name, colors and icons, used when it's installed |
 | `sw.js` | Saves a copy of the app so it opens offline |

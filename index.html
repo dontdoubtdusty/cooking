@@ -121,6 +121,11 @@ body.hast #toast{bottom:calc(140px + env(safe-area-inset-bottom,0px))}
 .rc:active{transform:scale(.98);background:var(--fld)}
 .rt{flex:none;width:48px;height:48px;border-radius:15px;display:grid;place-content:center;color:#fff;font:600 17px var(--fd);letter-spacing:.4px;text-shadow:0 1px 2px #0003}
 .rt.big{width:70px;height:70px;border-radius:21px;font-size:25px}
+img.rt.ph{border-radius:50%;object-fit:cover;background:var(--fld)}img.rt.huge{width:150px;height:150px}
+.phb{position:relative;flex:none;padding:0;border:0;background:none;border-radius:21px;cursor:pointer}.phb.add::after{content:'+';position:absolute;right:-4px;bottom:-4px;width:24px;height:24px;border-radius:50%;background:var(--card);color:var(--pc);border:1px solid var(--bd);display:grid;place-content:center;font:700 17px/1 var(--fd);box-shadow:var(--sh)}
+.crop{position:relative;width:min(300px,76vw);aspect-ratio:1;margin:10px auto 12px;overflow:hidden;border-radius:18px;background:#111;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}.crop img{position:absolute;max-width:none;pointer-events:none}
+.cropO{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle closest-side,transparent 83.4%,rgba(255,255,255,.9) 83.6%,rgba(255,255,255,.9) 84.4%,rgba(0,0,0,.55) 84.6%)}
+#cropZ{width:100%;accent-color:var(--pc)}
 .rcn{flex:1;min-width:0;display:flex;flex-direction:column}.rcn b,.rcn .mu{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rcn b{font-weight:700;font-size:15px}
 .chev{flex:none;color:var(--mu);opacity:.55}
 .dbox{flex:none;width:48px;height:48px;border-radius:14px;background:var(--fld);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05}.dbox b{font:600 18px var(--fd)}.dbox span{font-size:10px;font-weight:800;text-transform:uppercase;color:var(--mu)}
@@ -162,7 +167,6 @@ ol.steps li:before{content:counter(s);position:absolute;left:0;top:8px;width:28p
 .g2f{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.g2f label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:800;color:var(--mu)}.g2f input{font:600 15px 'Nunito',sans-serif;color:var(--tx)}
 .nrow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--bd)}.nrow:first-of-type{border-top:0}.nrow b{font-weight:800;text-align:right}
 .hint{font-size:12px;color:var(--mu);margin:6px 2px 0}
-body.shv #nav,body.shv #gear,body.shv #tdock{display:none}body.shv{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
 .savebar{position:sticky;bottom:calc(80px + env(safe-area-inset-bottom,0px));z-index:3;display:flex;gap:8px;padding:8px;background:color-mix(in srgb,var(--card) 90%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--bd);border-radius:20px;box-shadow:var(--sh)}
 body.hast .savebar{bottom:calc(128px + env(safe-area-inset-bottom,0px))}
 .savebar button:last-child{flex:1}
@@ -230,6 +234,7 @@ button.cd.on{border-color:var(--pc);background:var(--card)}
 // =====================================================================
 // 1. CONSTANTS
 // =====================================================================
+if(/[?&]r=/.test(location.search))location.replace('share.html'+location.search);
 const LS='saucy-v1',LST='saucy-timers';   // localStorage keys (don't change: they hold your data)
 // Facets: [key, label, single-choice?]
 const FAC=[['cuisine','Cuisine',1],['meal','Category'],['protein','Protein'],['method','Method'],['diet','Diet']];
@@ -619,6 +624,8 @@ function parseRecipe(txt){
  for(const l of J){if(!l||NOISE.test(l)||/^[\d.]+ (from|out of) \d+/i.test(l)||/^[\d.]+ stars?\b/i.test(l)||/^\(?\d+ (votes?|reviews?|ratings?|comments?)\)?$/i.test(l))continue;
   if(/^https?:\/\/\S+$/i.test(l)){if(VIDRE.test(l))vid=vid||l;else src=src||l;continue}
   let m;
+  // "Source: https://…" or "Video: https://…", even right after the nutrition (where Big Saucy's own shared text puts them)
+  if(m=/^(?:source|original|from|recipe|video|watch)\b[^:]{0,20}:\s*(https?:\/\/\S+)$/i.exec(l)){if(VIDRE.test(m[1]))vid=vid||m[1];else src=src||m[1];continue}
   // Nutrition: a "Nutrition" heading starts the section; a line with several nutrients counts anywhere
   if(m=NUTH.exec(l)){sec='nut';pend='';if(m[1])nut.push(...(nutLine(m[1])||[]).map(x=>x.t));continue}
   if(sec=='nut'){let x=nutLine(pend?pend+': '+l:l);pend='';
@@ -637,6 +644,7 @@ function parseRecipe(txt){
    if(m=/^prep(?:aration)?(?: time)?\s*:?\s*(.+)$/i.exec(l)){const t=mins(m[1]);if(t){meta.prep=t;continue}}
    if(m=/^(?:cook|cooking|bake|baking)(?: time)?\s*:?\s*(.+)$/i.exec(l)){const t=mins(m[1]);if(t){meta.cook=t;continue}}
    if(m=/^(?:servings?|serves|yields?|makes)\b\s*:?\s*(\d+)/i.exec(l)){meta.serves=+m[1];continue}
+   if(sec=='pre'&&!meta.total&&/^(?:\d+(?:\.\d+)?\s*(?:hours?|hrs?|hr|h|minutes?|mins?|min|m)\s*)+$/i.test(l)){const t=mins(l);if(t){meta.total=t;continue}}
    if(m=/^cuisine\s*:?\s*(.+)$/i.exec(l)){meta.cuisine=m[1];continue}
    if(m=/^(?:course|meal|category)\s*:\s*(.+)$/i.exec(l)){meta.course=m[1];continue}
    if(m=/^keywords?\s*:\s*(.+)$/i.exec(l)){meta.kw=m[1];continue}}
@@ -679,7 +687,7 @@ const ICP='<svg class="ic" viewBox="0 0 16 16" width="15" height="15" aria-hidde
 const DT=(v,attrs)=>`<label class="dt"><span>${sd(v)}</span><input type="date" value="${esc(v||'')}" ${attrs}></label>`;
 const IDate=p=>DT(get(p),`data-p="${p}" data-t="s"`);
 const X=(p,i,label=ICX)=>`<button class="x" data-a="del" data-p="${p}" data-i="${i}" aria-label="Delete">${label}</button>`;
-const tile=(r,big)=>`<span class="rt${big?' big':''}" style="background:${cgrad(r.cuisine)}" aria-hidden="true">${esc(inits(r.title))}</span>`;
+const tile=(r,big)=>r.img&&IMG[r.img]?`<img class="rt ph${big==2?' huge':big?' big':''}" src="${IMG[r.img]}" alt="" aria-hidden="true">`:`<span class="rt${big?' big':''}" style="background:${cgrad(r.cuisine)}" aria-hidden="true">${esc(inits(r.title))}</span>`;
 function rRow(r){const lc=last(r),meta=[r.cuisine,fmtTime(r.time),lc?'cooked '+ago(lc):'not cooked yet'].filter(Boolean).join(' · ');
  return `<button class="rc" data-a="open" data-id="${esc(r.id)}">${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${esc(meta)}</span></span>${CHEV}</button>`}
 function hello(){const h=new Date().getHours(),g=h<5?'Late-night snack?':h<11?'What\'s for breakfast?':h<15?'What\'s for lunch?':'What\'s for dinner?',n=S.recipes.length;
@@ -763,7 +771,7 @@ function vRecipe(){const r=byId(RID);if(!r)return '';const i=S.recipes.indexOf(r
  const up=RST.length?byId(RST[RST.length-1]):null,nx=planOk().filter(e=>e.rid==r.id&&e.d>=tdy()).sort((a,b)=>a.d<b.d?-1:1)[0],ui=usedIn(r);
  let h=`<div class="bk"><button class="g" data-a="back">‹ ${up?esc(short(up.title)):'Back'}</button></div>`;
  if(SUR==r.id)h+=`<div class="card wide okc"><div class="row"><span style="flex:1"><b>Surprise pick</b><br><span class="mu">From ${SURN} matching recipe${SURN==1?'':'s'}, favoring ones you haven't made lately.</span></span><button data-a="surprise" style="flex:none">Try another</button></div></div>`;
- h+=`<div class="card wide"><div class="hr">${tile(r,1)}<div style="min-width:0"><h2>${esc(r.title||'Untitled')}</h2><div class="mu">${esc(meta)}</div></div></div>`
+ h+=`<div class="card wide"><div class="hr"><button class="phb${r.img&&IMG[r.img]?'':' add'}" data-a="phTap" data-id="${esc(r.id)}" aria-label="${r.img?'Change photo':'Add a photo'}">${tile(r,1)}</button><div style="min-width:0"><h2>${esc(r.title||'Untitled')}</h2><div class="mu">${esc(meta)}</div></div></div>`
  +(fac.length||r.tags.length?`<div class="pills">${fac.map(x=>`<span class="pill">${esc(x)}</span>`).join('')}${r.tags.map(x=>`<span class="pill tg">#${esc(x)}</span>`).join('')}</div>`:'')
  +`<div class="mu" style="margin-top:10px">${lc?`Last cooked ${ago(lc)} · ${r.cooked.length} time${r.cooked.length==1?'':'s'}`:'Not cooked yet'}${nx?` · <button class="g lnk" data-a="plGo" data-d="${nx.d}">${nx.d==tdy()?'On the calendar today':'Next on the calendar '+esc(dlab(nx.d))}</button>`:''}</div>
  ${linkRow(r)}${r.src?'':`<button class="g lnk" data-a="addLink" data-id="${esc(r.id)}" style="margin-top:10px">+ Add link to original recipe</button>`}<div class="row acts"><button data-a="cook" data-id="${esc(r.id)}">Start cooking</button><button class="g bd" data-a="cooked" data-id="${esc(r.id)}">Cooked today</button><button class="g bd" data-a="plCal" data-id="${esc(r.id)}">Add to calendar</button><button class="g bd" data-a="listT" data-id="${esc(r.id)}">${S.shop.rids.includes(r.id)?'On the list':'Add to list'}</button><button class="g bd" data-a="rShare" data-id="${esc(r.id)}">Share</button><button class="g bd" data-a="edit" data-id="${esc(r.id)}">Edit</button></div></div>`;
@@ -784,6 +792,74 @@ function linkRow(r){const a=[];if(isUrl(r.src))a.push(`<a class="lbtn" href="${e
 // Optional nutrition card: folded away, with calories in the summary
 function nutCard(r){if(!r.nut.length)return '';const sp=t=>{const i=t.indexOf(':');return i<0?[t,'']:[t.slice(0,i).trim(),t.slice(i+1).trim()]},cal=r.nut.map(sp).find(x=>/^calories$/i.test(x[0]));
  return `<details class="card" ${O.nut?'open':''} data-o="nut"><summary><h3><span>Nutrition</span><span class="mu">${cal&&cal[1]?esc(cal[1])+' cal':''}</span></h3></summary><div>${r.nut.map(sp).map(([n,v])=>`<div class="nrow"><span>${esc(n)}</span><b>${esc(v)}</b></div>`).join('')}<div class="hint">As listed in the recipe, usually per serving. Doesn't change when you scale.</div></div></details>`}
+// ---- Recipe photos ----
+// A recipe's photo is r.img, an id. The picture (a 600px square, about 25 KB) stays out of the synced data, which has a
+// 1 MB limit: each device keeps photos in IndexedDB, and the cloud keeps one document per photo at users/{uid}/photos/{id}.
+// A changed photo always gets a new id, so photos are only ever added or removed, never updated.
+const IMG={};    // id -> object URL, for the photos this device has
+const phq=()=>{try{return JSON.parse(localStorage.getItem('saucy-photo-q'))||{up:[],del:[]}}catch(e){return {up:[],del:[]}}};   // photos waiting to upload or be removed from the cloud
+const phqSet=q=>{try{localStorage.setItem('saucy-photo-q',JSON.stringify(q))}catch(e){}};
+const PDB=(()=>{let p;const open=()=>p||(p=new Promise((ok,no)=>{const r=indexedDB.open('saucy-photos',1);r.onupgradeneeded=()=>r.result.createObjectStore('p');r.onsuccess=()=>ok(r.result);r.onerror=()=>{p=null;no(r.error)}}));
+ const run=(m,f)=>open().then(d=>new Promise((ok,no)=>{const t=d.transaction('p',m);f(t.objectStore('p'));t.oncomplete=()=>ok();t.onerror=t.onabort=()=>no(t.error)}));
+ return {put:(k,v)=>run('readwrite',s=>s.put(v,k)),del:k=>run('readwrite',s=>s.delete(k)),
+  all:()=>open().then(d=>new Promise((ok,no)=>{const o={},c=d.transaction('p').objectStore('p').openCursor();c.onsuccess=()=>{const x=c.result;if(x){o[x.key]=x.value;x.continue()}else ok(o)};c.onerror=()=>no(c.error)}))}})();
+const b2d=b=>new Promise((ok,no)=>{const f=new FileReader();f.onload=()=>ok(f.result);f.onerror=()=>no(f.error);f.readAsDataURL(b)});
+const phBlob=id=>IMG[id]?fetch(IMG[id]).then(x=>x.blob()).catch(()=>null):Promise.resolve(null);
+async function phStore(id,b){IMG[id]=URL.createObjectURL(b);try{await PDB.put(id,b)}catch(e){}}
+function phLoad(){PDB.all().then(o=>{Object.entries(o).forEach(([k,b])=>{if(b instanceof Blob)IMG[k]=URL.createObjectURL(b)});R()}).catch(()=>{}).then(pubLater)}
+// Photos this device doesn't have yet (added on another device)
+const PHT=new Set();   // ids already looked for in the cloud this session
+async function phFetch(){let got=0;
+ for(const r of S.recipes){const id=r.img;if(!id||IMG[id]||PHT.has(id))continue;PHT.add(id);
+  try{const d=await CloudSync.mine.get('photos/'+id);if(d&&d.d){await phStore(id,await (await fetch(d.d)).blob());got=1}}catch(e){PHT.delete(id)}}
+ if(got)R()}
+// Photos no recipe uses any more are removed after 30 seconds (long enough for Undo)
+const ORPH={};
+async function phTidy(){const used=new Set(S.recipes.map(r=>r.img).filter(Boolean)),now=Date.now();let wait=0;
+ for(const id of Object.keys(IMG)){if(used.has(id)){delete ORPH[id];continue}
+  if(!ORPH[id])ORPH[id]=now;if(now-ORPH[id]<30000){wait=1;continue}
+  URL.revokeObjectURL(IMG[id]);delete IMG[id];delete ORPH[id];try{await PDB.del(id)}catch(e){}
+  const q=phq();if(q.up.includes(id))q.up=q.up.filter(x=>x!=id);else if(!q.del.includes(id))q.del.push(id);phqSet(q)}
+ if(wait)setTimeout(pubLater,31000)}
+// Cropping: the photo moves and zooms under a fixed circle. z is the zoom (1 = the photo just fills the circle);
+// ox, oy move the photo, measured in circle widths. The circle is 84% of the square stage.
+const CR=.84;
+let CIMG=null;   // the picked photo, loaded
+function cropDims(){const m=Math.min(SH.w,SH.h);return [SH.w*SH.z/m,SH.h*SH.z/m]}   // photo size in circle widths
+function cropClamp(){const [a,b]=cropDims();SH.z=Math.max(1,Math.min(5,SH.z));const mx=(a-1)/2,my=(b-1)/2;SH.ox=Math.max(-mx,Math.min(mx,SH.ox));SH.oy=Math.max(-my,Math.min(my,SH.oy))}
+function cropCss(){const [a,b]=cropDims(),pw=a*CR*100,ph=b*CR*100;return `width:${pw}%;height:${ph}%;left:${50+SH.ox*CR*100-pw/2}%;top:${50+SH.oy*CR*100-ph/2}%`}
+function cropDraw(){const i=document.getElementById('cropI');if(i)i.style.cssText=cropCss();const z=document.getElementById('cropZ');if(z&&+z.value!==SH.z)z.value=SH.z}
+function cropZoom(f){if(!SH||SH.kind!='crop')return;const z0=SH.z;SH.z=Math.max(1,Math.min(5,SH.z*f));const k=SH.z/z0;SH.ox*=k;SH.oy*=k;cropClamp();cropDraw()}
+(()=>{const P=new Map();let last=null;
+ const stage=()=>document.getElementById('crop');
+ const dist=()=>{const [a,b]=[...P.values()];return Math.hypot(a.x-b.x,a.y-b.y)};
+ document.addEventListener('pointerdown',e=>{if(!e.target.closest('#crop')||!SH||SH.kind!='crop')return;e.preventDefault();P.set(e.pointerId,{x:e.clientX,y:e.clientY});try{e.target.setPointerCapture(e.pointerId)}catch(_){}last=P.size==2?dist():null});
+ document.addEventListener('pointermove',e=>{const p=P.get(e.pointerId);if(!p||!SH||SH.kind!='crop')return;const W=stage().getBoundingClientRect().width*CR;
+  if(P.size==1){SH.ox+=(e.clientX-p.x)/W;SH.oy+=(e.clientY-p.y)/W;p.x=e.clientX;p.y=e.clientY;cropClamp();cropDraw()}
+  else{const o={...p};p.x=e.clientX;p.y=e.clientY;SH.ox+=(e.clientX-o.x)/2/W;SH.oy+=(e.clientY-o.y)/2/W;const d=dist();if(last)cropZoom(d/last);last=d;cropClamp();cropDraw()}});
+ const up=e=>{P.delete(e.pointerId);last=P.size==2?dist():null};
+ document.addEventListener('pointerup',up);document.addEventListener('pointercancel',up);
+ document.addEventListener('wheel',e=>{if(!e.target.closest('#crop'))return;e.preventDefault();cropZoom(Math.exp(-e.deltaY*.002))},{passive:false});
+ document.addEventListener('input',e=>{if(e.target.id=='cropZ')cropZoom(+e.target.value/SH.z)})})();
+// The circle's square as a small image: 600px, WebP where the browser can make it (else JPEG), quality lowered to about 25 KB
+async function cropExport(){const m=Math.min(SH.w,SH.h),sw=m/SH.z,sx=SH.w/2-SH.ox*m/SH.z-sw/2,sy=SH.h/2-SH.oy*m/SH.z-sw/2;
+ const enc=(c,t,q)=>new Promise(ok=>c.toBlob(ok,t,q));let best=null;
+ for(const N of [600,480]){const c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,N,N);x.imageSmoothingQuality='high';x.drawImage(CIMG,sx,sy,sw,sw,0,0,N,N);
+  const probe=await enc(c,'image/webp',.8),t=probe&&probe.type=='image/webp'?'image/webp':'image/jpeg';
+  for(const q of [.8,.7,.6,.5,.42,.35]){const b=q==.8&&t=='image/webp'?probe:await enc(c,t,q);if(!b)continue;if(!best||b.size<best.size)best=b;if(b.size<=26000)return b}
+  if(best&&best.size<=32000)return best}
+ return best}
+function phPick(id){let f=document.getElementById('phf');
+ if(!f){f=document.createElement('input');f.type='file';f.accept='image/*';f.id='phf';f.hidden=true;document.body.appendChild(f);
+  f.addEventListener('change',()=>{const file=f.files&&f.files[0],rid=f.dataset.id;f.value='';if(!file)return;const u=URL.createObjectURL(file),im=new Image();
+   im.onload=()=>{CIMG=im;SH={kind:'crop',id:rid,src:u,w:im.naturalWidth,h:im.naturalHeight,z:1,ox:0,oy:0};R()};
+   im.onerror=()=>{URL.revokeObjectURL(u);toast('Couldn’t open that photo. Try a JPEG or PNG.')};im.src=u})}
+ f.dataset.id=id;f.click()}
+function phSheet(){const r=byId(SH.id);if(!r)return '';
+ return `<h2>Recipe photo</h2><div style="display:flex;justify-content:center;margin:4px 0 14px">${tile(r,2)}</div><div class="row"><button class="x" data-a="phDel" data-id="${esc(r.id)}">Remove</button><button data-a="phNew" data-id="${esc(r.id)}" style="flex:1">Change photo</button></div>`}
+function cropSheet(){return `<h2>Position photo</h2><p class="mu" style="margin:0 0 4px">Drag to move it. Pinch, scroll or use the slider to zoom.</p><div class="crop" id="crop"><img id="cropI" src="${esc(SH.src)}" style="${cropCss()}" alt="" draggable="false"><div class="cropO"></div></div>
+ <input type="range" id="cropZ" min="1" max="5" step="0.01" value="${SH.z}" aria-label="Zoom"><div class="row" style="margin-top:12px"><button class="g bd" data-a="shClose">Cancel</button><button data-a="cropSave" style="flex:1">Use photo</button></div>`}
+
 // ---- Sharing: a short link to a recipe card, or plain text ----
 // A shared recipe gets r.share (an id). Its public copy lives at shared/{id} in Firebase and is re-uploaded whenever
 // the recipe changes, so the link always shows the latest version. Deleting the recipe deletes the copy.
@@ -791,17 +867,31 @@ const LSH='saucy-shared';   // this device: share id -> fingerprint of the copy 
 var PST=0,PBUSY=0;          // var, not let: flush() can run before this part of the script does
 const fp=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)+':'+s.length};
 const plainL=l=>String(l||'').replace(LRE,(m,t)=>t.trim());   // [[Linked recipe]] -> Linked recipe
-const pubOf=r=>({app:'cooking',v:1,title:r.title,cuisine:r.cuisine,meal:r.meal,protein:r.protein,method:r.method,diet:r.diet,tags:r.tags,serves:r.serves,time:r.time,
+const pubOf=r=>({app:'cooking',v:1,title:r.title,cuisine:r.cuisine,meal:r.meal,protein:r.protein,method:r.method,diet:r.diet,tags:r.tags,serves:r.serves,time:r.time,img:r.img||'',
  ing:r.ing.map(plainL),steps:r.steps.map(plainL),nut:r.nut,notes:plainL(r.notes),src:r.src,vid:r.vid});
-const shareUrl=id=>location.origin+location.pathname.replace(/index\.html$/,'')+'?r='+id;
+const shareUrl=id=>location.origin+location.pathname.replace(/index\.html$/,'')+'share.html?r='+id;
 const newShareId=()=>{const a='abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';return [...crypto.getRandomValues(new Uint8Array(10))].map(x=>a[x%a.length]).join('')};
 const pubMap=()=>{try{return JSON.parse(localStorage.getItem(LSH))||{}}catch(e){return {}}};
 const pubKeep=m=>{try{localStorage.setItem(LSH,JSON.stringify(m))}catch(e){}};
 function pubLater(){clearTimeout(PST);PST=setTimeout(pubSync,2000)}
-async function pubSync(){const C=window.CloudSync;if(PBUSY||!C||!C.pub||!C.signedIn())return;PBUSY=1;const m=pubMap();
- try{for(const id of [...(S.shareGone||[])]){try{await C.pub.del(id)}catch(e){if(!/permission|not-found/.test(e&&e.code||''))throw e}
+// Upload a recipe's public copy, with its photo as a data URL. Resolves to the fingerprint to remember, or null to retry later.
+async function pubPut(r){const d=pubOf(r),f=fp(JSON.stringify(d)),out={...d,img:''};
+ if(r.img){const b=await phBlob(r.img);if(b)out.img=await b2d(b)}
+ await CloudSync.pub.put(r.share,out);return !r.img||out.img?f:null}
+// Cloud chores after each save or sign-in: tidy photos no recipe uses, upload and remove photos, fetch missing ones,
+// and keep shared copies the same as their recipes
+async function pubSync(){if(PBUSY)return;PBUSY=1;
+ try{await phTidy()}catch(e){}
+ const C=window.CloudSync;
+ if(C&&C.pub&&C.mine&&C.signedIn())try{
+  const q=phq();
+  for(const id of [...q.up]){const b=await phBlob(id);if(b)await C.mine.put('photos/'+id,{d:await b2d(b)});q.up=q.up.filter(x=>x!=id);phqSet(q)}
+  for(const id of [...q.del]){await C.mine.del('photos/'+id);q.del=q.del.filter(x=>x!=id);phqSet(q)}
+  await phFetch();
+  const m=pubMap();
+  for(const id of [...(S.shareGone||[])]){try{await C.pub.del(id)}catch(e){if(!/permission|not-found/.test(e&&e.code||''))throw e}
    S.shareGone=S.shareGone.filter(x=>x!=id);delete m[id];pubKeep(m);save()}
-  for(const r of S.recipes){if(!r.share)continue;const d=pubOf(r),f=fp(JSON.stringify(d));if(m[r.share]===f)continue;await C.pub.put(r.share,d);m[r.share]=f;pubKeep(m)}}
+  for(const r of S.recipes){if(!r.share)continue;const f=fp(JSON.stringify(pubOf(r)));if(m[r.share]===f)continue;const g=await pubPut(r);if(g){m[r.share]=g;pubKeep(m)}}}
  catch(e){}   // offline or refused: tried again after the next save or sign-in
  PBUSY=0}
 // The recipe as plain lines: title, servings and time, then each section under a header line
@@ -825,30 +915,6 @@ function shareSheet(){const r=byId(SH.id);if(!r)return '';const opt=(a,ic,t,sub)
   +(SH.need?`<div class="card okc" style="margin:0 0 8px;padding:12px"><b>Sign in to share links</b><p class="mu" style="margin:4px 0 10px">Shared recipes are kept with your account, so the link can stay up to date when you edit. Plain text works without signing in.</p><button data-a="shSignIn" style="width:100%">Sign in</button></div>`:'')
   +opt('shLink',ICSH,'Share link','A recipe card anyone can open. It updates when you edit the recipe.')
   +opt('shText',ICTX,'Share as text','Plain lines with no formatting, for copying and pasting.')}
-// ---- A recipe someone shared with a link (?r=id) ----
-let SHV=null;   // {id, st:'load'|'ok'|'gone'|'err', d: the recipe, f: servings scale}
-function loadShared(){const C=window.CloudSync;if(!/^[A-Za-z0-9]{6,32}$/.test(SHV.id)){SHV.st='gone';R();return}
- if(!C||!C.pub){SHV.st='err';R();return}SHV.st='load';R();
- C.pub.get(SHV.id).then(d=>{if(!d||d.app!='cooking'||!Array.isArray(d.ing))SHV.st='gone';else{SHV.st='ok';SHV.d=fix({...d,id:'shared'});document.title=(d.title||'Recipe')+' · Big Saucy'}R()},()=>{SHV.st='err';R()})}
-function vShared(){const v=SHV,mineBtn='<button class="g bd" data-a="shvExit">Open my recipes</button>';
- if(v.st=='load')return `<div class="card wide"><p class="mu" style="margin:0">Loading the recipe…</p></div>`;
- if(v.st!='ok')return `<div class="card wide"><h2>${v.st=='gone'?'Recipe not found':'Couldn’t load this recipe'}</h2><p class="mu">${v.st=='gone'?'This link doesn’t lead to a recipe any more. It may have been deleted.':'Check your connection and try again.'}</p><div class="row">${v.st=='err'?'<button data-a="shvRetry">Try again</button>':''}${HAD?mineBtn:''}</div></div>`;
- const r=v.d,f=v.f||1,fac=[...r.meal,...r.protein,...r.method,...r.diet],mine=S.recipes.find(x=>x.from==v.id||x.share==v.id);
- const meta=[r.cuisine,r.time?fmtTime(r.time):'',r.serves?'serves '+r.serves:''].filter(Boolean).join(' · ');
- let h=`<div class="card wide"><div class="hr">${tile(r,1)}<div style="min-width:0"><h2>${esc(r.title||'Untitled')}</h2><div class="mu">${esc(meta)}</div></div></div>`
-  +(fac.length||r.tags.length?`<div class="pills">${fac.map(x=>`<span class="pill">${esc(x)}</span>`).join('')}${r.tags.map(x=>`<span class="pill tg">#${esc(x)}</span>`).join('')}</div>`:'')
-  +linkRow(r)
-  +(HAD?`<div class="row acts">${mine?`<button data-a="shvOpen" data-id="${esc(mine.id)}">Open in my recipes</button>`:`<button data-a="shvSave">Save to my recipes</button>`}${mine?'':mineBtn}</div>`:'')+`</div>`;
- const sv=r.serves?'Serves '+fmtQ(r.serves*f):(f==1?'Original':'×'+fmtQ(f));
- h+=`<div class="card"><h3><span>Ingredients</span><span class="scl"><button class="g sb" data-a="shvScale" data-d="-1" aria-label="Fewer servings">−</button><span class="b">${sv}</span><button class="g sb" data-a="shvScale" data-d="1" aria-label="More servings">+</button></span></h3>`
-  +(f!=1?`<div class="mu" style="margin:-4px 0 6px">Amounts scaled ×${fmtQ(f)} · <button class="g lnk" data-a="shvScale" data-d="0">Reset</button></div>`:'')
-  +(r.ing.map(l=>{if(/:$/.test(l))return `<div class="srow ihr"><div class="sec ih">${esc(l.slice(0,-1))}</div></div>`;const [q,rest]=scaleLine(l,f);
-   return `<div class="srow"><span class="ingr" style="cursor:default"><span>${q?`<b>${esc(q)}</b> `:''}${esc(rest)}</span></span></div>`}).join('')||'<p class="mu" style="margin:0">No ingredients listed.</p>')+`</div>`;
- h+=`<div class="card"><h3><span>Directions</span></h3>${r.steps.length?`<ol class="steps">${r.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`:'<p class="mu" style="margin:0">No steps listed.</p>'}</div>`;
- if(r.notes)h+=`<div class="card"><h3><span>Notes</span></h3><p class="pre">${esc(r.notes)}</p></div>`;
- if(r.nut.length){const sp=t=>{const i=t.indexOf(':');return i<0?[t,'']:[t.slice(0,i).trim(),t.slice(i+1).trim()]};
-  h+=`<div class="card"><h3><span>Nutrition</span></h3>${r.nut.map(sp).map(([n,x])=>`<div class="nrow"><span>${esc(n)}</span><b>${esc(x)}</b></div>`).join('')}<div class="hint">As listed in the recipe, usually per serving.</div></div>`}
- return h+`<p class="mu wide" style="text-align:center;margin:4px 0 0">Shared from Big Saucy Recipes</p>`}
 // ---- Cook mode ----
 let WL=null,WP=0,WST='';
 const wakeTxt=()=>WST=='on'?'Screen stays on while you cook':WST=='no'?'Couldn\'t keep the screen on here. It should work once the app is hosted.':'';
@@ -857,7 +923,7 @@ function vCook(){const r=byId(S.cookId);
   return `<div class="card wide"><h2>Cook mode</h2><p class="mu" style="margin:0 0 12px">Open a recipe and tap Start cooking. Your screen stays on, times in the steps become one-tap timers, and you can check off ingredients as you go.</p><button data-a="tab" data-id="browse">Browse recipes</button></div>`
   +(rec.length?`<div class="card wide"><div class="sec">Cooked recently</div>${rec.map(rRow).join('')}</div>`:'')}
  const n=r.steps.length,k=Math.min(S.step||0,Math.max(0,n-1));
- let h=`<div class="card wide"><div class="row"><div style="flex:1;min-width:0"><span class="sec" style="margin:0">Cooking</span><b class="ct">${esc(r.title)}</b></div><button class="g bd" data-a="cookExit">Exit</button></div>${linkRow(r)}<div class="mu" id="wks" style="margin-top:6px">${wakeTxt()}</div></div>`;
+ let h=`<div class="card wide"><div class="row">${r.img&&IMG[r.img]?tile(r):''}<div style="flex:1;min-width:0"><span class="sec" style="margin:0">Cooking</span><b class="ct">${esc(r.title)}</b></div><button class="g bd" data-a="cookExit">Exit</button></div>${linkRow(r)}<div class="mu" id="wks" style="margin-top:6px">${wakeTxt()}</div></div>`;
  if(n)h+=`<div class="card wide stepc"><h3><span>Steps</span><span class="mu">Step ${k+1} of ${n}</span></h3><div class="bar" style="margin-bottom:8px"><i style="width:${(k+1)/n*100}%"></i></div>`
   +r.steps.map((s,j)=>j==k?`<div class="sl cur"><span class="slnum">${j+1}</span><div style="flex:1;min-width:0"><div class="st">${stepHtml(s,r,j)}</div><div class="row nv"><button class="g bd" data-a="stp" data-d="-1" ${k?'':'disabled'}>‹ Back</button>${k>=n-1?`<button data-a="finish">Finish and log it</button>`:`<button data-a="stp" data-d="1">Next step ›</button>`}</div></div></div>`
    :`<button class="sl ${j<k?'dn':''}" data-a="stp" data-to="${j}"><span class="slnum">${j<k?ICK:j+1}</span><span>${esc(s)}</span></button>`).join('')+`</div>`;
@@ -998,6 +1064,8 @@ function vSheet(){if(!SH)return '';let b='';
   return `<div class="shbg"></div><div class="shp" role="dialog" aria-modal="true" tabindex="-1"><div class="grab"></div>${b}</div>`}
  const wrap=x=>`<div class="shbg"></div><div class="shp" role="dialog" aria-modal="true" tabindex="-1"><div class="grab"></div>${x}</div>`;
  if(SH.kind=='share')return wrap(shareSheet());
+ if(SH.kind=='photo')return wrap(phSheet());
+ if(SH.kind=='crop')return wrap(cropSheet());
  if(SH.kind=='shout')return wrap(`<h2>Copy ${SH.what=='Link'?'the link':'the recipe'}</h2><p class="mu" style="margin:0 0 8px">Sharing isn't available here, so copy it and paste it wherever you like.</p><textarea id="shoT" class="rx" readonly>${esc(SH.t)}</textarea><div class="row" style="margin-top:12px"><button class="g bd" data-a="shClose">Close</button><button data-a="shoCopy" style="flex:1">Copy</button></div>`);
  const byT=(a,b)=>(a.title||'').toLowerCase()<(b.title||'').toLowerCase()?-1:1,qOk=(x,q)=>!q||(x.title+' '+x.cuisine+' '+x.tags.join(' ')).toLowerCase().includes(q);
  const pRow=(r,a,extra='')=>`<button class="rc" data-a="${a}" data-id="${esc(r.id)}"${extra}>${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${esc([r.cuisine,r.serves?'serves '+r.serves:'',fmtTime(r.time)].filter(Boolean).join(' · ')||' ')}</span></span>${CHEV}</button>`;
@@ -1151,28 +1219,28 @@ const ACT={
   S.draft=Object.assign(blankD(),{id:r.id,title:r.title,cuisine:r.cuisine,meal:[...r.meal],protein:[...r.protein],method:[...r.method],diet:[...r.diet],tags:[...r.tags],serves:r.serves||'',time:r.time?fmtTime(r.time):'',ingT:r.ing.join('\n'),stepT:r.steps.join('\n'),nutT:r.nut.join('\n'),notes:r.notes,src:r.src,vid:r.vid});
   AM='type';PARSED='';save();goTab('add')},
  delR:d=>{const i=S.recipes.findIndex(r=>r.id==d.id);if(i<0)return;const [x]=S.recipes.splice(i,1);if(x.share)S.shareGone=[...(S.shareGone||[]),x.share];if(S.cookId==x.id)S.cookId=null;if(S.shop.rids.includes(x.id))pruneShop();save();ACT.back();toast(`Deleted “${x.title}”`,()=>{S.recipes.splice(i,0,x);if(x.share)S.shareGone=(S.shareGone||[]).filter(id=>id!=x.share);commit()},'del')},
+ phTap:d=>{const r=byId(d.id);if(!r)return;if(r.img&&IMG[r.img]){SH={kind:'photo',id:r.id};R()}else phPick(r.id)},
+ phNew:d=>{SH=null;R();phPick(d.id)},
+ phDel:d=>{const r=byId(d.id);if(!r)return;const old=r.img;r.img='';SH=null;commit();toast('Photo removed',()=>{r.img=old;commit()})},
+ cropSave:async()=>{if(!SH||SH.kind!='crop'||!CIMG)return;const r=byId(SH.id),src=SH.src;if(!r){SH=null;R();return}
+  const b=document.querySelector('[data-a=cropSave]');if(b){b.disabled=true;b.textContent='Saving…'}
+  let blob=null;try{blob=await cropExport()}catch(e){}
+  URL.revokeObjectURL(src);CIMG=null;SH=null;if(!blob){R();toast('Couldn’t save that photo');return}
+  const id=uid('ph');await phStore(id,blob);const q=phq();q.up.push(id);phqSet(q);r.img=id;commit();toast('Photo added')},
  rShare:d=>{if(byId(d.id)){SH={kind:'share',id:d.id};R()}},
  shLink:d=>{const r=byId(d.id),C=window.CloudSync;if(!r)return;
   if(!C||!C.pub){toast('Sharing links needs sync, which isn’t set up here');return}
   if(C.pending()){toast('Still connecting to sync. Try again in a moment.');return}
   if(!C.signedIn()){SH={kind:'share',id:r.id,need:1};R();return}
   if(!r.share){r.share=newShareId();save()}
-  const id=r.share,data=pubOf(r);SH=null;R();
+  const id=r.share;SH=null;R();
   sendOut({title:r.title||'Recipe',url:shareUrl(id)},'Link');   // first, while the tap still counts for the share sheet
-  C.pub.put(id,data).then(()=>{const m=pubMap();m[id]=fp(JSON.stringify(data));pubKeep(m)},
+  pubPut(r).then(f=>{if(f){const m=pubMap();m[id]=f;pubKeep(m)}},
    e=>toast(/permission/.test(e&&e.code||'')?'The link couldn’t be published: the sync service refused it. Check the Firestore rules.':'The link will start working once you’re back online.'))},
  shText:d=>{const r=byId(d.id);if(!r)return;SH=null;R();sendOut({text:recipeText(r)},'Recipe')},
  shSignIn:()=>{SH=null;goTab('more');setTimeout(()=>{const f=document.querySelector('[data-cs-form]');if(f){f.scrollIntoView({block:'center',behavior:'smooth'});f.email&&f.email.focus({preventScroll:true})}},450)},
  shoCopy:()=>{const t=document.getElementById('shoT');if(!t)return;t.select();const ok=()=>{toast('Copied');SH=null;R()};
   if(navigator.clipboard)navigator.clipboard.writeText(t.value).then(ok,()=>{try{document.execCommand('copy')&&ok()}catch(_){}});else{try{document.execCommand('copy')&&ok()}catch(_){}}},
- shvScale:d=>{if(!SHV||!SHV.d)return;const r=SHV.d,f=SHV.f||1,s=+d.d;SHV.f=!s?1:r.serves?Math.max(1,Math.round(r.serves*f)+s)/r.serves:Math.max(.5,f+s*.5);R()},
- shvRetry:()=>loadShared(),
- shvSave:()=>{if(!SHV||SHV.st!='ok')return;const d=SHV.d;
-  if(S.recipes.some(x=>tkey(x.title)==tkey(d.title))&&!confirm(`You already have "${d.title}". Save another one?`))return;
-  S.recipes.push(fix({title:d.title,cuisine:d.cuisine,meal:[...d.meal],protein:[...d.protein],method:[...d.method],diet:[...d.diet],tags:[...d.tags],serves:d.serves,time:d.time,
-   ing:[...d.ing],steps:[...d.steps],nut:[...d.nut],notes:d.notes,src:d.src,vid:d.vid,from:SHV.id}));commit();toast('Saved to your recipes')},
- shvOpen:d=>{shvLeave();openRecipe(d.id)},
- shvExit:()=>{shvLeave();R();scrollTo(0,0)},
  addLink:d=>{const r=byId(d.id);if(!r)return;const u=normUrl(prompt('Paste the link to the original recipe')||'');if(!u)return;r.src=u;commit();toast('Link added')},
  logAdd:d=>{const r=byId(d.id);if(!r)return;r.cooked.push(tdy());O.log=1;commit()},
  del:d=>del(d.p,+d.i),
@@ -1252,7 +1320,7 @@ const ACT={
  shopDone,
  shT:(d,el)=>{if(SH&&SH[d.g]&&SH[d.g][d.i])SH[d.g][d.i].on=el.checked},
  shSave:()=>{if(!SH)return;let n=0;(SH.used||[]).forEach(x=>{if(x.on){S.pantry=S.pantry.filter(p=>p.id!=x.id);n++}});SH.left.forEach(x=>{if(x.on){addPantry(x.name,x.days);n++}});SH=null;commit();toast(n?'Kitchen updated':'Nothing changed')},
- shClose:()=>{if(SH&&SH.kind=='link'&&SH.back)return ACT.lnkX();SH=null;R()},
+ shClose:()=>{if(SH&&SH.kind=='link'&&SH.back)return ACT.lnkX();if(SH&&SH.kind=='crop'){URL.revokeObjectURL(SH.src);CIMG=null}SH=null;R()},
  ingEd:d=>{const r=byId(d.id);if(!r||r.ing[+d.i]==null)return;SH={kind:'ing',id:r.id,i:+d.i,t:r.ing[+d.i]};R();focusIng()},
  ingNew:d=>{SH={kind:'ing',id:d.id,i:-1,t:''};R();focusIng()},
  ingSave:()=>{const r=SH&&byId(SH.id),el=document.getElementById('ingE');if(!r||!el)return;const v=el.value.trim();
@@ -1391,8 +1459,6 @@ let RK='';
 function R(){const de=document.documentElement,th=S.set.theme||'system';de.dataset.theme=th=='system'?(DARK.matches?'dark':'light'):th;
  if(T=='recipe'&&!byId(RID))T='browse';
  const c=tabCols(T=='recipe'?navId():T);de.style.setProperty('--pc',c[0]);de.style.setProperty('--pc2',c[1]);
- document.body.classList.toggle('shv',!!SHV);
- if(SHV){const f=RK!=='shv';RK='shv';patch(APP(),vShared(),f);const sh=document.getElementById('sheet');if(SH||sh.firstChild)patch(sh,vSheet());document.body.classList.toggle('shopen',!!SH);sheetFocus(sh);return}
  if(SEL&&T=='kit'){const ids=new Set(shopRows().map(r=>r.id));[...SEL].forEach(id=>{if(!ids.has(id))SEL.delete(id)})}
  const key=T+'|'+(T=='recipe'?RID:''),full=key!==RK;RK=key;
  patch(APP(),VIEW[T](),full);
@@ -1458,15 +1524,11 @@ const rmPeek=()=>{const p=document.getElementById('peek');if(p)p.remove()};
 // 10. START
 // =====================================================================
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
-const HAD=(()=>{try{return localStorage.getItem(LS)!=null}catch(e){return false}})();   // already uses Big Saucy in this browser
-const TITLE0=document.title,SHQ=new URLSearchParams(location.search).get('r');
-function shvLeave(){SHV=null;document.title=TITLE0;try{history.replaceState(null,'',location.pathname)}catch(_){}}
 load();
-if(SHQ)SHV={id:SHQ,st:'load',f:1};
 R();
+phLoad();
 // Sync across devices (sync.js). Timers stay on each device; only the recipes, pantry and settings sync.
 window.CloudSync&&CloudSync.init({app:'cooking',name:'Big Saucy',key:LS,what:'your recipes',version:()=>MIGRATIONS.length,btn:'',btn2:'g bd',
  card:b=>`<div class="card"><h2>Sync across devices</h2>${b}</div>`,
  apply:obj=>{if(!obj||!Array.isArray(obj.recipes))throw 0;S=obj;migrate();save();flush();R()},render:()=>R(),onUser:u=>{if(u)pubLater()}});
-if(SHV)loadShared();
 </script></body></html>
