@@ -1,9 +1,12 @@
 // Cloudflare Pages Function for the Discover tab's feed.
 //   /feed?u=<link to a cooking site, blog or YouTube channel>
+//   /feed?post=<link to one post>   is it a recipe, and if so its ingredients, time, cuisine and photo
+//                                   (read from the schema.org Recipe data recipe plugins put in the page)
 // Browsers can't read other sites' feeds directly (they block it), so the app asks here instead.
 // This finds the source's RSS or Atom feed (YouTube channels have one too), reads it and answers with
 // its newest posts as small JSON: { title, site, feed, items: [{ t: title, u: link, d: ISO date, img }] }.
-// Answers are cached for 30 minutes so a busy feed isn't fetched over and over.
+// YouTube videos get the ingredients listed in their description, when there are any, and Shorts are left out.
+// Answers can be cached for 30 minutes (posts for a week); the app also keeps what it got on the device.
 
 const UA = 'Mozilla/5.0 (compatible; BigSaucyFeed/1.0; +https://big-saucy.pages.dev)';
 const MAX_BYTES = 2e6, MAX_ITEMS = 20, AGE = 1800;
@@ -83,10 +86,58 @@ function parse(xml, base) {
       : abs(text(inner(b, 'link')) || (/isPermaLink\s*=\s*["']false/i.test(b) ? '' : text(inner(b, 'guid'))), base);
     const ds = text(inner(b, 'pubDate') || inner(b, 'published') || inner(b, 'dc:date') || inner(b, 'updated'));
     const d = Date.parse(ds);
-    return { t, u, d: isNaN(d) ? '' : new Date(d).toISOString(), img: image(b, base) };
-  }).filter(x => x.t && x.u);
+    const it = { t, u, d: isNaN(d) ? '' : new Date(d).toISOString(), img: image(b, base) };
+    if (/youtube\.com\/watch/.test(u)) Object.assign(it, ytRecipe(t, inner(b, 'media:description')));
+    return it;
+  }).filter(x => x.t && x.u && !/youtube\.com\/shorts\//.test(x.u));
   items.sort((a, b) => (b.d > a.d ? 1 : b.d < a.d ? -1 : 0));
   return { title: text(inner(head, 'title')), site, items: items.slice(0, MAX_ITEMS) };
+}
+
+// ---- Recipes in posts ----
+const RECIPE_WORDS = /\b(recipes?|how to (make|cook|bake)|ingredients?|easy|homemade|from scratch)\b/i;
+const NOT_RECIPE = /\b(vlog|q ?& ?a|haul|unboxing|taste test|tier list|reacts?|reacting|review|podcast|livestream|live stream|trailer|announcement|what i eat|mukbang)\b/i;
+const QTY = /^(\d|[½⅓⅔¼¾⅛]|a |an |one |two |three |half |pinch |dash |handful )/i;
+// A video's description: lines under an "Ingredients" heading, or else lines that start with an amount
+function ytRecipe(title, desc) {
+  const lines = ent(cdata(desc)).split(/\r?\n/).map(l => l.replace(/^[\s\-–•*▢·✓✔]+/, '').trim());
+  let ing = [], on = false;
+  for (const l of lines) {
+    if (/^ingredients?\b/i.test(l)) { on = true; continue }
+    if (on && (/^(instructions|directions|method|steps|equipment|nutrition|notes|recipe|chapters|timestamps|music|follow|subscribe|my |get |shop|links?)\b/i.test(l) || /https?:\/\//.test(l) || /^\d+:\d\d/.test(l))) { if (ing.length) break; on = false; continue }
+    if (on && l && l.length < 120 && !/:$/.test(l)) ing.push(l);
+  }
+  if (ing.length < 3) ing = lines.filter(l => QTY.test(l) && l.length < 100 && !/^\d+:\d\d/.test(l) && !/https?:/.test(l));
+  ing = ing.slice(0, 50);
+  const isR = ing.length >= 3 ? 1 : NOT_RECIPE.test(title) ? 0 : RECIPE_WORDS.test(title + ' ' + desc.slice(0, 600)) ? 1 : null;
+  return ing.length >= 3 ? { r: 1, ing } : { r: isR };
+}
+// ISO 8601 durations ("PT1H30M") -> minutes
+const mins = d => { const m = /P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?/i.exec(String(d || '')); return m ? (+m[1] || 0) * 1440 + (+m[2] || 0) * 60 + (+m[3] || 0) : 0 };
+// The schema.org Recipe in a page's JSON-LD blocks (it can sit in an @graph, a list or mainEntity)
+function ldRecipe(html) {
+  const seen = []; let i = 0;
+  while ((i = html.indexOf('application/ld+json', i)) >= 0) {
+    const s = html.indexOf('>', i) + 1, e = html.indexOf('</script>', s);
+    if (s <= 0 || e < 0) break;
+    try { seen.push(JSON.parse(html.slice(s, e).trim())) } catch (_) { }
+    i = e;
+  }
+  const walk = o => {
+    if (!o || typeof o != 'object') return null;
+    if (Array.isArray(o)) { for (const x of o) { const r = walk(x); if (r) return r } return null }
+    if ([].concat(o['@type'] || []).some(t => /^recipe$/i.test(t))) return o;
+    return walk(o['@graph']) || walk(o.mainEntity);
+  };
+  return walk(seen);
+}
+const str = v => typeof v == 'string' ? v : Array.isArray(v) ? str(v[0]) : v && typeof v == 'object' ? str(v.url || v['@id'] || v.name || '') : '';
+async function postInfo(u) {
+  const { text: html, url } = await get(u.href);
+  const r = ldRecipe(html);
+  if (!r) return { r: /class=["'][^"']*\b(wprm-recipe|tasty-recipes|mv-create-card|recipe-card)\b|itemtype=["']https?:\/\/schema\.org\/Recipe/i.test(html) ? 1 : 0 };
+  const ing = [].concat(r.recipeIngredient || r.ingredients || []).map(x => text(String(x))).filter(Boolean).slice(0, 60);
+  return { r: 1, ing, tm: mins(r.totalTime) || (mins(r.prepTime) + mins(r.cookTime)) || 0, cu: text(str(r.recipeCuisine)).slice(0, 30), img: abs(str(r.image), url) };
 }
 
 // YouTube channel pages -> the channel's video feed
@@ -102,7 +153,13 @@ async function youtubeFeed(u) {
 
 export async function onRequest({ request }) {
   if (request.method == 'OPTIONS') return new Response(null, { headers: { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'GET' } });
-  const u = okUrl(new URL(request.url).searchParams.get('u') || '');
+  const q = new URL(request.url).searchParams;
+  if (q.has('post')) {
+    const pu = okUrl(q.get('post'));
+    if (!pu) return json({ error: 'That link doesn\'t look right' }, 400, 60);
+    try { return json(await postInfo(pu), 200, 7 * 86400) } catch (e) { return json({ error: 'Couldn\'t reach it' }, 502, 300) }
+  }
+  const u = okUrl(q.get('u') || '');
   if (!u) return json({ error: 'That link doesn\'t look right' }, 400, 60);
   try {
     let feed = '', got = null;
@@ -114,8 +171,9 @@ export async function onRequest({ request }) {
         const cands = feedLinks(got.text, got.url);
         // No feed advertised: try the usual addresses (WordPress, Substack, Blogger, Squarespace, Ghost, Hugo…)
         const o = new URL(got.url).origin;
-        cands.push(o + '/feed', o + '/rss', o + '/feed.xml', o + '/rss.xml', o + '/index.xml', o + '/atom.xml', o + '/feeds/posts/default', o + '/blog?format=rss');
-        for (const c of [...new Set(cands)].slice(0, 6)) {
+        const here = got.url.split(/[?#]/)[0];
+        cands.push(o + '/feed', o + '/rss', here + '?format=rss', o + '/feed.xml', o + '/rss.xml', o + '/index.xml', o + '/atom.xml', o + '/feeds/posts/default', o + '/blog?format=rss');
+        for (const c of [...new Set(cands)].slice(0, 9)) {
           try { const g = await get(c); if (isFeed(g.text)) { feed = g.url; got = g; break } } catch (e) { }
         }
         if (!feed) got = null;

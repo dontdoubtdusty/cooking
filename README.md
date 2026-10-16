@@ -12,7 +12,7 @@ A recipe box, cook mode and shopping list that runs in your browser. It's part o
 - A meal calendar that tracks servings made, servings eaten and leftovers
 - A Kitchen tab for what you have on hand, recipes you can make without shopping, and a merged shopping list
 - A cooking log with what's due for a comeback
-- A Discover tab for the cooking sites, blogs, YouTube channels and social accounts you follow, with one feed of their newest posts (read through the share site's `/feed`, see `share/functions/feed.js`)
+- A Discover tab for the cooking sites, blogs, YouTube channels and social accounts you follow, with one feed of their newest recipes that flags the ones you can make from your kitchen, and a few suggested sources (read through the share site's `/feed`, see `share/functions/feed.js`)
 - Light, dark and automatic themes
 - Recipe photos, cropped to a circle
 - Sharing a recipe as a short link to a simple recipe page that stays up to date, or as plain text

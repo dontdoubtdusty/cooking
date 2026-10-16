@@ -116,7 +116,13 @@ body.hast #toast{bottom:calc(140px + env(safe-area-inset-bottom,0px))}
 .dst{width:84px;height:56px;border-radius:12px;object-fit:cover}span.dst img{position:absolute;inset:14px 28px;width:28px;height:28px}span.dst img.ph{inset:0;width:100%;height:100%;object-fit:cover}
 a.rc{text-decoration:none}
 .dsp{align-items:flex-start}.dsp .rcn b{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:14.5px;line-height:1.3}
-.dsa{margin:-6px 0 6px 102px}.dsa .lnk{font-size:12.5px;padding:2px 0}
+.dsp{padding:8px 6px 10px}.dsk{align-self:flex-start;margin-top:4px;font-size:11.5px;font-weight:800;padding:2px 8px;border-radius:99px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsk.ok{background:color-mix(in srgb,#17a06a 16%,transparent);color:#138a5b}.dsk.nr{background:color-mix(in srgb,#f2994a 18%,transparent);color:#b8621c}
+:root[data-theme="dark"] .dsk.ok{color:#4fd29b}:root[data-theme="dark"] .dsk.nr{color:#ffb070}
+.dsg{opacity:.92}.dsg h3{font-size:14px}
+/* Tags on a recipe open Find with that filter */
+button.pill{border:0;box-shadow:none;cursor:pointer;font-family:inherit}button.pill:active{transform:scale(.95)}
+.mlk{background:none;border:0;box-shadow:none;padding:0;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:3px}
 .ctl.flag{border-color:var(--bd);background:var(--card)}.ctl .fl{position:absolute;inset:0 0 34px}.ctl.flag b{background:var(--card);color:var(--tx);text-shadow:none;height:34px;padding:0 10px;line-height:33px;font-size:15px;border-top:1px solid var(--bd)}
 .ctl em{position:absolute;top:8px;right:8px;font-style:normal;font-weight:800;font-size:12px;min-width:24px;height:22px;padding:0 7px;display:grid;place-content:center;border-radius:99px;background:#00000059;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .ctl.all{background:linear-gradient(135deg,var(--pc),var(--pc2))}.ctl.flag.all{background:var(--card)}.ctl .fl.globe{background:#04060d url(img/globe.jpg) center/cover no-repeat}
@@ -795,13 +801,13 @@ function vBrowse(){const g=S.set.bg||'meal',N=S.recipes.length;
   +(ord.length?'':`<p class="mu wide" style="margin:0 4px">No recipes have a ${g=='meal'?'category':g} picked yet. Edit a recipe and use <b>Sort it</b> to add one.</p>`)}
 
 // ---- Recipe page ----
-function vRecipe(){const r=byId(RID);if(!r)return '';const i=S.recipes.indexOf(r),p='recipes.'+i,lc=last(r),fac=[...r.meal,...r.protein,...r.method,...r.diet];
- const meta=[r.cuisine,r.time?fmtTime(r.time):'',r.serves?'serves '+r.serves:''].filter(Boolean).join(' · '),warn=dietWarn(r.ing.join('\n'));
+function vRecipe(){const r=byId(RID);if(!r)return '';const i=S.recipes.indexOf(r),p='recipes.'+i,lc=last(r),fac=['meal','protein','method','diet'].flatMap(k=>r[k].map(v=>[k,v]));
+ const meta=[r.cuisine?`<button class="mlk" data-a="ftag" data-k="cuisine" data-v="${esc(r.cuisine)}">${esc(r.cuisine)}</button>`:'',r.time?esc(fmtTime(r.time)):'',r.serves?'serves '+esc(r.serves):''].filter(Boolean).join(' · '),warn=dietWarn(r.ing.join('\n'));
  const up=RST.length?byId(RST[RST.length-1]):null,nx=planOk().filter(e=>e.rid==r.id&&e.d>=tdy()).sort((a,b)=>a.d<b.d?-1:1)[0],ui=usedIn(r);
  let h=`<div class="bk"><button class="g" data-a="back">‹ ${up?esc(short(up.title)):'Back'}</button></div>`;
  if(SUR==r.id)h+=`<div class="card wide okc"><div class="row"><span style="flex:1"><b>Surprise pick</b><br><span class="mu">From ${SURN} matching recipe${SURN==1?'':'s'}, favoring ones you haven't made lately.</span></span><button data-a="surprise" style="flex:none">Try another</button></div></div>`;
- h+=`<div class="card wide"><div class="hr"><button class="phb${r.img&&IMG[r.img]?'':' add'}" data-a="phTap" data-id="${esc(r.id)}" aria-label="${r.img?'Change photo':'Add a photo'}">${tile(r,1)}</button><div style="min-width:0"><h2>${esc(r.title||'Untitled')}</h2><div class="mu">${esc(meta)}</div></div></div>`
- +(fac.length||r.tags.length?`<div class="pills">${fac.map(x=>`<span class="pill">${esc(x)}</span>`).join('')}${r.tags.map(x=>`<span class="pill tg">#${esc(x)}</span>`).join('')}</div>`:'')
+ h+=`<div class="card wide"><div class="hr"><button class="phb${r.img&&IMG[r.img]?'':' add'}" data-a="phTap" data-id="${esc(r.id)}" aria-label="${r.img?'Change photo':'Add a photo'}">${tile(r,1)}</button><div style="min-width:0"><h2>${esc(r.title||'Untitled')}</h2><div class="mu">${meta}</div></div></div>`
+ +(fac.length||r.tags.length?`<div class="pills">${fac.map(([k,x])=>`<button class="pill" data-a="ftag" data-k="${k}" data-v="${esc(x)}">${esc(x)}</button>`).join('')}${abc(r.tags).map(x=>`<button class="pill tg" data-a="ftag" data-k="tags" data-v="${esc(x)}">#${esc(x)}</button>`).join('')}</div>`:'')
  +`<div class="mu" style="margin-top:10px">${lc?`Last cooked ${ago(lc)} · ${r.cooked.length} time${r.cooked.length==1?'':'s'}`:'Not cooked yet'}${nx?` · <button class="g lnk" data-a="plGo" data-d="${nx.d}">${nx.d==tdy()?'On the calendar today':'Next on the calendar '+esc(dlab(nx.d))}</button>`:''}</div>
  ${linkRow(r)}${r.src?'':`<button class="g lnk" data-a="addLink" data-id="${esc(r.id)}" style="margin-top:10px">+ Add link to original recipe</button>`}<div class="row acts"><button data-a="cook" data-id="${esc(r.id)}">Start cooking</button><button class="g bd" data-a="cooked" data-id="${esc(r.id)}">Cooked today</button><button class="g bd" data-a="plCal" data-id="${esc(r.id)}">Add to calendar</button><button class="g bd" data-a="listT" data-id="${esc(r.id)}">${S.shop.rids.includes(r.id)?'On the list':'Add to list'}</button><button class="g bd" data-a="rShare" data-id="${esc(r.id)}">Share</button><button class="g bd" data-a="edit" data-id="${esc(r.id)}">Edit</button></div></div>`;
  if(warn.length)h+=`<div class="card warn"><h3><span><i class="bang">!</i>Heads up</span></h3><div>This mentions ${esc(warn.join(', '))}.</div></div>`;
@@ -1057,13 +1063,18 @@ function vLists(){const tg=allTags().sort((a,b)=>a[0].localeCompare(b[0],undefin
  +FAC.map(([k,l])=>{const cnt=countFac(k);return `<div class="card"><h3><span>${l}</span><span class="mu">${S.facets[k].length}</span></h3><div class="chips">${abc(S.facets[k]).map(v=>chip(k,v,cnt[v])).join('')}</div><div class="row"><input type="text" id="fa-${k}" placeholder="Add to ${l.toLowerCase()}" enterkeyhint="done" autocomplete="off"><button data-a="facAdd" data-k="${k}" style="flex:none">Add</button></div></div>`}).join('')
  +`<div class="card"><h3><span>Your tags</span><span class="mu">${tg.length}</span></h3>${tg.length?`<div class="chips">${tg.map(([v,n])=>chip('tags',v,n)).join('')}</div>`:'<p class="mu" style="margin:0">Tags you add to recipes show up here.</p>'}</div>`}
 
-// ---- Discover: cooking sites, blogs, channels and accounts you follow, and what they posted lately ----
+// ---- Discover: cooking sites, blogs and channels you follow, and the recipes they posted lately ----
 // Feeds come through the share site (share/functions/feed.js): browsers won't let a page read other sites' feeds itself.
-// What came back is kept on this device only (not synced, not in backups) and refreshed when it's over an hour old.
-const LSF='saucy-feed',FEED_AGE=36e5;
-let FD={},FDL=new Set(),DSF='',DSN=30;   // feed results by source id, sources loading now, source filter, posts shown
+// Each post is checked once for a recipe (blogs: through the share site; YouTube: from its description), so the feed
+// keeps only recipes and can say which ones you could make from your kitchen.
+// What came back is kept on this device only (not synced, not in backups); feeds refresh when over an hour old.
+const LSF='saucy-feed',LSP='saucy-posts',FEED_AGE=36e5,POST_DAYS=90,DSPAGE=10;
+let FD={},PI={},FDL=new Set(),PIL=new Set(),DSF='',DSM='all',DSN=DSPAGE,DSRT=0;   // feeds, post info, loading, source filter, kitchen filter, posts shown
 try{FD=JSON.parse(localStorage.getItem(LSF))||{}}catch(e){FD={}}
+try{PI=JSON.parse(localStorage.getItem(LSP))||{}}catch(e){PI={}}
 const saveFD=()=>{try{localStorage.setItem(LSF,JSON.stringify(FD))}catch(e){}};
+// Post info is kept for the newest 500 posts
+const savePI=()=>{const k=Object.keys(PI);if(k.length>500)k.sort((a,b)=>PI[a].at-PI[b].at).slice(0,k.length-500).forEach(x=>delete PI[x]);try{localStorage.setItem(LSP,JSON.stringify(PI))}catch(e){}};
 const SOC=[[/(^|\.)instagram\.com$/,'Instagram'],[/(^|\.)tiktok\.com$/,'TikTok'],[/(^|\.)(facebook|fb)\.com$/,'Facebook'],[/(^|\.)pinterest\.[a-z.]+$/,'Pinterest'],[/(^|\.)(x|twitter)\.com$/,'X'],[/(^|\.)threads\.(net|com)$/,'Threads'],[/(^|\.)reddit\.com$/,'Reddit']];
 const hostOf=u=>{try{return new URL(u).hostname.toLowerCase().replace(/^(www|m)\./,'')}catch(e){return ''}};
 function srcKind(u){const h=hostOf(u);if(/(^|\.)(youtube\.com|youtu\.be)$/.test(h))return 'yt';return SOC.some(([re])=>re.test(h))?'soc':'site'}
@@ -1075,41 +1086,72 @@ function srcName(u){const h=hostOf(u),k=srcKind(u);let seg=[];try{seg=new URL(u)
  return h}
 const srcKey=u=>hostOf(u)+(()=>{try{return new URL(u).pathname.replace(/\/+$/,'').toLowerCase()}catch(e){return ''}})();
 const favi=u=>'https://www.google.com/s2/favicons?sz=64&domain='+encodeURIComponent(hostOf(u));
-const sIcon=(x,cls='dsi')=>`<span class="${cls}" aria-hidden="true">${esc((x.name||hostOf(x.url)).replace(/^[@r]\/?/,'').charAt(0).toUpperCase())}<img src="${esc(favi(x.url))}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+const ini=x=>esc((x.name||hostOf(x.url)).replace(/^[@r]\/?/,'').charAt(0).toUpperCase());
+const sIcon=(x,cls='dsi')=>`<span class="${cls}" aria-hidden="true">${ini(x)}<img src="${esc(favi(x.url))}" alt="" loading="lazy" onerror="this.remove()"></span>`;
 const relT=d=>{if(!d)return '';const m=(Date.now()-Date.parse(d))/6e4;return m<60?Math.max(1,Math.round(m))+' min ago':m<1440?Math.round(m/60)+' hr ago':ago(iso(new Date(d)))};
-// Fetch the feeds that are due (or all of them), a few at a time
-async function loadFeeds(all){const due=S.srcs.filter(x=>srcKind(x.url)!='soc'&&!FDL.has(x.id)&&(all||!FD[x.id]||Date.now()-FD[x.id].at>FEED_AGE));if(!due.length)return;
+const dsLater=()=>{if(T=='disc'&&!DSRT)DSRT=setTimeout(()=>{DSRT=0;if(T=='disc')R()},250)};
+// Fetch the feeds that are due (or all of them), a few at a time, then check their new posts
+async function loadFeeds(all){const due=S.srcs.filter(x=>srcKind(x.url)!='soc'&&!FDL.has(x.id)&&(all||!FD[x.id]||Date.now()-FD[x.id].at>FEED_AGE));if(!due.length)return loadPosts();
  due.forEach(x=>FDL.add(x.id));if(T=='disc')R();let i=0,named=0;
  const one=async x=>{let r;try{const res=await fetch(SHARE_SITE+'/feed?u='+encodeURIComponent(x.url));r=await res.json();if(!res.ok&&!r.error)r={error:'Couldn’t reach it'}}catch(e){r={error:navigator.onLine===false?'You’re offline':'Couldn’t reach it'}}
   const old=FD[x.id];if(r.error&&old&&old.items&&old.items.length&&!/No feed/.test(r.error))FD[x.id]=Object.assign({},old,{at:Date.now(),err:r.error});   // keep what we had if it's just a hiccup
-  else FD[x.id]={at:Date.now(),err:r.error||'',title:r.title||'',items:(r.items||[]).slice(0,20)};
+  else FD[x.id]={at:Date.now(),ok:r.error?0:Date.now(),err:r.error||'',title:r.title||'',items:(r.items||[]).slice(0,20)};
   const s=S.srcs.find(y=>y.id==x.id);if(s&&s.auto&&r.title&&!r.error){const t=r.title.replace(/\s+/g,' ').trim().slice(0,60);if(t&&t!=s.name){s.name=t;named=1}}
   FDL.delete(x.id)};
  await Promise.all(Array.from({length:Math.min(4,due.length)},async()=>{while(i<due.length)await one(due[i++])}));
- saveFD();if(named)save();if(T=='disc')R()}
-function vDisc(){const L=abc(S.srcs.map(x=>x.name)).map(n=>S.srcs.find(x=>x.name==n)).filter((x,i,a)=>a.indexOf(x)==i),busy=FDL.size>0;
- S.srcs.forEach(x=>{if(!L.includes(x))L.push(x)});
+ saveFD();if(named)save();if(T=='disc')R();loadPosts()}
+const recent=it=>!it.d||Date.now()-Date.parse(it.d)<POST_DAYS*864e5;
+// Check blog posts we haven't seen for a recipe (YouTube posts arrive already checked)
+async function loadPosts(){const q=[];S.srcs.forEach(x=>{if(srcKind(x.url)!='site'||!FD[x.id])return;(FD[x.id].items||[]).forEach(it=>{if(recent(it)&&!PI[it.u]&&!PIL.has(it.u))q.push(it.u)})});if(!q.length)return;
+ q.forEach(u=>PIL.add(u));let i=0;
+ const one=async u=>{try{const res=await fetch(SHARE_SITE+'/feed?post='+encodeURIComponent(u));const r=await res.json();if(res.ok&&!r.error){PI[u]={at:Date.now(),r:r.r,ing:r.ing||[],tm:r.tm||0,cu:r.cu||'',img:r.img||''};KC=null}}catch(e){}PIL.delete(u);dsLater()};
+ await Promise.all(Array.from({length:Math.min(3,q.length)},async()=>{while(i<q.length)await one(q[i++])}));savePI();dsLater()}
+// Everything known about a post: is it a recipe (1, 0, or null when unknown), ingredients, time, cuisine, photo
+function postOf(x,it){const p=srcKind(x.url)=='yt'?{r:it.r==null?null:it.r,ing:it.ing||[]}:PI[it.u]||{r:null,ing:[]};
+ const o={x,it,r:p.r,ing:p.ing||[],tm:p.tm||0,cu:p.cu||'',img:it.img||p.img||'',k:''};
+ if(o.ing.length&&S.pantry.length){const c=kCheck({id:'p:'+it.u,ing:o.ing});o.c=c;o.k=c.n.length&&!c.miss.length?'ready':c.miss.length&&c.miss.length<=2&&c.miss.length<c.n.length?'near':''}
+ return o}
+// A few well-known recipe sites and channels to suggest, matched to the cuisines you cook. [link, name, cuisines, vegetarian-friendly]
+const DSUG=[['https://www.budgetbytes.com','Budget Bytes',['American'],0],['https://smittenkitchen.com','Smitten Kitchen',['American'],0],['https://www.recipetineats.com','RecipeTin Eats',['Australian'],0],
+ ['https://minimalistbaker.com','Minimalist Baker',[],1],['https://www.loveandlemons.com','Love and Lemons',['Mediterranean'],1],['https://cookieandkate.com','Cookie and Kate',[],1],['https://pinchofyum.com','Pinch of Yum',['American'],0],
+ ['https://rainbowplantlife.com','Rainbow Plant Life',[],1],['https://www.noracooks.com','Nora Cooks',[],1],['https://www.justonecookbook.com','Just One Cookbook',['Japanese'],0],['https://www.maangchi.com','Maangchi',['Korean'],0],
+ ['https://thekoreanvegan.com','The Korean Vegan',['Korean'],1],['https://www.veganricha.com','Vegan Richa',['Indian'],1],['https://www.indianhealthyrecipes.com','Swasthi’s Recipes',['Indian'],0],['https://hebbarskitchen.com','Hebbars Kitchen',['Indian'],1],
+ ['https://thewoksoflife.com','The Woks of Life',['Chinese'],0],['https://www.mexicoinmykitchen.com','Mexico in My Kitchen',['Mexican'],0],['https://www.themediterraneandish.com','The Mediterranean Dish',['Mediterranean','Greek','Middle Eastern','Lebanese','Turkish'],0],
+ ['https://www.feelgoodfoodie.net','Feel Good Foodie',['Lebanese','Middle Eastern'],0],['https://www.hungryhuy.com','Hungry Huy',['Vietnamese'],0],['https://hot-thai-kitchen.com','Hot Thai Kitchen',['Thai'],0],
+ ['https://www.afghancultureunveiled.com/humaira-ghilzai','Afghan Culture Unveiled',['Afghan'],0],['https://www.youtube.com/@JoshuaWeissman','Joshua Weissman',['American'],0]];
+function dsSugg(){const no=new Set(S.set.dsNo||[]),have=new Set(S.srcs.map(x=>srcKey(x.url))),cu={};S.recipes.forEach(r=>{const k=fkey(r.cuisine||'');if(k)cu[k]=(cu[k]||0)+1});
+ const veg=S.recipes.length&&S.recipes.filter(r=>r.diet.some(d=>/vegan|vegetarian/i.test(d))).length/S.recipes.length>=.5;
+ return DSUG.filter(([u])=>!no.has(srcKey(u))&&!have.has(srcKey(u))).map(([u,n,c,v],i)=>{const m=c.filter(x=>cu[fkey(x)]);return {u,n,why:m.length?m.join(', '):v&&veg?'Vegetarian-friendly':'Popular',sc:m.reduce((a,x)=>a+cu[fkey(x)]*3,0)+(v&&veg?2:0)-i/100}}).sort((a,b)=>b.sc-a.sc).slice(0,2)}
+function vDisc(){const L=[...S.srcs].sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:'base'})),busy=FDL.size>0,checking=PIL.size>0,kit=S.pantry.length>0;
  let h=`<div class="hello"><b>Discover</b><span>${S.srcs.length||''}</span></div>`;
  h+=`<div class="card wide"><h3><span>Add a source</span></h3><div class="row"><input id="dsin" type="url" inputmode="url" placeholder="Paste a site, blog, YouTube or Instagram link" enterkeyhint="done" autocomplete="off" autocapitalize="none"><button data-a="dsAdd" style="flex:none">Add</button></div>`
-  +`<div class="hint">Blogs and YouTube channels show their newest posts below. Instagram, TikTok and other social accounts are saved as links.</div></div>`;
- if(!S.srcs.length)return h+`<div class="card wide"><p class="mu" style="margin:0">Collect the cooking sites, blogs and channels you like here. Each one becomes a link you can tap, and their latest recipes show up in one feed.</p></div>`;
- // The feed
- const has=x=>FD[x.id]&&FD[x.id].items&&FD[x.id].items.length,P=[];
- S.srcs.forEach(x=>{if(has(x)&&(!DSF||DSF==x.id))FD[x.id].items.forEach(it=>P.push({x,it}))});
- P.sort((a,b)=>(b.it.d||'')>(a.it.d||'')?1:(b.it.d||'')<(a.it.d||'')?-1:0);
- const fs=L.filter(has),last=Math.max(0,...S.srcs.map(x=>FD[x.id]?FD[x.id].at:0)),canFeed=S.srcs.some(x=>srcKind(x.url)!='soc');
- if(canFeed){h+=`<div class="card wide"><h3><span>Lately</span><button class="g lnk" data-a="dsRef" ${busy?'disabled':''}>${busy?'Checking…':'Refresh'}</button></h3>`
-  +(fs.length>1?`<div class="chips" style="margin:0 0 8px"><button class="chip ${DSF?'':'on'}" data-a="dsF" data-id="">All</button>${fs.map(x=>`<button class="chip ${DSF==x.id?'on':''}" data-a="dsF" data-id="${esc(x.id)}">${esc(short(x.name))}</button>`).join('')}</div>`:'')
-  +(P.length?P.slice(0,DSN).map(({x,it})=>`<a class="rc dsp" href="${esc(it.u)}" target="_blank" rel="noopener">${it.img?`<span class="dst" aria-hidden="true">${esc(x.name.replace(/^[@r]\/?/,'').charAt(0).toUpperCase())}<img class="ph" src="${esc(it.img)}" alt="" loading="lazy" onerror="this.remove()"></span>`:sIcon(x,'dst')}<span class="rcn"><b>${esc(it.t)}</b><span class="mu">${esc(x.name)}${it.d?' · '+esc(relT(it.d)):''}</span></span></a><div class="dsa"><button class="g lnk" data-a="dsSave" data-u="${esc(it.u)}" data-t="${esc(it.t)}">Save to my recipes</button></div>`).join('')
-    +(P.length>DSN?`<button class="g lnk" data-a="dsMore" style="margin-top:6px">Show more</button>`:'')
-   :`<p class="mu" style="margin:0">${busy?'Checking your sources…':'Nothing to show yet. Sources with a feed show their newest posts here.'}</p>`)
-  +(last?`<div class="hint">Updated ${esc(relT(new Date(last).toISOString()))}. Tap a post to open it.</div>`:'')+`</div>`}
+  +`<div class="hint">Blogs and YouTube channels show their newest recipes below. Instagram, TikTok and other social accounts are saved as links.</div></div>`;
+ const sg=dsSugg(),sugg=sg.length?`<div class="card wide dsg"><h3><span>You might like</span></h3>${sg.map(x=>`<div class="srow pr">${sIcon({name:x.n,url:x.u})}<span class="rcn" style="flex:1"><b>${esc(x.n)}</b><span class="mu">${esc(x.why)}</span></span><button class="g lnk" data-a="dsSug" data-u="${esc(x.u)}" data-n="${esc(x.n)}" style="flex:none;padding:6px">Add</button><button class="g" data-a="dsNo" data-u="${esc(x.u)}" aria-label="Not interested in ${esc(x.n)}" style="padding:6px">${ICX}</button></div>`).join('')}</div>`:'';
+ if(!S.srcs.length)return h+`<div class="card wide"><p class="mu" style="margin:0">Collect the cooking sites, blogs and channels you like here. Each one becomes a link you can tap, and their latest recipes show up in one feed.</p></div>`+sugg;
+ // The feed: recipes only, from the last few months; ones you can make now come first
+ const A=[];S.srcs.forEach(x=>{const f=FD[x.id];if(!f||!f.items||(DSF&&DSF!=x.id))return;f.items.forEach(it=>{if(!recent(it))return;const o=postOf(x,it);if(o.r!==0)A.push(o)})});
+ const nR=A.filter(o=>o.k=='ready').length,nN=A.filter(o=>o.k=='near').length;if(DSM=='ready'&&!nR||DSM=='near'&&!nN)DSM='all';
+ const rank={ready:0,near:1,'':2},P=A.filter(o=>DSM=='all'||o.k==DSM).sort((a,b)=>rank[a.k]-rank[b.k]||((b.it.d||'')>(a.it.d||'')?1:(b.it.d||'')<(a.it.d||'')?-1:0));
+ const fs=L.filter(x=>FD[x.id]&&FD[x.id].items&&FD[x.id].items.length),last=Math.max(0,...S.srcs.map(x=>FD[x.id]?FD[x.id].at:0));
+ if(S.srcs.some(x=>srcKind(x.url)!='soc')){
+  h+=`<div class="card wide"><h3><span>Lately</span><button class="g lnk" data-a="dsRef" ${busy?'disabled':''}>${busy?'Checking…':'Refresh'}</button></h3>`
+  +((nR||nN)?`<div class="chips" style="margin:0 0 8px">${[['all','All'],['ready','Ready to cook'+(nR?' · '+nR:'')],['near','Missing 1–2'+(nN?' · '+nN:'')]].map(([v,l])=>`<button class="chip ${DSM==v?'on':''}" data-a="dsM" data-v="${v}">${l}</button>`).join('')}</div>`:'')
+  +(fs.length>1?`<select data-a="dsF" aria-label="Source" style="margin-bottom:8px"><option value="">All sources</option>${fs.map(x=>`<option value="${esc(x.id)}" ${DSF==x.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>`:'')
+  +(P.length?P.slice(0,DSN).map(o=>{const meta=[o.x.name,o.tm?fmtTime(o.tm):'',o.cu,o.it.d?relT(o.it.d):''].filter(Boolean).join(' · '),
+     badge=o.k=='ready'?`<span class="dsk ok">Have everything</span>`:o.k=='near'?`<span class="dsk nr">Missing ${esc(o.c.miss.map(m=>m.name.toLowerCase()).join(', '))}</span>`:'';
+     return `<a class="rc dsp" href="${esc(o.it.u)}" target="_blank" rel="noopener">${o.img?`<span class="dst" aria-hidden="true">${ini(o.x)}<img class="ph" src="${esc(o.img)}" alt="" loading="lazy" onerror="this.remove()"></span>`:sIcon(o.x,'dst')}<span class="rcn"><b>${esc(o.it.t)}</b><span class="mu">${esc(meta)}</span>${badge}</span></a>`}).join('')
+    +(P.length>DSN?`<button class="g lnk" data-a="dsMore" style="margin-top:6px">Show ${Math.min(DSPAGE,P.length-DSN)} more</button>`:'')
+   :`<p class="mu" style="margin:0">${busy||checking?'Checking your sources…':'No new recipes from your sources lately.'}</p>`)
+  +`<div class="hint">${!kit&&A.some(o=>o.ing.length)?'Add what’s in your kitchen on the Kitchen tab to see which of these you can make now. ':''}${last?'Updated '+esc(relT(new Date(last).toISOString()))+'.':''}${checking?' Checking new posts…':''}</div></div>`}
  // The sources, by kind
- const G=[['yt','YouTube'],['site','Sites and blogs'],['soc','Social']];
- G.forEach(([k,l])=>{const xs=L.filter(x=>srcKind(x.url)==k);if(!xs.length)return;
-  h+=`<div class="card wide"><h3><span>${l}</span><span class="mu">${xs.length}</span></h3>`+xs.map(x=>{const f=FD[x.id],st=k=='soc'?hostOf(x.url):FDL.has(x.id)?'Checking…':!f?hostOf(x.url):f.err?(/No feed/.test(f.err)?'No feed, link only':f.err):f.items.length?(()=>{const wk=f.items.filter(it=>it.d&&Date.now()-Date.parse(it.d)<7*864e5).length;return wk?wk+' new this week':'Last post '+relT(f.items[0].d||'')})():'No posts yet';
+ [['yt','YouTube'],['site','Sites and blogs'],['soc','Social']].forEach(([k,l])=>{const xs=L.filter(x=>srcKind(x.url)==k);if(!xs.length)return;
+  h+=`<div class="card wide"><h3><span>${l}</span><span class="mu">${xs.length}</span></h3>`+xs.map(x=>{const f=FD[x.id];let st;
+   if(k=='soc'||!f)st=FDL.has(x.id)?'Checking…':hostOf(x.url);
+   else if(FDL.has(x.id))st='Checking…';
+   else if(f.err)st=/No feed/.test(f.err)?'No feed, link only':f.items&&f.items.length?'Couldn’t load lately'+(f.ok?' · last worked '+relT(new Date(f.ok).toISOString()):''):f.err;
+   else{const wk=f.items.filter(it=>it.d&&Date.now()-Date.parse(it.d)<7*864e5).length;st=wk?wk+' new this week':f.items.length?'Last post '+(relT(f.items[0].d)||'a while ago'):'No posts yet'}
    return `<div class="srow pr"><a class="rc" href="${esc(x.url)}" target="_blank" rel="noopener" style="flex:1;min-width:0">${sIcon(x)}<span class="rcn"><b>${esc(x.name)}</b><span class="mu">${esc(st)}</span></span></a><button class="g" data-a="dsRen" data-id="${esc(x.id)}" aria-label="Rename ${esc(x.name)}" style="padding:6px">${ICP}</button><button class="g" data-a="dsDel" data-id="${esc(x.id)}" aria-label="Remove ${esc(x.name)}" style="padding:6px">${ICX}</button></div>`}).join('')+`</div>`});
- return h}
+ return h+sugg}
 
 // ---- Kitchen ----
 let EX=new Set(),SEL=null,LPX=0;   // shopping list: expanded rows, selection (long press)
@@ -1311,10 +1353,13 @@ const ACT={
  dsDel:d=>{const i=S.srcs.findIndex(x=>x.id==d.id);if(i<0)return;const [x]=S.srcs.splice(i,1);if(DSF==x.id)DSF='';commit();toast('Removed '+x.name,()=>{S.srcs.splice(i,0,x);commit()})},
  dsRen:d=>{const x=S.srcs.find(y=>y.id==d.id);if(!x)return;const v=(prompt('Name',x.name)||'').trim();if(!v||v==x.name)return;x.name=v.slice(0,60);x.auto=0;commit()},
  dsRef:()=>loadFeeds(true),
- dsF:d=>{DSF=d.id||'';DSN=30;R()},
- dsMore:()=>{DSN+=30;R()},
- // A post you want to keep: start a recipe with its name and link, ready for the recipe to be pasted in
- dsSave:d=>{pull();if(!dEmpty(S.draft)&&!confirm('Replace what’s on the Add tab with this?'))return;S.draft=Object.assign(blankD(),{title:d.t||'',src:d.u||''});PARSED='';AM='paste';goTab('add');toast('Paste the recipe from the post, or type it in')},
+ dsF:(d,el)=>{DSF=el&&el.value||'';DSN=DSPAGE;R()},
+ dsM:d=>{DSM=d.v;DSN=DSPAGE;R()},
+ dsMore:()=>{DSN+=DSPAGE;R()},
+ dsSug:d=>{if(S.srcs.some(x=>srcKey(x.url)==srcKey(d.u)))return;S.srcs.push({id:uid('s'),url:d.u,name:d.n,auto:0,added:tdy()});commit();toast('Added '+d.n);loadFeeds()},
+ dsNo:d=>{const k=srcKey(d.u);S.set.dsNo=[...(S.set.dsNo||[]),k];commit();toast('Won’t suggest that again',()=>{S.set.dsNo=(S.set.dsNo||[]).filter(x=>x!=k);commit()})},
+ // A category, cuisine or tag on a recipe: open Find with just that filter on
+ ftag:d=>{const so=S.f.sort;S.f=blankF();S.f.sort=so;if(S.f[d.k])S.f[d.k]=[d.v];O.fl=1;save();goTab('find')},
  // navigation
  tab:d=>{if(d.id=='browse'&&T=='browse'&&BC)return ACT.catX();goTab(d.id)}, gear:()=>goTab(T=='more'||T=='lists'?'browse':'more'),
  open:d=>{SUR=null;if(T=='recipe'){if(d.id==RID)return;RST.push(RID);try{history.pushState({r:1},'')}catch(_){}RID=d.id;R();scrollTo(0,0);slideIn(1)}else openRecipe(d.id)},
