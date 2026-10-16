@@ -11,3 +11,5 @@ the `FLAGS` list in `index.html`.
 
 `jewish.svg` is drawn for this app (a Star of David on white), not taken from flag-icons.
 It also shows for a cuisine or category named `Jewish food`, `Jewish foods` or `Jewish cuisine`.
+
+`afghan.svg` also shows for a cuisine named `Afghani` or `Afghanistan`.
