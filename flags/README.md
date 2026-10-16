@@ -12,6 +12,9 @@ the `FLAGS` list in `index.html`.
 `jewish.svg` is drawn for this app (a Star of David on white), not taken from flag-icons.
 It also shows for a cuisine or category named `Jewish food`, `Jewish foods` or `Jewish cuisine`.
 
+`african.svg` is drawn for this app after the African Union flag (55 gold stars around a white disc
+with a green map of Africa; outline from Natural Earth, public domain). It also shows for `Africa` and `Pan-African`.
+
 `afghan.svg` also shows for a cuisine named `Afghani` or `Afghanistan`.
 
 `tex-mex.svg` (the Texas flag) and `hawaiian.svg` (the Hawaii flag) are drawn for this app; the Hawaii canton
