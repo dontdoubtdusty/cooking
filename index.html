@@ -883,16 +883,21 @@ const LSH='saucy-shared';   // this device: share id -> fingerprint of the copy 
 var PST=0,PBUSY=0;          // var, not let: flush() can run before this part of the script does
 const fp=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)+':'+s.length};
 const plainL=l=>String(l||'').replace(LRE,(m,t)=>t.trim());   // [[Linked recipe]] -> Linked recipe
-const pubOf=r=>({app:'cooking',v:1,title:r.title,cuisine:r.cuisine,meal:r.meal,protein:r.protein,method:r.method,diet:r.diet,tags:r.tags,serves:r.serves,time:r.time,img:r.img||'',
+const pubOf=r=>({app:'cooking',v:2,title:r.title,cuisine:r.cuisine,meal:r.meal,protein:r.protein,method:r.method,diet:r.diet,tags:r.tags,serves:r.serves,time:r.time,img:r.img||'',
  ing:r.ing.map(plainL),steps:r.steps.map(plainL),nut:r.nut,notes:plainL(r.notes),src:r.src,vid:r.vid});
 const shareUrl=id=>location.origin+location.pathname.replace(/index\.html$/,'')+'share.html?r='+id;
 const newShareId=()=>{const a='abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';return [...crypto.getRandomValues(new Uint8Array(10))].map(x=>a[x%a.length]).join('')};
 const pubMap=()=>{try{return JSON.parse(localStorage.getItem(LSH))||{}}catch(e){return {}}};
 const pubKeep=m=>{try{localStorage.setItem(LSH,JSON.stringify(m))}catch(e){}};
 function pubLater(){clearTimeout(PST);PST=setTimeout(pubSync,2000)}
+// Shared copies carry the photo as a JPEG: every link-preview service reads JPEG, not all of them read WebP
+async function jpegOf(b){if(b.type=='image/jpeg')return b;try{const u=URL.createObjectURL(b),im=new Image();
+ await new Promise((ok,no)=>{im.onload=ok;im.onerror=no;im.src=u});const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;
+ const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);URL.revokeObjectURL(u);
+ return await new Promise(ok=>c.toBlob(j=>ok(j||b),'image/jpeg',.62))}catch(e){return b}}
 // Upload a recipe's public copy, with its photo as a data URL. Resolves to the fingerprint to remember, or null to retry later.
 async function pubPut(r){const d=pubOf(r),f=fp(JSON.stringify(d)),out={...d,img:''};
- if(r.img){const b=await phBlob(r.img);if(b)out.img=await b2d(b)}
+ if(r.img){const b=await phBlob(r.img);if(b)out.img=await b2d(await jpegOf(b))}
  await CloudSync.pub.put(r.share,out);return !r.img||out.img?f:null}
 // Cloud chores after each save or sign-in: tidy photos no recipe uses, upload and remove photos, fetch missing ones,
 // and keep shared copies the same as their recipes
