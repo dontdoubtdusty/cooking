@@ -46,7 +46,7 @@ details.card>summary+*{margin-top:12px}
 .okc{border-color:color-mix(in srgb,var(--ac) 50%,transparent);background:color-mix(in srgb,var(--ac) 9%,var(--card))}
 
 /* ===== Inputs & buttons ===== */
-input[type=text],input[type=search],input[type=url],input[type=number],textarea,select{width:100%;padding:9px 10px;border:1px solid transparent;border-radius:12px;background:var(--fld);color:var(--tx);font:inherit;transition:border-color var(--fast),background var(--fast)}
+input[type=text],input[type=email],input[type=password],input[type=search],input[type=url],input[type=number],textarea,select{width:100%;padding:9px 10px;border:1px solid transparent;border-radius:12px;background:var(--fld);color:var(--tx);font:inherit;transition:border-color var(--fast),background var(--fast)}
 input[type=number]{-moz-appearance:textfield;appearance:textfield}input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 input[type=search]::-webkit-search-decoration{display:none}
 input:focus,select:focus,textarea:focus{outline:none;border-color:color-mix(in srgb,var(--pc) 60%,transparent);background:var(--card);box-shadow:0 0 0 3px color-mix(in srgb,var(--pc) 18%,transparent)}
@@ -224,6 +224,7 @@ button.cd.on{border-color:var(--pc);background:var(--card)}
 .sbig{min-width:30px;text-align:center;font:600 18px var(--fd)}
 @media(prefers-reduced-motion:reduce){*,*:after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
 </style></head><body><header class="top"><span class="tt"><svg class="logo" viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><circle cx="16" cy="18" r="12" fill="#ff4d5e"/><ellipse cx="11" cy="15" rx="3" ry="2" fill="#fff" opacity=".35"/><path d="M16 9l-5-3 3.6 4.2L10 11.5l5 .3L16 16l1-4.2 5-.3-4.6-1.3L21 6z" fill="#1fa971"/><path d="M16 9V4" stroke="#1fa971" stroke-width="2" stroke-linecap="round"/></svg><span><span class="jz">Big Saucy</span> Recipes</span></span><button id="gear" class="gear" aria-label="Settings" data-a="gear"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></header><div class="vclip"><main id="app" class="view"></main></div><div id="tdock"></div><nav id="nav"></nav><div id="toast" role="status" aria-live="polite"></div><div id="sheet"></div>
+<script src="sync.js"></script>
 <script>
 // =====================================================================
 // 1. CONSTANTS
@@ -325,7 +326,7 @@ function fresh(){S=seed();migrate();S.recipes.forEach(r=>r.time=num(sample().tim
 function migrate(){S.set=S.set||{};for(let v=S.v||0;v<MIGRATIONS.length;v++)MIGRATIONS[v](S);S.v=MIGRATIONS.length}
 function load(){try{S=JSON.parse(localStorage.getItem(LS))}catch(e){}if(!S)fresh();else migrate();try{TM=JSON.parse(localStorage.getItem(LST))||[]}catch(e){TM=[]}}
 let SVT=0,SI=null;   // SI: merged shopping items, rebuilt after each save
-function flush(){clearTimeout(SVT);SVT=0;try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('Could not save: storage is full')}}
+function flush(){clearTimeout(SVT);SVT=0;let t;try{t=JSON.stringify(S);localStorage.setItem(LS,t)}catch(e){toast('Could not save: storage is full');return}window.CloudSync&&CloudSync.saved(t)}
 const save=()=>{SI=null;KC=null;clearTimeout(SVT);SVT=setTimeout(flush,400)};
 const commit=()=>{save();R()};
 const saveT=()=>{try{localStorage.setItem(LST,JSON.stringify(TM))}catch(e){}};
@@ -971,6 +972,7 @@ function vMore(){const kb=Math.round(((localStorage.getItem(LS)||'').length)/102
  return `<div class="card"><h2>Settings</h2><div class="sec">Appearance</div><div class="seg qm">${[['system','Auto'],['light','Light'],['dark','Dark']].map(([v,l])=>`<button class="${S.set.theme==v?'on':''}" data-a="theme" data-v="${v}">${l}</button>`).join('')}</div>
  <div class="sec" style="margin-top:16px">Storage</div><div class="mu">${S.recipes.length} recipe${S.recipes.length==1?'':'s'} using about ${kb} KB of roughly 5,000 KB.</div></div>
  <div class="card"><h2>Tags and lists</h2><p class="mu">Rename or remove cuisines, categories, proteins, methods, diets and your own tags.</p><button data-a="tab" data-id="lists">Edit tags and lists</button></div>
+ ${window.CloudSync?CloudSync.view():''}
  <div class="card"><h2>Backup & restore</h2><p class="mu">Recipes live in this device's browser. Save a backup now and then, and use it to move everything to another device.</p><div class="row"><button data-a="share">Share backup</button><button data-a="export">Download backup</button></div><div class="row"><button data-a="pickFile">Import backup file</button><input type="file" id="bkf" accept=".json,application/json" style="display:none" data-a="importFile"></div>
  <details style="margin-top:8px" ${O.bk?'open':''} data-o="bk"><summary class="mu">Advanced: copy/paste text</summary><textarea id="bk">${O.bk?esc(JSON.stringify(S)):''}</textarea><div class="row"><button data-a="restore">Restore from text</button><button class="x" data-a="reset">Reset everything</button></div></details></div>`}
 
@@ -1344,4 +1346,8 @@ const rmPeek=()=>{const p=document.getElementById('peek');if(p)p.remove()};
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 load();
 R();
+// Sync across devices (sync.js). Timers stay on each device; only the recipes, pantry and settings sync.
+window.CloudSync&&CloudSync.init({app:'cooking',name:'Big Saucy',key:LS,what:'your recipes',version:()=>MIGRATIONS.length,btn:'',btn2:'g bd',
+ card:b=>`<div class="card"><h2>Sync across devices</h2>${b}</div>`,
+ apply:obj=>{if(!obj||!Array.isArray(obj.recipes))throw 0;S=obj;migrate();save();flush();R()},render:()=>R()});
 </script></body></html>
