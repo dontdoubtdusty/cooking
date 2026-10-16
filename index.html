@@ -393,6 +393,8 @@ function remAt(b,X,skip){if(b.gone&&(!X||X>=b.gone))return 0;return (b.mk||0)-su
 const leftAt=X=>S.plan.filter(b=>b.k=='cook'&&byId(b.rid)&&b.d<=X&&dBetween(b.d,X)<=7).map(b=>({b,n:remAt(b,X)})).filter(x=>x.n>0).sort((x,y)=>x.b.d<y.b.d?-1:1);
 const ageTxt=n=>n<=0?'Made today':n==1?'1 day old':n+' days old';
 const ageCls=n=>n>=5?'late':n>=3?'soon':'ok';
+// Alphabetical, ignoring case and accents (Ç sorts with C)
+const abc=a=>[...a].sort((x,y)=>String(x).localeCompare(String(y),undefined,{sensitivity:'base'}));
 function allTags(){const m={};S.recipes.forEach(r=>r.tags.forEach(t=>m[t]=(m[t]||0)+1));return Object.entries(m).sort((a,b)=>b[1]-a[1]||(a[0]<b[0]?-1:1))}
 function countFac(k){const m={};S.recipes.forEach(r=>(k=='cuisine'?[r.cuisine]:r[k]).forEach(v=>{if(v)m[v]=(m[v]||0)+1}));return m}
 function match(r){const f=S.f;
@@ -721,14 +723,16 @@ function ingCard(r){const f=SC[r.id]||1,ck=CK[r.id]||{},any=Object.values(ck).so
 // 6. VIEWS (one function per screen; each returns HTML for #app)
 // =====================================================================
 // ---- Recipes (browse) ----
-function vFind(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF(),tags=allTags().map(x=>x[0]);
+function vFind(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF(),tags=abc(new Set([...allTags().map(x=>x[0]),...f.tags]));
+ // Filters only offer what your recipes actually use (and anything still switched on), in A to Z order
+ const used=k=>{const c=countFac(k);return abc(new Set([...Object.keys(c),...f[k]]))};
  const chipsFor=(k,vals)=>`${vals.map(v=>`<button class="chip ${f[k].includes(v)?'on':''}" data-a="fil" data-k="${k}" data-v="${esc(v)}">${esc(k=='tags'?'#'+v:v)}</button>`).join('')}`,frow=(l,c)=>`<div class="frow"><div class="fh">${l}</div><div class="chips">${c}</div></div>`;
  let h=hello()+(S.set.welcome?welcome():'');
  const LOW=pSorted().filter(p=>p.days!=null&&pLeft(p)<=5);if(LOW.length){h+=`<div class="card wide"><h3><span>Use it up</span><button class="g lnk" data-a="kitUse">Kitchen ›</button></h3>${LOW.slice(0,3).map(p=>{const n=pLeft(p);return `<button class="urow" data-a="kitUse"><span>${esc(p.name)}</span><span class="dl ${dlCls(n)}">${dlTxt(n)}</span></button>`}).join('')}</div>`}
  h+=`<div class="card wide"><div class="srch">${ICS}<input id="q" type="search" placeholder="Search names, ingredients, tags" value="${esc(f.q)}" autocomplete="off" enterkeyhint="search"></div>
  <div class="row" style="margin-top:8px"><select data-a="sort" aria-label="Sort">${SORTS.map(([v,l])=>`<option value="${v}" ${f.sort==v?'selected':''}>${l}</option>`).join('')}</select><button data-a="surprise" style="flex:none">Surprise me</button></div>`;
  h+=`<details class="fdet" ${O.fl?'open':''} data-o="fl"><summary><h3><span>Filters${act.length?`<span class="cnt">${act.length}</span>`:''}</span><span class="mu fsum">${act.length?esc(act.join(', ')):'<span class="ex">Expand</span><span class="co">Collapse</span>'}</span></h3></summary><div>`
- +FAC.map(([k,l])=>S.facets[k].length?frow(l,chipsFor(k,S.facets[k])):'').join('')
+ +FAC.map(([k,l])=>{const v=used(k);return v.length?frow(l,chipsFor(k,v)):''}).join('')
  +frow('Kitchen',`<button class="chip ${f.now?'on':''}" data-a="fnow">Can make now${S.pantry.length?'':' · add your kitchen first'}</button><button class="chip ${f.near?'on':''}" data-a="fnear">Missing 1–2 things</button>`)
  +frow('Time',TIMES.map(v=>`<button class="chip ${f.time==v?'on':''}" data-a="ftime" data-v="${v}">${v?'Under '+fmtTime(v):'Any'}</button>`).join(''))
  +(tags.length?frow('Tags',chipsFor('tags',tags)):'')
@@ -741,11 +745,14 @@ function vFind(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF(),t
 let BC=null;   // open category on the Recipes tab: {k,v} or {k:'all'}
 const BGS=[['meal','Category'],['cuisine','Cuisine'],['protein','Protein'],['recent','Recent']];
 // Cuisine tiles show the region's flag from the flags/ folder (file name = cuisine, lowercase, hyphens for spaces)
-const FLAGS=new Set(["afghan", "american", "brazilian", "british", "chinese", "cuban", "ethiopian", "filipino", "french", "german", "greek", "indian", "irish", "italian", "japanese", "jewish", "korean", "lebanese", "mediterranean", "mexican", "middle-eastern", "moroccan", "peruvian", "slovenian", "spanish", "thai", "turkish", "vietnamese"]);
-const FALIAS={'jewish-food':'jewish','jewish-foods':'jewish','jewish-cuisine':'jewish','afghani':'afghan','afghanistan':'afghan'};
+const FLAGS=new Set(["afghan", "american", "argentinian", "australian", "brazilian", "british", "canadian", "chinese", "colombian", "cuban", "dominican", "egyptian", "ethiopian", "filipino", "french", "german", "greek", "hawaiian", "hungarian", "indian", "indonesian", "irish", "israeli", "italian", "jamaican", "japanese", "jewish", "korean", "lebanese", "malaysian", "mediterranean", "mexican", "middle-eastern", "moroccan", "nepali", "nigerian", "pakistani", "persian", "peruvian", "polish", "portuguese", "puerto-rican", "russian", "salvadoran", "slovenian", "south-african", "spanish", "swedish", "taiwanese", "tex-mex", "thai", "turkish", "ukrainian", "venezuelan", "vietnamese"]);
+const FALIAS={'jewish-food':'jewish','jewish-foods':'jewish','jewish-cuisine':'jewish','afghani':'afghan','afghanistan':'afghan','iranian':'persian','argentine':'argentinian','argentinean':'argentinian','salvadorian':'salvadoran','el-salvadoran':'salvadoran','el-salvadorian':'salvadoran','nepalese':'nepali','puerto-rico':'puerto-rican','texmex':'tex-mex','texan':'tex-mex','texas':'tex-mex','hawaii':'hawaiian','cajun/creole':'cajun','cajun-/-creole':'cajun','cajun-&-creole':'cajun','cajun-and-creole':'cajun','creole':'cajun','louisiana':'cajun','soul':'soul-food','nordic':'scandinavian'};
 const fkey=v=>{const k=v.toLowerCase().trim().replace(/\s+/g,'-');return FALIAS[k]||k};
 // Regions without a single flag get their colors drawn instead
-const FLAGC={caribbean:'linear-gradient(#009b3a 0 40%,#fed100 40% 60%,#000 60%)'};
+const FLAGC={caribbean:'linear-gradient(#009b3a 0 40%,#fed100 40% 60%,#000 60%)',
+ cajun:'radial-gradient(circle,#f2b705 0 10%,transparent 10.5%),linear-gradient(#0c3c8c 0 33.3%,#fff 33.3% 66.6%,#c8102e 66.6%)',   // Acadiana's blue, white and red with its gold star
+ 'soul-food':'linear-gradient(#e31b23 0 33.3%,#000 33.3% 66.6%,#00843d 66.6%)',   // Pan-African red, black and green
+ scandinavian:'linear-gradient(transparent 40%,#fff 40% 60%,transparent 60%),linear-gradient(90deg,transparent 28%,#fff 28% 40%,transparent 40%),linear-gradient(90deg,#c8102e 0 33.3%,#00205b 33.3% 66.6%,#006aa7 66.6%)'};   // a white Nordic cross over Denmark, Norway and Sweden
 const hasFlag=v=>FLAGS.has(fkey(v))||!!FLAGC[fkey(v)];
 // Category tiles (stored as 'meal') each get their own color
 const MEALC={breakfast:['#f6b23e','#e8792b'],brunch:['#f59a5a','#e0663f'],lunch:['#3bb08f','#1d8a72'],dinner:['#c8364f','#8f1f3c'],side:['#7cbf4f','#3f9a45'],sides:['#7cbf4f','#3f9a45'],
@@ -774,7 +781,7 @@ function vBrowse(){const g=S.set.bg||'meal',N=S.recipes.length;
  if(g=='recent'){const c=S.recipes.filter(r=>r.cooked.length).sort((a,b)=>last(a)<last(b)?1:-1),nw=S.recipes.filter(r=>!r.cooked.length);
   return h+(c.length?`<div class="card wide"><div class="sec">Cooked recently</div>${c.slice(0,30).map(rRow).join('')}</div>`:'')+(nw.length?`<div class="card wide"><div class="sec">Not cooked yet</div>${nw.map(rRow).join('')}</div>`:'')}
  const cnt=new Map();S.recipes.forEach(r=>(g=='cuisine'?[r.cuisine].filter(Boolean):r[g]||[]).forEach(v=>cnt.set(v,(cnt.get(v)||0)+1)));
- const ord=[...S.facets[g].filter(v=>cnt.has(v)),...[...cnt.keys()].filter(v=>!S.facets[g].includes(v)).sort()];
+ const ord=abc(cnt.keys());
  return h+`<div class="cgrid wide">${ord.map(v=>ctile(g,v,cnt.get(v))).join('')}${g=='cuisine'?`<button class="ctl flag all" data-a="cat" data-k="all" data-v=""><i class="fl globe"></i><em>${N}</em><b>All</b></button>`:`<button class="ctl all" data-a="cat" data-k="all" data-v=""><img class="ci" src="icons/cutlery.svg" alt=""><em>${N}</em><b>All</b></button>`}</div>`
   +(ord.length?'':`<p class="mu wide" style="margin:0 4px">No recipes have a ${g=='meal'?'category':g} picked yet. Edit a recipe and use <b>Sort it</b> to add one.</p>`)}
 
@@ -977,8 +984,8 @@ function vAdd(){const d=S.draft,ed=!!d.id;
   <input type="url" inputmode="url" placeholder="Link to the original recipe (optional)" value="${esc(S.draft.src)}" data-p="draft.src" data-t="s" autocomplete="off" autocapitalize="none" style="margin-bottom:8px">
   <textarea id="pt" class="auto rx big" placeholder="Paste here">${esc(PT)}</textarea><div class="row" style="margin-top:8px">${CLIP?'<button class="g bd" data-a="clip">Paste from clipboard</button>':''}<button data-a="parse" style="margin-left:auto">Read recipe</button></div></div>`;
  const warn=dietWarn(d.ingT);
- const fchips=(k,one)=>`<div class="chips">${(one&&d.cuisine&&!S.facets[k].includes(d.cuisine)?[...S.facets[k],d.cuisine]:S.facets[k]).map(v=>{const on=one?d.cuisine==v:d[k].includes(v);return `<button class="chip ${on?'on':''}" data-a="tog" data-k="${k}" data-v="${esc(v)}">${esc(v)}</button>`}).join('')}<button class="chip add" data-a="facNew" data-k="${k}">+ New</button></div>`;
- const sugg=allTags().map(x=>x[0]).filter(t=>!d.tags.includes(t)).slice(0,12);
+ const fchips=(k,one)=>`<div class="chips">${abc(one&&d.cuisine&&!S.facets[k].includes(d.cuisine)?[...S.facets[k],d.cuisine]:S.facets[k]).map(v=>{const on=one?d.cuisine==v:d[k].includes(v);return `<button class="chip ${on?'on':''}" data-a="tog" data-k="${k}" data-v="${esc(v)}">${esc(v)}</button>`}).join('')}<button class="chip add" data-a="facNew" data-k="${k}">+ New</button></div>`;
+ const sugg=abc(allTags().map(x=>x[0]).filter(t=>!d.tags.includes(t)).slice(0,12));
  if(PARSED)h+=`<div class="card wide okc"><b>${esc(PARSED)}</b><div class="mu">Check below, fix anything that's off, then save.</div></div>`;
  h+=`<div class="card"><h3><span>Basics</span></h3><input id="ttl" type="text" class="ttl" placeholder="Recipe name" value="${esc(d.title)}" data-p="draft.title" data-t="s" enterkeyhint="next" autocomplete="off" autocapitalize="words">
  <input type="url" inputmode="url" placeholder="Link to the original recipe (optional)" value="${esc(d.src)}" data-p="draft.src" data-t="s" autocomplete="off" autocapitalize="none" style="margin-top:8px">
@@ -987,7 +994,7 @@ function vAdd(){const d=S.draft,ed=!!d.id;
  h+=`<div class="card"><h3><span>Steps</span></h3><textarea class="auto rx" data-p="draft.stepT" data-t="s" placeholder="Rinse the rice and drain.&#10;Simmer the sauce for 10 minutes.&#10;Serve hot.">${esc(d.stepT)}</textarea><div class="hint">One step per line. Times like "10 minutes" become timers you can tap to start, if you want them.</div></div>`;
  if(warn.length)h+=`<div class="card warn"><h3><span><i class="bang">!</i>Heads up</span></h3><div>This mentions ${esc(warn.join(', '))}. Swap or skip as needed.</div></div>`;
  h+=`<div class="card"><h3><span>Sort it</span></h3>${FAC.map(([k,l,one])=>`<div class="sec">${l}${one?' · pick one':''}</div>${fchips(k,one)}`).join('')}
- <div class="sec">Tags</div><div class="chips"${d.tags.length?'':' hidden'}>${d.tags.map(t=>`<button class="chip on" data-a="tagDel" data-v="${esc(t)}" aria-label="Remove tag ${esc(t)}">#${esc(t)} ${ICX}</button>`).join('')}</div>
+ <div class="sec">Tags</div><div class="chips"${d.tags.length?'':' hidden'}>${abc(d.tags).map(t=>`<button class="chip on" data-a="tagDel" data-v="${esc(t)}" aria-label="Remove tag ${esc(t)}">#${esc(t)} ${ICX}</button>`).join('')}</div>
  <input id="tagin" type="text" placeholder="Add tags, like weeknight or freezer-friendly" enterkeyhint="done" autocomplete="off" autocapitalize="none" data-a="tagIn">
  <div class="chips" style="margin:8px 0 0"${sugg.length?'':' hidden'}>${sugg.map(t=>`<button class="chip add" data-a="tagAdd" data-v="${esc(t)}">+ ${esc(t)}</button>`).join('')}</div></div>`;
  h+=`<div class="card"><h3><span>Notes, nutrition and video</span></h3><textarea class="auto rx sm" data-p="draft.notes" data-t="s" placeholder="Swaps, storage, what to serve it with">${esc(d.notes)}</textarea>
@@ -1035,10 +1042,10 @@ function vHist(){const ev=[];S.recipes.forEach(r=>r.cooked.forEach(d=>ev.push([d
  return h+`<div class="card wide">${body}</div>`}
 
 // ---- Tags and lists ----
-function vLists(){const tg=allTags();
+function vLists(){const tg=allTags().sort((a,b)=>a[0].localeCompare(b[0],undefined,{sensitivity:'base'}));
  const chip=(k,v,n)=>`<span class="chip ed2"><button class="cn" data-a="facRen" data-k="${k}" data-v="${esc(v)}">${esc(k=='tags'?'#'+v:v)}<i>${n||0}</i></button><button class="cx" data-a="facDel" data-k="${k}" data-v="${esc(v)}" aria-label="Remove ${esc(v)}">${ICX}</button></span>`;
  return `<div class="bk"><button class="g" data-a="tab" data-id="more">‹ Settings</button></div><div class="card wide"><h2>Tags and lists</h2><p class="mu" style="margin:0">Tap a name to rename it everywhere. Removing one also takes it off every recipe, and you can undo. The number is how many recipes use it.</p></div>`
- +FAC.map(([k,l])=>{const cnt=countFac(k);return `<div class="card"><h3><span>${l}</span><span class="mu">${S.facets[k].length}</span></h3><div class="chips">${S.facets[k].map(v=>chip(k,v,cnt[v])).join('')}</div><div class="row"><input type="text" id="fa-${k}" placeholder="Add to ${l.toLowerCase()}" enterkeyhint="done" autocomplete="off"><button data-a="facAdd" data-k="${k}" style="flex:none">Add</button></div></div>`}).join('')
+ +FAC.map(([k,l])=>{const cnt=countFac(k);return `<div class="card"><h3><span>${l}</span><span class="mu">${S.facets[k].length}</span></h3><div class="chips">${abc(S.facets[k]).map(v=>chip(k,v,cnt[v])).join('')}</div><div class="row"><input type="text" id="fa-${k}" placeholder="Add to ${l.toLowerCase()}" enterkeyhint="done" autocomplete="off"><button data-a="facAdd" data-k="${k}" style="flex:none">Add</button></div></div>`}).join('')
  +`<div class="card"><h3><span>Your tags</span><span class="mu">${tg.length}</span></h3>${tg.length?`<div class="chips">${tg.map(([v,n])=>chip('tags',v,n)).join('')}</div>`:'<p class="mu" style="margin:0">Tags you add to recipes show up here.</p>'}</div>`}
 
 // ---- Kitchen ----
