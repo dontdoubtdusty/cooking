@@ -53,7 +53,7 @@ match /shared/{id} {
 
 ### Share links on Cloudflare Pages
 
-The `share/` folder is a tiny separate site for share links, hosted free on Cloudflare Pages so links look like `https://<name>.pages.dev/r/AbC123xyz`. The apps themselves stay on GitHub Pages. `share/functions/r/[[path]].js` adds link previews (the recipe's name, a summary and its photo) when a link is pasted into Messages and similar apps.
+The `share/` folder is a tiny separate site for share links, hosted free on Cloudflare Pages so links look like `https://big-saucy.pages.dev/r/AbC123xyz`. The address is set in `index.html` (`SHARE_SITE`). The apps themselves stay on GitHub Pages. `share/functions/r/[[path]].js` adds link previews (the recipe's name, a summary and its photo) when a link is pasted into Messages and similar apps.
 
 Setup, once: in Cloudflare, **Workers & Pages → Create → Pages → Connect to Git**, pick this repo, then set **Root directory** to `share`, leave the build command empty, and set **Build output directory** to `public`. Optionally set build watch paths to `share/*`.
 
@@ -64,7 +64,7 @@ Or as a Worker (**Workers & Pages → Create → Import a repository**): set **P
 | File | What it does |
 | --- | --- |
 | `index.html` | The whole app |
-| `share.html` | The shared recipe page on GitHub Pages (older links) |
+| `share.html` | Forwards older share links to the share site |
 | `share/` | The shared recipe site on Cloudflare Pages, with link previews |
 | `sync.js` | Optional sync across devices (shared by all the Big apps) |
 | `manifest.webmanifest` | The app's name, colors and icons, used when it's installed |

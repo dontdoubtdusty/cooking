@@ -234,7 +234,7 @@ button.cd.on{border-color:var(--pc);background:var(--card)}
 // =====================================================================
 // 1. CONSTANTS
 // =====================================================================
-if(/[?&]r=/.test(location.search))location.replace('share.html'+location.search);
+{const q=/[?&]r=([A-Za-z0-9]+)/.exec(location.search);if(q)location.replace('https://big-saucy.pages.dev/r/'+q[1])}   // early share links
 const LS='saucy-v1',LST='saucy-timers';   // localStorage keys (don't change: they hold your data)
 // Facets: [key, label, single-choice?]
 const FAC=[['cuisine','Cuisine',1],['meal','Category'],['protein','Protein'],['method','Method'],['diet','Diet']];
@@ -885,7 +885,8 @@ const fp=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=M
 const plainL=l=>String(l||'').replace(LRE,(m,t)=>t.trim());   // [[Linked recipe]] -> Linked recipe
 const pubOf=r=>({app:'cooking',v:2,title:r.title,cuisine:r.cuisine,meal:r.meal,protein:r.protein,method:r.method,diet:r.diet,tags:r.tags,serves:r.serves,time:r.time,img:r.img||'',
  ing:r.ing.map(plainL),steps:r.steps.map(plainL),nut:r.nut,notes:plainL(r.notes),src:r.src,vid:r.vid});
-const shareUrl=id=>location.origin+location.pathname.replace(/index\.html$/,'')+'share.html?r='+id;
+const SHARE_SITE='https://big-saucy.pages.dev';   // the share site on Cloudflare Pages (share/ in this repo)
+const shareUrl=id=>SHARE_SITE+'/r/'+id;
 const newShareId=()=>{const a='abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';return [...crypto.getRandomValues(new Uint8Array(10))].map(x=>a[x%a.length]).join('')};
 const pubMap=()=>{try{return JSON.parse(localStorage.getItem(LSH))||{}}catch(e){return {}}};
 const pubKeep=m=>{try{localStorage.setItem(LSH,JSON.stringify(m))}catch(e){}};
