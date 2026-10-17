@@ -293,6 +293,8 @@ const cgrad=c=>{const g=c?CG[hashS(c.toLowerCase())%CG.length]:CGN;return `linea
 const STOP=new Set(['the','a','an','and','with','of','my','easy','best','simple','quick','for','in','on']);
 function inits(t){const w=(t||'').replace(/[^\p{L}\p{N}\s-]/gu,'').split(/[\s-]+/).filter(Boolean),k=w.filter(x=>!STOP.has(x.toLowerCase())),u=k.length?k:w;
  if(!u.length)return '?';return (u.length>1?u[0][0]+u[1][0]:u[0].slice(0,2)).toUpperCase()}
+// The name lists show: the optional short name, else the full title
+const dn=r=>((r&&r.sn)||'').trim()||(r&&r.title)||'';
 const short=t=>(t||'Recipe').length>20?(t||'').slice(0,19).trim()+'…':(t||'Recipe');
 
 // =====================================================================
@@ -302,7 +304,7 @@ let S,T='browse',RID=null,PREV='browse';
 let SH=null,KV='use',QT=0;   // open bottom sheet, Kitchen sub-view
 let O={},AM='type',PT='',PARSED='',CK={},SC={},SUR=null,SURN=0,TM=[];   // UI-only state
 
-const blankD=()=>({id:'',title:'',cuisine:'',meal:[],protein:[],method:[],diet:[],tags:[],serves:'',time:'',ingT:'',stepT:'',pairT:'',nutT:'',notes:'',src:'',vid:''});
+const blankD=()=>({id:'',title:'',sn:'',cuisine:'',meal:[],protein:[],method:[],diet:[],tags:[],serves:'',time:'',ingT:'',stepT:'',pairT:'',nutT:'',notes:'',src:'',vid:''});
 const blankShop=()=>({rids:[],x:{},extra:[],ck:{},got:{},have:{},need:{},note:{}});   // x: recipe id -> batches (×2 doubles its amounts)
 const blankF=()=>({q:'',time:0,now:0,near:0,sort:'az',tags:[],cuisine:[],meal:[],protein:[],method:[],diet:[]});
 const dEmpty=d=>!((d.title||'').trim()||(d.ingT||'').trim()||(d.stepT||'').trim()||(d.pairT||'').trim()||(d.notes||'').trim());
@@ -310,7 +312,7 @@ const dEmpty=d=>!((d.title||'').trim()||(d.ingT||'').trim()||(d.stepT||'').trim(
 function subHead(l){if(typeof l!='string'||l.length>60||/:$/.test(l))return l;
  const m=/^(?:ingredients?|what you('|’)?ll need)\s+(?:for|to make)\s+(?:the\s+|your\s+)?(.{2,50}?)\s*$/i.exec(l)||/^([a-z][a-z &'’-]{1,40}?)\s+ingredients?$/i.exec(l);
  if(!m)return l;const n=(m[2]||m[1]).trim();return n.charAt(0).toUpperCase()+n.slice(1)+':'}
-function fix(r){const A=x=>Array.isArray(x)?x:[];r.id=r.id||uid('r');r.title=r.title||'';r.cuisine=r.cuisine||'';
+function fix(r){const A=x=>Array.isArray(x)?x:[];r.id=r.id||uid('r');r.title=r.title||'';r.sn=typeof r.sn=='string'?r.sn:'';r.cuisine=r.cuisine||'';
  ['meal','protein','method','diet','tags','ing','steps','cooked','nut','pair'].forEach(k=>r[k]=A(r[k]));
  r.time=num(r.time);r.serves=num(r.serves);r.notes=r.notes||'';r.src=r.src||'';r.vid=r.vid||'';r.added=r.added||tdy();return r}
 const sample=()=>({title:'One-Pot Chickpea Curry',cuisine:'Indian',meal:['Dinner'],protein:['Chickpeas'],method:['One-pot'],diet:['Vegan','Gluten-free','Dairy-free'],tags:['weeknight','freezer-friendly'],time:35,serves:4,
@@ -410,7 +412,7 @@ function pairsOf(txt){const o=[];let cur='',d=0;const put=()=>{const x=cur.repla
 const pairedFrom=r=>S.recipes.filter(x=>x.id!=r.id&&prs(x).some(l=>linksIn(l).some(t=>tkey(t)==tkey(r.title))));
 // This recipe's Goes with items, plus recipes that pair with it and aren't already listed
 function pairItems(r){const P=prs(r),own=P.map(l=>linkHtml(l)),seen=new Set(P.flatMap(l=>linksIn(l).map(tkey)));
- return [...own,...pairedFrom(r).filter(x=>!seen.has(tkey(x.title))).map(x=>`<button class="rl" data-a="open" data-id="${esc(x.id)}">${esc(x.title.trim())}</button>`)]}
+ return [...own,...pairedFrom(r).filter(x=>!seen.has(tkey(x.title))).map(x=>`<button class="rl" data-a="open" data-id="${esc(x.id)}">${esc(dn(x).trim())}</button>`)]}
 
 // ---- Plan: cook days, servings eaten, and the leftovers they leave ----
 const planOk=()=>S.plan.filter(e=>byId(e.rid)&&(e.k=='cook'||S.plan.some(b=>b.id==e.src)));
@@ -431,7 +433,7 @@ const abc=a=>[...a].sort((x,y)=>String(x).localeCompare(String(y),undefined,{sen
 function allTags(){const m={};S.recipes.forEach(r=>r.tags.forEach(t=>m[t]=(m[t]||0)+1));return Object.entries(m).sort((a,b)=>b[1]-a[1]||(a[0]<b[0]?-1:1))}
 function countFac(k){const m={};S.recipes.forEach(r=>(k=='cuisine'?[r.cuisine]:r[k]).forEach(v=>{if(v)m[v]=(m[v]||0)+1}));return m}
 function match(r){const f=S.f;
- if(f.q){const q=f.q.toLowerCase().trim();if(q&&!(r.title+' '+r.cuisine+' '+r.tags.join(' ')+' '+r.ing.join(' ')).toLowerCase().includes(q))return false}
+ if(f.q){const q=f.q.toLowerCase().trim();if(q&&!(r.title+' '+(r.sn||'')+' '+r.cuisine+' '+r.tags.join(' ')+' '+r.ing.join(' ')).toLowerCase().includes(q))return false}
  for(const [k,,one] of FAC){const sel=f[k];if(sel.length){const v=one?[r.cuisine]:r[k];if(!sel.some(x=>v.includes(x)))return false}}
  if(f.tags.length&&!f.tags.every(t=>r.tags.includes(t)))return false;
  if(f.time&&!(r.time&&r.time<=f.time))return false;if((f.now||f.near)&&!((f.now&&kReady(r))||(f.near&&kNear(r))))return false;return true}
@@ -472,7 +474,7 @@ const VIDRE=/youtu\.?be|vimeo\.com|tiktok\.com|instagram\.com\/(reel|p)\/|facebo
 const normUrl=u=>{u=(u||'').trim();if(!u)return '';if(!/^[a-z]+:\/\//i.test(u)&&/^[\w-]+(\.[\w-]+)+(\/|$)/.test(u))u='https://'+u;return u};
 const isUrl=u=>/^https?:\/\//i.test(u||'');
 function stepHtml(s,r,n){let o='',i=0;s.replace(TRE,(m,a,u,off)=>{const sec=Math.round(parseFloat(a)*(/^h/i.test(u)?3600:/^s/i.test(u)?1:60));
- o+=esc(s.slice(i,off))+`<button class="tmr" data-a="timer" data-s="${sec}" data-l="${esc(short(r.title)+' · step '+(n+1))}">${ICT}${esc(m)}</button>`;i=off+m.length;return m});return o+esc(s.slice(i))}
+ o+=esc(s.slice(i,off))+`<button class="tmr" data-a="timer" data-s="${sec}" data-l="${esc(short(dn(r))+' · step '+(n+1))}">${ICT}${esc(m)}</button>`;i=off+m.length;return m});return o+esc(s.slice(i))}
 
 // ---- Heads-up for eggs and meat ----
 function dietWarn(t){t=(t||'').toLowerCase().replace(/\b(vegan|veggie|vegetarian|plant[- ]based|meatless|meat-free|egg-free|eggless|no[- ]egg|beyond|impossible|faux|mock)\s+[\w-]+(\s+[\w-]+)?/g,'').replace(/\boyster mushrooms?\b/g,'');
@@ -523,7 +525,7 @@ function shopOff(id){const sh=S.shop;sh.rids=sh.rids.filter(x=>x!=id);if(sh.x)de
 function calcShop(){const m=new Map();
  S.shop.rids.forEach(id=>{const r=byId(id);if(!r)return;const f=shopX(id);r.ing.forEach(l=>{if(/:$/.test(l))return;const x=ingInfo(l);if(!x.key||WATER.test(x.key))return;
   let e=m.get(x.key);if(!e){e={k:x.key,name:cap(x.name),src:l,v:0,w:0,c:{},rs:[]};m.set(x.key,e)}
-  const rt=r.title+xTxt(f);if(!e.rs.includes(rt))e.rs.push(rt);
+  const rt=dn(r)+xTxt(f);if(!e.rs.includes(rt))e.rs.push(rt);
   const p=x.p;if(p&&p.q>0){const q=(p.q2!=null?p.q2:p.q)*f;
    if(p.u&&p.u[2]=='v')e.v+=q*p.u[3];else if(p.u&&p.u[2]=='w')e.w+=q*p.u[3];else{const u=p.u?p.u[1]:x.cu;e.c[u]=(e.c[u]||0)+q}}})});
  return [...m.values()].map(e=>{const a=[];
@@ -742,10 +744,10 @@ const ICP='<svg class="ic" viewBox="0 0 16 16" width="15" height="15" aria-hidde
 const DT=(v,attrs)=>`<label class="dt"><span>${sd(v)}</span><input type="date" value="${esc(v||'')}" ${attrs}></label>`;
 const IDate=p=>DT(get(p),`data-p="${p}" data-t="s"`);
 const X=(p,i,label=ICX)=>`<button class="x" data-a="del" data-p="${p}" data-i="${i}" aria-label="Delete">${label}</button>`;
-const tile=(r,big)=>r.img&&IMG[r.img]?`<img class="rt ph${big==2?' huge':big?' big':''}" src="${IMG[r.img]}" alt="" aria-hidden="true">`:`<span class="rt${big?' big':''}" style="background:${cgrad(r.cuisine)}" aria-hidden="true">${esc(inits(r.title))}</span>`;
+const tile=(r,big)=>r.img&&IMG[r.img]?`<img class="rt ph${big==2?' huge':big?' big':''}" src="${IMG[r.img]}" alt="" aria-hidden="true">`:`<span class="rt${big?' big':''}" style="background:${cgrad(r.cuisine)}" aria-hidden="true">${esc(inits(dn(r)))}</span>`;
 // quiet: leave out "not cooked yet" (for lists that are already all uncooked recipes)
 function rRow(r,quiet){const lc=last(r),meta=[r.cuisine,fmtTime(r.time),lc?'cooked '+ago(lc):quiet===true?'':'not cooked yet'].filter(Boolean).join(' · ');
- return `<button class="rc" data-a="open" data-id="${esc(r.id)}">${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${esc(meta)}</span></span>${CHEV}</button>`}
+ return `<button class="rc" data-a="open" data-id="${esc(r.id)}">${tile(r)}<span class="rcn"><b>${esc(dn(r)||'Untitled')}</b><span class="mu">${esc(meta)}</span></span>${CHEV}</button>`}
 function hello(){const h=new Date().getHours(),g=h<5?'Late-night snack?':h<11?'What\'s for breakfast?':h<15?'What\'s for lunch?':'What\'s for dinner?',n=S.recipes.length;
  return `<div class="hello"><b>${g}</b><span>${n} recipe${n==1?'':'s'}</span></div>`}
 const welcome=()=>`<div class="card wide"><h3><span>Welcome to Big Saucy</span><button class="g" data-a="welcomeOff" aria-label="Dismiss">${ICX}</button></h3><p class="mu" style="margin:0 0 12px">Type recipes in or paste them from any website or doc. Then filter by cuisine, protein, method, time and your own tags, or let Surprise me decide. The Kitchen tab holds what you have on hand and builds your shopping list, flagging anything you already have. There's one sample recipe to show you around.</p><div class="row"><button data-a="tab" data-id="add">Add a recipe</button><button class="g bd" data-a="gear">Import a backup</button></div></div>`;
@@ -830,7 +832,7 @@ function vBrowse(){const g=S.set.bg||'meal',N=S.recipes.length;
 function vRecipe(){const r=byId(RID);if(!r)return '';const i=S.recipes.indexOf(r),p='recipes.'+i,lc=last(r),fac=['meal','protein','method','diet'].flatMap(k=>r[k].map(v=>[k,v]));
  const meta=[r.cuisine?`<button class="mlk" data-a="ftag" data-k="cuisine" data-v="${esc(r.cuisine)}">${esc(r.cuisine)}</button>`:'',r.time?esc(fmtTime(r.time)):'',r.serves?'serves '+esc(r.serves):''].filter(Boolean).join(' · '),warn=dietWarn(r.ing.join('\n'));
  const up=RST.length?byId(RST[RST.length-1]):null,nx=planOk().filter(e=>e.rid==r.id&&e.d>=tdy()).sort((a,b)=>a.d<b.d?-1:1)[0],ui=usedIn(r);
- let h=`<div class="bk"><button class="g" data-a="back">‹ ${up?esc(short(up.title)):'Back'}</button></div>`;
+ let h=`<div class="bk"><button class="g" data-a="back">‹ ${up?esc(short(dn(up))):'Back'}</button></div>`;
  if(SUR==r.id)h+=`<div class="card wide okc"><div class="row"><span style="flex:1"><b>Surprise pick</b><br><span class="mu">From ${SURN} matching recipe${SURN==1?'':'s'}, favoring ones you haven't made lately.</span></span><button data-a="surprise" style="flex:none">Try another</button></div></div>`;
  h+=`<div class="card wide"><div class="hr"><button class="phb${r.img&&IMG[r.img]?'':' add'}" data-a="phTap" data-id="${esc(r.id)}" aria-label="${r.img?'Change photo':'Add a photo'}">${tile(r,1)}</button><div style="min-width:0"><h2>${esc(r.title||'Untitled')}</h2><div class="mu">${meta}</div></div></div>`
  +(fac.length||r.tags.length?`<div class="pills">${fac.map(([k,x])=>`<button class="pill" data-a="ftag" data-k="${k}" data-v="${esc(x)}">${esc(x)}</button>`).join('')}${abc(r.tags).map(x=>`<button class="pill tg" data-a="ftag" data-k="tags" data-v="${esc(x)}">#${esc(x)}</button>`).join('')}</div>`:'')
@@ -1008,7 +1010,7 @@ function vCook(){const r=byId(S.cookId);
   return `<div class="card wide"><h2>Cook mode</h2><p class="mu" style="margin:0 0 12px">Open a recipe and tap Start cooking. Your screen stays on, times in the steps become one-tap timers, and you can check off ingredients as you go.</p><button data-a="tab" data-id="browse">Browse recipes</button></div>`
   +(rec.length?`<div class="card wide"><div class="sec">Cooked recently</div>${rec.map(rRow).join('')}</div>`:'')}
  const n=realSteps(r).length,k=Math.min(S.step||0,Math.max(0,n-1));let c=0;
- let h=`<div class="card wide"><div class="row">${r.img&&IMG[r.img]?tile(r):''}<div style="flex:1;min-width:0"><span class="sec" style="margin:0">Cooking</span><b class="ct">${esc(r.title)}</b></div><button class="g bd" data-a="cookExit">Exit</button></div>${linkRow(r)}<div class="mu" id="wks" style="margin-top:6px">${wakeTxt()}</div></div>`;
+ let h=`<div class="card wide"><div class="row">${r.img&&IMG[r.img]?tile(r):''}<div style="flex:1;min-width:0"><span class="sec" style="margin:0">Cooking</span><b class="ct">${esc(dn(r))}</b></div><button class="g bd" data-a="cookExit">Exit</button></div>${linkRow(r)}<div class="mu" id="wks" style="margin-top:6px">${wakeTxt()}</div></div>`;
  if(n)h+=`<div class="card wide stepc"><h3><span>Steps</span><span class="mu">Step ${k+1} of ${n}</span></h3><div class="bar" style="margin-bottom:8px"><i style="width:${(k+1)/n*100}%"></i></div>`
   +r.steps.map(s=>{if(isHd(s))return `<div class="sec slh">${esc(s.slice(0,-1))}</div>`;const j=c++;return j==k?`<div class="sl cur"><span class="slnum">${j+1}</span><div style="flex:1;min-width:0"><div class="st">${stepHtml(s,r,j)}</div><div class="row nv"><button class="g bd" data-a="stp" data-d="-1" ${k?'':'disabled'}>‹ Back</button>${k>=n-1?`<button data-a="finish">Finish and log it</button>`:`<button data-a="stp" data-d="1">Next step ›</button>`}</div></div></div>`
    :`<button class="sl ${j<k?'dn':''}" data-a="stp" data-to="${j}"><span class="slnum">${j<k?ICK:j+1}</span><span>${esc(s)}</span></button>`}).join('')+`</div>`;
@@ -1031,6 +1033,7 @@ function vAdd(){const d=S.draft,ed=!!d.id;
  const sugg=abc(allTags().map(x=>x[0]).filter(t=>!d.tags.includes(t)).slice(0,12));
  if(PARSED)h+=`<div class="card wide okc"><b>${esc(PARSED)}</b><div class="mu">Check below, fix anything that's off, then save.</div></div>`;
  h+=`<div class="card"><h3><span>Basics</span></h3><input id="ttl" type="text" class="ttl" placeholder="Recipe name" value="${esc(d.title)}" data-p="draft.title" data-t="s" enterkeyhint="next" autocomplete="off" autocapitalize="words">
+ <input id="sn" type="text" placeholder="Short name for your lists (optional)" value="${esc(d.sn)}" data-p="draft.sn" data-t="s" enterkeyhint="next" autocomplete="off" autocapitalize="words" maxlength="40" style="margin-top:8px">
  <input type="url" inputmode="url" placeholder="Link to the original recipe (optional)" value="${esc(d.src)}" data-p="draft.src" data-t="s" autocomplete="off" autocapitalize="none" style="margin-top:8px">
  <div class="g2f"><label>Total time<input id="tm" type="text" placeholder="45 min" value="${esc(d.time)}" data-p="draft.time" data-t="s" autocomplete="off"></label><label>Serves<input type="number" inputmode="numeric" min="0" placeholder="4" value="${esc(d.serves)}" data-p="draft.serves" data-t="n"></label></div><div class="hint" id="ctm">${ctmSug(d)}</div></div>`;
  h+=`<div class="card"><h3><span>Ingredients</span></h3><textarea class="auto rx" data-p="draft.ingT" data-t="s" placeholder="2 cups basmati rice&#10;1 can coconut milk&#10;3 cloves garlic, minced&#10;For the sauce:&#10;2 tbsp soy sauce">${esc(d.ingT)}</textarea><div class="row ifoot" style="margin-top:4px"><button class="g lnk" data-a="lnkPick" data-f="ingT">+ Link one of your recipes</button></div><div class="hint">One per line. A line ending in a colon becomes a heading. Put one of your recipe names in double brackets, like <b>1/2 cup [[Pickled Onions]]</b>, to link to it.</div></div>`;
@@ -1053,7 +1056,7 @@ function planRow(e,X){const r=byId(e.rid);let sub,pill='';
   pill=n>0?`<span class="lo">${fmtQ(n)} left over</span>`:n<0?`<span class="lo neg">${fmtQ(-n)} short</span>`:''}
  else{const b=batch(e.src),n=remAt(b,X);sub=`Leftovers from ${b.d==X?'today':dlab(b.d)} · eating ${e.eat}`;
   pill=n<0?`<span class="lo neg">${fmtQ(-n)} short</span>`:n>0?`<span class="lo">${fmtQ(n)} left</span>`:`<span class="lo" style="opacity:.7">All gone</span>`}
- return `<button class="rc pr" data-a="plEd" data-id="${esc(e.id)}">${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${esc(sub)}</span></span>${pill}</button>`}
+ return `<button class="rc pr" data-a="plEd" data-id="${esc(e.id)}">${tile(r)}<span class="rcn"><b>${esc(dn(r)||'Untitled')}</b><span class="mu">${esc(sub)}</span></span>${pill}</button>`}
 function vPlan(){const t=tdy();PD=PD||t;PM=PM||PD.slice(0,7);const X=PD,P=planOk(),byD={};P.forEach(e=>(byD[e.d]=byD[e.d]||[]).push(e));
  const [y,m]=PM.split('-').map(Number),first=new Date(y,m-1,1),dim=new Date(y,m,0).getDate(),wk=Math.ceil((first.getDay()+dim)/7),start=addD(iso(first),-first.getDay());
  let cells='';for(let i=0;i<wk*7;i++){const d=addD(start,i),es=byD[d]||[],cls=[d.slice(0,7)!=PM?'out':'',d==t?'td':'',d==X?'on':''].filter(Boolean).join(' ');
@@ -1067,7 +1070,7 @@ function vPlan(){const t=tdy();PD=PD||t;PM=PM||PD.slice(0,7);const X=PD,P=planOk
   +`<div class="row"><button data-a="plAdd" data-d="${X}">+ Add a meal</button></div></div>`;
  const L=leftAt(X);
  h+=`<div class="card"><h3><span>${X==t?'Leftovers in the fridge':'Leftovers after '+esc(X==addD(t,1)?'tomorrow':dlab(X))}</span><span class="mu">${L.length?fmtQ(sum(L,x=>x.n))+' serving'+(sum(L,x=>x.n)==1?'':'s'):''}</span></h3>`
-  +(L.length?L.map(({b,n})=>{const r=byId(b.rid),a=dBetween(b.d,X);return `<div class="prow pr"><span class="pn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${fmtQ(n)} serving${n==1?'':'s'} · made ${b.d==X?'this day':esc(dlab(b.d))}</span></span><span class="dl ${ageCls(a)}">${ageTxt(a)}</span><button class="g lnk" data-a="plEat" data-id="${esc(b.id)}" style="padding:6px">Eat</button><button class="g" data-a="plGone" data-id="${esc(b.id)}" aria-label="Leftovers gone" style="padding:6px">${ICX}</button></div>`}).join('')
+  +(L.length?L.map(({b,n})=>{const r=byId(b.rid),a=dBetween(b.d,X);return `<div class="prow pr"><span class="pn"><b>${esc(dn(r)||'Untitled')}</b><span class="mu">${fmtQ(n)} serving${n==1?'':'s'} · made ${b.d==X?'this day':esc(dlab(b.d))}</span></span><span class="dl ${ageCls(a)}">${ageTxt(a)}</span><button class="g lnk" data-a="plEat" data-id="${esc(b.id)}" style="padding:6px">Eat</button><button class="g" data-a="plGone" data-id="${esc(b.id)}" aria-label="Leftovers gone" style="padding:6px">${ICX}</button></div>`}).join('')
    +`<div class="hint">Counts what's cooked by the end of this day minus what's eaten. Tap Eat to plan a leftovers meal, or ✕ if they're gone.</div>`
    :`<p class="mu" style="margin:0">None. When you cook more servings than you eat, the rest shows up here.</p>`)+`</div>`;
  const wkC=P.filter(e=>e.k=='cook'&&e.d>=t&&e.d<=addD(t,6));
@@ -1085,7 +1088,7 @@ function vHist(){const ev=[];S.recipes.forEach(r=>r.cooked.forEach(d=>ev.push([d
  const PER=[[7,'Past week'],[30,'Past 30 days'],[90,'Past 3 months'],[365,'Past year'],[1e9,'Longer ago']],G=PER.map(()=>new Map());
  ev.forEach(([d,r])=>{const gi=PER.findIndex(([n])=>-dayDiff(d)<n),m=G[gi];if(!m.has(r.id))m.set(r.id,{r,ds:[]});m.get(r.id).ds.push(d)});
  const body=PER.map(([,l],gi)=>{if(!G[gi].size)return '';return `<div class="sec mh">${l}</div>`+[...G[gi].values()].map(({r,ds})=>{const n=ds.length,sub=[r.cuisine,n>1?'made '+(n==2?'twice':n+' times'):''].filter(Boolean).join(' · ');
-   return `<div class="srow pr"><button class="rc" data-a="open" data-id="${esc(r.id)}" style="flex:1;min-width:0">${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b>${sub?`<span class="mu">${esc(sub)}</span>`:''}</span></button><button class="g" data-a="logDel" data-id="${esc(r.id)}" data-d="${ds[0]}" aria-label="Remove ${esc(r.title||'this')} from the log${n>1?' (one time)':''}" style="padding:6px">${ICX}</button></div>`}).join('')}).join('');
+   return `<div class="srow pr"><button class="rc" data-a="open" data-id="${esc(r.id)}" style="flex:1;min-width:0">${tile(r)}<span class="rcn"><b>${esc(dn(r)||'Untitled')}</b>${sub?`<span class="mu">${esc(sub)}</span>`:''}</span></button><button class="g" data-a="logDel" data-id="${esc(r.id)}" data-d="${ds[0]}" aria-label="Remove ${esc(r.title||'this')} from the log${n>1?' (one time)':''}" style="padding:6px">${ICX}</button></div>`}).join('')}).join('');
  return h+`<div class="card wide">${body}</div>`}
 
 // ---- Tags and lists ----
@@ -1203,7 +1206,7 @@ function vKit(){const P=pSorted(),sh=S.shop,rows=shopRows(),have=shopItems().fil
  const toBuy=rows.filter(r=>!r.ck).length,nck=rows.filter(r=>r.ck).length;
  let h=`<div class="seg qm wide">${[['use','On hand'+(P.length?' · '+P.length:'')],['shop','Shopping'+(toBuy?' · '+toBuy:'')]].map(([v,l])=>`<button class="${KV==v?'on':''}" data-a="kitV" data-v="${v}">${l}</button>`).join('')}</div>`;
  if(KV=='use')return h+vOnHand();
- if(!SEL)h+=`<div class="card wide"><h3><span>Cooking this week</span><span class="mu">${rs.length}</span></h3><div class="chips" style="margin:0">${rs.map(r=>`<span class="chip ed2"><button class="cn" data-a="open" data-id="${esc(r.id)}">${esc(short(r.title)+xTxt(shopX(r.id)))}</button><button class="cx" data-a="rOff" data-id="${esc(r.id)}" aria-label="Take ${esc(r.title)} off the list">${ICX}</button></span>`).join('')}<button class="chip add" data-a="pick">+ ${rs.length?'Add recipes':'Pick recipes'}</button></div></div>`;
+ if(!SEL)h+=`<div class="card wide"><h3><span>Cooking this week</span><span class="mu">${rs.length}</span></h3><div class="chips" style="margin:0">${rs.map(r=>`<span class="chip ed2"><button class="cn" data-a="open" data-id="${esc(r.id)}">${esc(short(dn(r))+xTxt(shopX(r.id)))}</button><button class="cx" data-a="rOff" data-id="${esc(r.id)}" aria-label="Take ${esc(r.title)} off the list">${ICX}</button></span>`).join('')}<button class="chip add" data-a="pick">+ ${rs.length?'Add recipes':'Pick recipes'}</button></div></div>`;
  h+=`<div class="card wide${SEL?' selm':''}"><h3><span>${SEL?(SEL.size?SEL.size+' selected':'Tap items to select'):'Shopping list'}</span>${SEL?(kit.length?`<button class="g lnk" data-a="sSelKit">Select kitchen items</button>`:''):`<span class="mu">${toBuy?toBuy+' left':''}</span>`}</h3>`
   +(!SEL&&kit.length?`<button class="khint" data-a="sReview"><span><b>${kit.length}</b> already in your kitchen</span>Review ›</button>`:'')
   +rows.map(sRow).join('')
@@ -1218,7 +1221,7 @@ function vKit(){const P=pSorted(),sh=S.shop,rows=shopRows(),have=shopItems().fil
 function vOnHand(){const P=pSorted(),C=S.recipes.map(r=>({r,c:kCheck(r)})).filter(x=>x.c.n.length);
  const ready=C.filter(x=>!x.c.miss.length).sort((a,b)=>b.c.soon-a.c.soon||(last(a.r)<last(b.r)?-1:last(a.r)>last(b.r)?1:0)),
   near=C.filter(x=>x.c.miss.length&&x.c.miss.length<=2&&x.c.miss.length<x.c.n.length).sort((a,b)=>a.c.miss.length-b.c.miss.length||b.c.uses.length-a.c.uses.length);
- const row=(r,sub,extra='')=>`<div class="srow pr"><button class="rc" data-a="open" data-id="${esc(r.id)}" style="flex:1;min-width:0">${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${sub}</span></span>${extra?'':CHEV}</button>${extra}</div>`;
+ const row=(r,sub,extra='')=>`<div class="srow pr"><button class="rc" data-a="open" data-id="${esc(r.id)}" style="flex:1;min-width:0">${tile(r)}<span class="rcn"><b>${esc(dn(r)||'Untitled')}</b><span class="mu">${sub}</span></span>${extra?'':CHEV}</button>${extra}</div>`;
  const useTxt=c=>{const s=c.uses.filter(p=>p.days!=null&&pLeft(p)<=3);return s.length?'Uses up '+esc(s.map(p=>p.name.toLowerCase()).join(', ')):esc(c.uses.slice(0,3).map(p=>p.name.toLowerCase()).join(', '))};
  let h=`<div class="card wide"><h3><span>Cook without shopping</span><span class="mu">${ready.length?ready.length+' ready':''}</span></h3>`;
  if(!P.length)h+=`<p class="mu" style="margin:0">Add your carbs, proteins, produce, sauces and garnishes, and anything else worth remembering, below, and this shows which recipes you can make right now.</p>`;
@@ -1246,8 +1249,8 @@ function vSheet(){if(!SH)return '';let b='';
  if(SH.kind=='photo')return wrap(phSheet());
  if(SH.kind=='crop')return wrap(cropSheet());
  if(SH.kind=='shout')return wrap(`<h2>Copy ${SH.what=='Link'?'the link':'the recipe'}</h2><p class="mu" style="margin:0 0 8px">Sharing isn't available here, so copy it and paste it wherever you like.</p><textarea id="shoT" class="rx" readonly>${esc(SH.t)}</textarea><div class="row" style="margin-top:12px"><button class="g bd" data-a="shClose">Close</button><button data-a="shoCopy" style="flex:1">Copy</button></div>`);
- const byT=(a,b)=>(a.title||'').toLowerCase()<(b.title||'').toLowerCase()?-1:1,qOk=(x,q)=>!q||(x.title+' '+x.cuisine+' '+x.tags.join(' ')).toLowerCase().includes(q);
- const pRow=(r,a,extra='')=>`<button class="rc" data-a="${a}" data-id="${esc(r.id)}"${extra}>${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${esc([r.cuisine,r.serves?'serves '+r.serves:'',fmtTime(r.time)].filter(Boolean).join(' · ')||' ')}</span></span>${CHEV}</button>`;
+ const byT=(a,b)=>(a.title||'').toLowerCase()<(b.title||'').toLowerCase()?-1:1,qOk=(x,q)=>!q||(x.title+' '+(x.sn||'')+' '+x.cuisine+' '+x.tags.join(' ')).toLowerCase().includes(q);
+ const pRow=(r,a,extra='')=>`<button class="rc" data-a="${a}" data-id="${esc(r.id)}"${extra}>${tile(r)}<span class="rcn"><b>${esc(dn(r)||'Untitled')}</b><span class="mu">${esc([r.cuisine,r.serves?'serves '+r.serves:'',fmtTime(r.time)].filter(Boolean).join(' · ')||' ')}</span></span>${CHEV}</button>`;
  const srch=(id,v,ph)=>`<div class="srch" style="margin:8px 0 4px">${ICS}<input id="${id}" type="search" placeholder="${ph}" value="${esc(v||'')}" autocomplete="off" enterkeyhint="search"></div>`;
  // A kitchen item: name, group, use-by
  if(SH.kind=='pit'){const nw=!SH.id,g=kgOf(SH.t),n=SH.left;
@@ -1264,7 +1267,7 @@ function vSheet(){if(!SH)return '';let b='';
  if(SH.kind=='plan'){
   if(SH.st=='pick'){const q=tkey(SH.q),LO=q?[]:S.plan.filter(b=>b.k=='cook'&&byId(b.rid)&&b.d<=SH.d&&dBetween(b.d,SH.d)<=7&&remAt(b)>0),L=S.recipes.filter(r=>qOk(r,q)).sort(byT);
    return wrap(`<h2>Add to ${esc(dlab(SH.d))}</h2>`
-    +(LO.length?`<div class="sec" style="margin-top:10px">Leftovers</div>${LO.map(b=>{const r=byId(b.rid),n=remAt(b);return `<button class="rc" data-a="plPickL" data-id="${esc(b.id)}">${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">From ${b.d==SH.d?'this day':esc(dlab(b.d))}</span></span><span class="lo">${fmtQ(n)} left</span></button>`}).join('')}`:'')
+    +(LO.length?`<div class="sec" style="margin-top:10px">Leftovers</div>${LO.map(b=>{const r=byId(b.rid),n=remAt(b);return `<button class="rc" data-a="plPickL" data-id="${esc(b.id)}">${tile(r)}<span class="rcn"><b>${esc(dn(r)||'Untitled')}</b><span class="mu">From ${b.d==SH.d?'this day':esc(dlab(b.d))}</span></span><span class="lo">${fmtQ(n)} left</span></button>`}).join('')}`:'')
     +`<div class="sec" style="margin-top:12px">Cook something</div>${srch('plq',SH.q,'Search your recipes')}`
     +(L.length?L.map(r=>pRow(r,'plPick')).join(''):`<p class="mu">${S.recipes.length?'Nothing matches.':'No recipes yet.'}</p>`)
     +`<div class="row" style="margin-top:12px"><button class="g bd" data-a="shClose" style="flex:1">Cancel</button></div>`)}
@@ -1277,7 +1280,7 @@ function vSheet(){if(!SH)return '';let b='';
   }
   return wrap(`<h2>${SH.id?'Edit meal':'Add to calendar'}</h2>`
    +(SH.from&&!SH.id?`<button class="g lnk" data-a="plBack" style="margin:0 0 4px">‹ Pick something else</button>`:'')
-   +`<div class="row" style="margin:4px 0 6px">${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${isL?'Leftovers from '+esc(dlab(b.d)):'Cooking it'+(r.serves?' · serves '+r.serves+' as written':'')}</span></span></div>`
+   +`<div class="row" style="margin:4px 0 6px">${tile(r)}<span class="rcn"><b>${esc(dn(r)||'Untitled')}</b><span class="mu">${isL?'Leftovers from '+esc(dlab(b.d)):'Cooking it'+(r.serves?' · serves '+r.serves+' as written':'')}</span></span></div>`
    +`<div class="prow"><span class="pn"><b>Day</b></span>${DT(SH.d,'data-a="plDate"')}</div>`
    +(isL?'':`<div class="prow"><span class="pn"><b>Batches</b><span class="mu">${(SH.x||1)==2?'A double batch':(SH.x||1)==1?'As written':'×'+fmtQ(SH.x||1)+' the recipe'}. The shopping list scales to match.</span></span><span class="stp"><button class="g sb" data-a="plN" data-f="x" data-d="-1" aria-label="Fewer batches" ${(SH.x||1)<=.5?'disabled':''}>−</button><b class="sbig">${fmtQ(SH.x||1)}</b><button class="g sb" data-a="plN" data-f="x" data-d="1" aria-label="More batches">+</button></span></div>`
      +`<div class="prow"><span class="pn"><b>Servings made</b><span class="mu">Scale up to have leftovers</span></span>${st('mk',SH.mk,1)}</div>`)
@@ -1287,7 +1290,7 @@ function vSheet(){if(!SH)return '';let b='';
  const row=(g,x,i,sub)=>`<label class="chk"><input type="checkbox" data-a="shT" data-g="${g}" data-i="${i}" ${x.on?'checked':''}><span>${esc(x.name)}${sub?` <span class="mu">· ${esc(sub)}</span>`:''}</span></label>`;
  if(SH.kind=='pick'){const L=[...S.recipes].sort((a,b)=>(a.title||'').toLowerCase()<(b.title||'').toLowerCase()?-1:1);
   b=`<h2>Plan your shopping</h2><p class="mu" style="margin:0 0 8px">Pick what you'll cook. Their ingredients merge into one list.</p>`
-  +(L.length?L.map(r=>`<label class="chk"><input type="checkbox" data-a="pickT" data-id="${esc(r.id)}" ${S.shop.rids.includes(r.id)?'checked':''}>${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${esc([r.cuisine,fmtTime(r.time)].filter(Boolean).join(' · ')||' ')}</span></span></label>`).join(''):'<p class="mu">No recipes yet.</p>')
+  +(L.length?L.map(r=>`<label class="chk"><input type="checkbox" data-a="pickT" data-id="${esc(r.id)}" ${S.shop.rids.includes(r.id)?'checked':''}>${tile(r)}<span class="rcn"><b>${esc(dn(r)||'Untitled')}</b><span class="mu">${esc([r.cuisine,fmtTime(r.time)].filter(Boolean).join(' · ')||' ')}</span></span></label>`).join(''):'<p class="mu">No recipes yet.</p>')
   +`<div class="row" style="margin-top:12px"><button data-a="shClose" style="flex:1">Done</button></div>`}
  else if(SH.kind=='shop')b=`<h2>Put it away?</h2><p class="mu" style="margin:0 0 8px">Checked items go in your Kitchen, so next time the shopping list can tell you that you already have them.</p>${SH.left.map((x,i)=>row('left',x,i,x.days!=null?'keeps about '+x.days+' days':'')).join('')}
   <div class="row" style="margin-top:12px"><button class="g bd" data-a="shClose">Skip</button><button data-a="shSave" style="flex:1">Add to Kitchen</button></div>`;
@@ -1324,7 +1327,7 @@ function saveDraft(){pull();const d=S.draft,title=d.title.trim();if(!title){toas
  const old=d.id&&byId(d.id),oldT=old?old.title:'';
  if(!old&&S.recipes.some(r=>r.title.trim().toLowerCase()==title.toLowerCase())&&!confirm(`You already have "${title}". Save another one?`))return;
  const ing=d.ingT.split('\n').map(l=>l.replace(/^\s*[-*+]\s*/,'').trim()).filter(Boolean),steps=stepsOf(d.stepT),nut=nutMerge((d.nutT||'').split('\n').map(l=>l.replace(/^\s*[-*•]\s*/,'').trim()).filter(Boolean).map(l=>{const x=nutPart(l);return x?x.t:l}));
- const o=fix({id:old?old.id:uid('r'),title,cuisine:d.cuisine,meal:[...d.meal],protein:[...d.protein],method:[...d.method],diet:[...d.diet],tags:[...d.tags],serves:num(d.serves),time:tm,ing,steps,pair:pairsOf(d.pairT||''),nut,notes:d.notes.trim(),src:normUrl(d.src),vid:normUrl(d.vid)});
+ const o=fix({id:old?old.id:uid('r'),title,sn:(d.sn||'').trim(),cuisine:d.cuisine,meal:[...d.meal],protein:[...d.protein],method:[...d.method],diet:[...d.diet],tags:[...d.tags],serves:num(d.serves),time:tm,ing,steps,pair:pairsOf(d.pairT||''),nut,notes:d.notes.trim(),src:normUrl(d.src),vid:normUrl(d.vid)});
  if(old)Object.assign(old,o,{cooked:old.cooked,added:old.added});else S.recipes.push(o);
  // Renamed: point [[links]] to the new name
  if(old&&tkey(oldT)&&tkey(oldT)!=tkey(title))S.recipes.forEach(r=>{const re=l=>l.replace(LRE,(m,t)=>tkey(t)==tkey(oldT)?'[['+title+']]':m);r.ing=r.ing.map(re);if(Array.isArray(r.pair))r.pair=r.pair.map(re)});
@@ -1410,7 +1413,7 @@ const ACT={
  cook:d=>{if(S.cookId!=d.id){S.cookId=d.id;S.step=0}save();goTab('cook')},
  cooked:d=>{const r=byId(d.id);if(!r||!logCooked(r))return;afterCook(r);R();toast('Logged as cooked today',()=>{const i=r.cooked.lastIndexOf(tdy());if(i>=0)r.cooked.splice(i,1);commit()})},
  edit:d=>{const r=byId(d.id);if(!r)return;if(!dEmpty(S.draft)&&S.draft.id!=r.id&&!confirm('Discard the recipe you were adding?'))return;
-  S.draft=Object.assign(blankD(),{id:r.id,title:r.title,cuisine:r.cuisine,meal:[...r.meal],protein:[...r.protein],method:[...r.method],diet:[...r.diet],tags:[...r.tags],serves:r.serves||'',time:r.time?fmtTime(r.time):'',ingT:r.ing.join('\n'),stepT:r.steps.join('\n'),pairT:prs(r).join(', '),nutT:r.nut.join('\n'),notes:r.notes,src:r.src,vid:r.vid});
+  S.draft=Object.assign(blankD(),{id:r.id,title:r.title,sn:r.sn||'',cuisine:r.cuisine,meal:[...r.meal],protein:[...r.protein],method:[...r.method],diet:[...r.diet],tags:[...r.tags],serves:r.serves||'',time:r.time?fmtTime(r.time):'',ingT:r.ing.join('\n'),stepT:r.steps.join('\n'),pairT:prs(r).join(', '),nutT:r.nut.join('\n'),notes:r.notes,src:r.src,vid:r.vid});
   AM='type';PARSED='';save();goTab('add')},
  delR:d=>{const i=S.recipes.findIndex(r=>r.id==d.id);if(i<0)return;const [x]=S.recipes.splice(i,1);if(x.share)S.shareGone=[...(S.shareGone||[]),x.share];if(S.cookId==x.id)S.cookId=null;if(S.shop.rids.includes(x.id))pruneShop();save();ACT.back();toast(`Deleted “${x.title}”`,()=>{S.recipes.splice(i,0,x);if(x.share)S.shareGone=(S.shareGone||[]).filter(id=>id!=x.share);commit()},'del')},
  phTap:d=>{if(byId(d.id)){SH={kind:'photo',id:d.id};R()}},
@@ -1455,7 +1458,7 @@ const ACT={
  clip:async()=>{try{const t=await navigator.clipboard.readText();if(t&&t.trim()){PT=t;R()}else toast('The clipboard is empty')}catch(e){toast('Long-press the box and tap Paste instead')}},
  parse:()=>{const t=(document.getElementById('pt')?.value||PT||'');if(!t.trim()){toast('Paste a recipe first');return}
   if(!dEmpty(S.draft)&&!confirm('Replace what you\'ve typed so far?'))return;
-  const p=parseRecipe(t);S.draft=Object.assign(blankD(),p,{id:S.draft.id,src:(S.draft.src||'').trim()||p.src});const ni=p.ingT?p.ingT.split('\n').length:0,ns=p.stepT?p.stepT.split('\n').length:0;
+  const p=parseRecipe(t);S.draft=Object.assign(blankD(),p,{id:S.draft.id,sn:S.draft.sn||'',src:(S.draft.src||'').trim()||p.src});const ni=p.ingT?p.ingT.split('\n').length:0,ns=p.stepT?p.stepT.split('\n').length:0;
   PARSED=`Found ${ni} ingredient${ni==1?'':'s'}${p.nutT?', ':' and '}${ns} step${ns==1?'':'s'}${p.nutT?' and nutrition':''}`+(p.title?'':'. No name found, so add one');PT='';AM='type';commit();scrollTo(0,0)},
  tog:d=>{const D=S.draft;if(d.k=='cuisine')D.cuisine=D.cuisine==d.v?'':d.v;else{const a=D[d.k],i=a.indexOf(d.v);i<0?a.push(d.v):a.splice(i,1)}commit()},
  facNew:d=>{const l=FAC.find(f=>f[0]==d.k)[1],v=(prompt('New '+l.toLowerCase()+' option')||'').trim();if(!v)return;let x=S.facets[d.k].find(y=>y.toLowerCase()==v.toLowerCase());if(!x){x=v;S.facets[d.k].push(v)}
@@ -1615,7 +1618,8 @@ document.addEventListener('input',e=>{const t=e.target,d=t.dataset;
  if(d.p=='draft.stepT'||d.p=='draft.time'){const c=document.getElementById('ctm');if(c)c.innerHTML=ctmSug(S.draft)}
  if(t.classList.contains('auto'))grow1(t)});
 document.addEventListener('keydown',e=>{const t=e.target;if(e.key!='Enter'||e.isComposing)return;
- if(t.id=='ttl'){e.preventDefault();document.querySelector('#app [data-p="draft.ingT"]')?.focus()}
+ if(t.id=='ttl'){e.preventDefault();document.getElementById('sn')?.focus()}
+ if(t.id=='sn'){e.preventDefault();document.querySelector('#app [data-p="draft.ingT"]')?.focus()}
  else if(t.id=='tagin'){e.preventDefault();addTags(t)}
  else if(t.id&&t.id.startsWith('fa-')){e.preventDefault();ACT.facAdd({k:t.id.slice(3)})}
  else if(t.id=='pin'){e.preventDefault();ACT.pAdd()}
