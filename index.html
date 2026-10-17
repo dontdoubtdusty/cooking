@@ -150,6 +150,15 @@ img.rt.ph{border-radius:50%;object-fit:cover;background:var(--fld)}img.rt.huge{w
 .bk{margin:0 0 -4px}.bk button{padding:6px 8px;font-weight:700}
 .hr{display:flex;gap:14px;align-items:center}.hr h2{margin:0 0 2px;color:var(--tx);font-size:22px;line-height:1.2}
 .acts{flex-wrap:wrap;margin-top:12px}.acts button{flex:1 1 auto}
+.hr>div{flex:1}.hed{flex:none;align-self:flex-start;margin:-6px -8px 0 0;padding:8px;color:var(--mu)}
+.rgo{display:block;width:100%;margin-top:14px;padding:12px 16px}
+.ract{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:6px}
+.ract button{background:none;box-shadow:none;color:var(--mu);display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px 6px;font-size:12px;font-weight:700;border-radius:12px;min-width:0}
+.ract button.on{color:var(--pc)}.ract span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.kn{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:13px;font-weight:600;line-height:1.35;background:none;box-shadow:none;padding:2px 0;border-radius:0;text-align:left;color:var(--mu)}
+.kn::before{content:'';width:7px;height:7px;border-radius:50%;flex:none;background:currentColor}
+.kn.ok{color:#138a5b}.kn.nr{color:#b8621c}.kn small{font-size:12.5px;font-weight:600;color:var(--mu)}
+:root[data-theme="dark"] .kn.ok{color:#4fd29b}:root[data-theme="dark"] .kn.nr{color:#ffb070}
 .scl{display:flex;align-items:center;gap:6px;font-size:13px;font-family:'Nunito',sans-serif}
 .sb{width:34px;height:34px;padding:0!important;border-radius:50%!important;border:1px solid var(--bd)!important;color:var(--tx)!important;font-size:19px!important;line-height:1}
 .ingr{display:flex;gap:12px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--bd);cursor:pointer;line-height:1.4}
@@ -837,10 +846,11 @@ function vRecipe(){const r=byId(RID);if(!r)return '';const i=S.recipes.indexOf(r
  const up=RST.length?byId(RST[RST.length-1]):null,nx=planOk().filter(e=>e.rid==r.id&&e.d>=tdy()).sort((a,b)=>a.d<b.d?-1:1)[0],ui=usedIn(r);
  let h=`<div class="bk"><button class="g" data-a="back">‹ ${up?esc(short(dn(up))):'Back'}</button></div>`;
  if(SUR==r.id)h+=`<div class="card wide okc"><div class="row"><span style="flex:1"><b>Surprise pick</b><br><span class="mu">From ${SURN} matching recipe${SURN==1?'':'s'}, favoring ones you haven't made lately.</span></span><button data-a="surprise" style="flex:none">Try another</button></div></div>`;
- h+=`<div class="card wide"><div class="hr"><button class="phb${r.img&&IMG[r.img]?'':' add'}" data-a="phTap" data-id="${esc(r.id)}" aria-label="${r.img?'Change photo':'Add a photo'}">${tile(r,1)}</button><div style="min-width:0"><h2>${esc(r.title||'Untitled')}</h2><div class="mu">${meta}</div></div></div>`
+ h+=`<div class="card wide"><div class="hr"><button class="phb${r.img&&IMG[r.img]?'':' add'}" data-a="phTap" data-id="${esc(r.id)}" aria-label="${r.img?'Change photo':'Add a photo'}">${tile(r,1)}</button><div style="min-width:0"><h2>${esc(r.title||'Untitled')}</h2><div class="mu">${meta}</div></div><button class="g hed" data-a="edit" data-id="${esc(r.id)}" aria-label="Edit recipe">${RIC(RI.edit)}</button></div>`
  +(fac.length||r.tags.length?`<div class="pills">${fac.map(([k,x])=>`<button class="pill" data-a="ftag" data-k="${k}" data-v="${esc(x)}">${esc(x)}</button>`).join('')}${abc(r.tags).map(x=>`<button class="pill tg" data-a="ftag" data-k="tags" data-v="${esc(x)}">#${esc(x)}</button>`).join('')}</div>`:'')
- +`<div class="mu" style="margin-top:10px">${lc?`Last cooked ${ago(lc)} · ${r.cooked.length} time${r.cooked.length==1?'':'s'}`:'Not cooked yet'}${nx?` · <button class="g lnk" data-a="plGo" data-d="${nx.d}">${nx.d==tdy()?'On the calendar today':'Next on the calendar '+esc(dlab(nx.d))}</button>`:''}</div>
- ${linkRow(r)}${r.src?'':`<button class="g lnk" data-a="addLink" data-id="${esc(r.id)}" style="margin-top:10px">+ Add link to original recipe</button>`}<div class="row acts"><button data-a="cook" data-id="${esc(r.id)}">Start cooking</button><button class="g bd" data-a="cooked" data-id="${esc(r.id)}">Cooked today</button><button class="g bd" data-a="plCal" data-id="${esc(r.id)}">Add to calendar</button><button class="g bd" data-a="listT" data-id="${esc(r.id)}">${S.shop.rids.includes(r.id)?'On the list':'Add to list'}</button><button class="g bd" data-a="rShare" data-id="${esc(r.id)}">Share</button><button class="g bd" data-a="edit" data-id="${esc(r.id)}">Edit</button></div></div>`;
+ +`<div class="mu" style="margin-top:10px">${lc?`Last cooked ${ago(lc)} · ${r.cooked.length} time${r.cooked.length==1?'':'s'}`:'Not cooked yet'}${nx?` · <button class="g lnk" data-a="plGo" data-d="${nx.d}">${nx.d==tdy()?'On the calendar today':'Next on the calendar '+esc(dlab(nx.d))}</button>`:''}</div>${kitNote(r)}
+ ${linkRow(r)}${r.src?'':`<button class="g lnk" data-a="addLink" data-id="${esc(r.id)}" style="margin-top:10px">+ Add link to original recipe</button>`}<button class="rgo" data-a="cook" data-id="${esc(r.id)}">Start cooking</button><div class="ract">${(()=>{const id=esc(r.id),onL=S.shop.rids.includes(r.id),b=(a,ic,t,al,on)=>`<button data-a="${a}" data-id="${id}"${on?' class="on" aria-pressed="true"':''} aria-label="${al}">${RIC(ic)}<span>${t}</span></button>`;
+  return b('cooked',RI.done,'Cooked','Cooked today')+b('plCal',ICON.plan,'Calendar','Add to calendar')+b('listT',RI.list,onL?'On list':'List',onL?'On the shopping list':'Add to shopping list',onL)+b('rShare',RI.share,'Share','Share')})()}</div></div>`;
  if(warn.length)h+=`<div class="card warn"><h3><span><i class="bang">!</i>Heads up</span></h3><div>This mentions ${esc(warn.join(', '))}.</div></div>`;
  h+=ingCard(r);
  h+=`<div class="card"><h3><span>Steps</span></h3>${r.steps.length?`<ol class="steps">${(()=>{let c=0;return r.steps.map(s=>isHd(s)?`<li class="sh"><div class="sec ih">${esc(s.slice(0,-1))}</div></li>`:`<li>${stepHtml(s,r,c++)}</li>`).join('')})()}</ol>`:'<p class="mu" style="margin:0">No steps yet.</p>'}</div>`;
@@ -854,6 +864,17 @@ function vRecipe(){const r=byId(RID);if(!r)return '';const i=S.recipes.indexOf(r
 
 const ICV='<svg class="ic" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M5 3.5v9l7-4.5z" fill="currentColor"/></svg>',ICL='<svg class="ic" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M7 9a3 3 0 0 0 4.2 0l2-2a3 3 0 0 0-4.2-4.2l-.7.7M9 7a3 3 0 0 0-4.2 0l-2 2a3 3 0 0 0 4.2 4.2l.7-.7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
 const host=u=>u.replace(/^https?:\/\/(www\.|m\.)?/i,'').split(/[/?#]/)[0];
+// Recipe page action icons
+const RIC=d=>`<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const RI={edit:'<path d="M15.5 4.5l4 4L9 19H5v-4z"/><path d="M13.5 6.5l4 4"/>',done:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 10"/>',
+ list:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/>',share:'<path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>'};
+// A quiet line on the recipe page: everything is in the kitchen, or one or two things are missing (tap to add them to the list)
+function kitNote(r){if(!S.pantry.length)return '';const c=kCheck(r);if(!c.n.length)return '';
+ if(!c.miss.length)return `<div class="kn ok">You have everything in your kitchen</div>`;
+ if(c.miss.length>2||c.miss.length>=c.n.length)return '';
+ const names=c.miss.map(x=>x.name.toLowerCase()).join(', '),onl=new Set(S.shop.extra.map(x=>nkey(x.t))),listed=c.miss.every(x=>onl.has(nkey(x.name)));
+ return listed?`<div class="kn nr">Missing ${esc(names)} <small>· on your list</small></div>`
+  :`<button class="kn nr" data-a="kMiss" data-id="${esc(r.id)}">Missing ${esc(names)} <small>· add to list</small></button>`}
 function linkRow(r){const a=[];if(isUrl(r.src))a.push(`<a class="lbtn" href="${esc(r.src)}" target="_blank" rel="noopener">${ICL}${esc(host(r.src))}</a>`);if(isUrl(r.vid))a.push(`<a class="lbtn" href="${esc(r.vid)}" target="_blank" rel="noopener">${ICV}Watch video</a>`);
  return (a.length?`<div class="lrow">${a.join('')}</div>`:'')+(r.src&&!isUrl(r.src)?`<div class="mu" style="margin-top:6px">From ${esc(r.src)}</div>`:'')}
 // Optional nutrition card: folded away, with calories in the summary
