@@ -46,6 +46,7 @@ section ul,section ol{margin:0;padding:0;list-style:none}
 .dir li{margin:0 0 14px}
 .dir .sub{margin:20px 0 8px;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}.dir .sub:first-child{margin-top:0}
 .notes p{margin:0;white-space:pre-wrap}
+.gw li{padding:5px 0;border-bottom:1px solid var(--bd)}.gw li:last-child{border-bottom:0}
 .nut li{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-bottom:1px solid var(--bd)}.nut li:last-child{border-bottom:0}
 .nut .hint{display:block;font-size:13px;color:var(--mu);border:0;padding-bottom:6px}
 .msg{text-align:center;padding:60px 0;color:var(--mu)}.msg h1{margin-bottom:8px}
@@ -57,7 +58,7 @@ section ul,section ol{margin:0;padding:0;list-style:none}
  .ph{width:180px;height:180px}
  h1{font-size:28px}
  .body{display:flex;flex-direction:column;align-items:stretch;gap:26px}.col{display:contents}
- .ing{order:1}.dir{order:2}.notes{order:3}.nut{order:4}}
+ .ing{order:1}.dir{order:2}.gw{order:3}.notes{order:4}.nut{order:5}}
 @media print{.top,button,#toast{display:none}body{background:#fff}main{padding-top:0}}
 </style>
 </head>
@@ -86,12 +87,13 @@ function recipeText(r){const L=[r.title||'Untitled'];if(r.serves)L.push('Serves 
  const sec=(h,a)=>{if(a.length)L.push('',h,...a)};
  sec('Ingredients',r.ing);
  {let c=0;sec('Directions',r.steps.map(x=>/:$/.test(x)?x:(++c)+'. '+x))}
+ sec('Goes with',r.pair.length?[r.pair.join(', ')]:[]);
  sec('Notes',String(r.notes||'').split('\n').map(x=>x.trim()).filter(Boolean));
  sec('Nutrition',r.nut);
  const ln=[isUrl(r.src)?'Source: '+r.src:r.src?'From: '+r.src:'',isUrl(r.vid)?'Video: '+r.vid:''].filter(Boolean);if(ln.length)L.push('',...ln);
  return L.join('\n')}
 
-function show(r){const A=k=>Array.isArray(r[k])?r[k]:[];['meal','cuisine','protein','method','diet','ing','steps','nut'].forEach(k=>{if(k!='cuisine')r[k]=A(k)});
+function show(r){const A=k=>Array.isArray(r[k])?r[k]:[];['meal','cuisine','protein','method','diet','ing','steps','nut','pair'].forEach(k=>{if(k!='cuisine')r[k]=A(k)});
  const cat=[...r.meal,r.cuisine,...r.protein,...r.method,...r.diet].filter(Boolean).join(' · ');
  const facts=[r.serves?`<li><b>Serves:</b> ${esc(r.serves)}</li>`:'',r.time?`<li><b>Total time:</b> ${esc(fmtTime(r.time))}</li>`:'',
   isUrl(r.src)?`<li><b>Source:</b> <a href="${esc(r.src)}" target="_blank" rel="noopener">${esc(r.src)}</a></li>`:r.src?`<li><b>From:</b> ${esc(r.src)}</li>`:'',
@@ -106,6 +108,7 @@ function show(r){const A=k=>Array.isArray(r[k])?r[k]:[];['meal','cuisine','prote
   ${r.nut.length?`<section class="nut"><h2>Nutrition</h2><ul><li class="hint">Per serving, as listed in the recipe</li>${r.nut.map(sp).map(([n,v])=>`<li><span>${esc(n)}</span><b>${esc(v)}</b></li>`).join('')}</ul></section>`:''}
  </div><div class="col">
   <section class="dir"><h2>Directions</h2><ol>${(()=>{let c=0;return r.steps.map(x=>/:$/.test(x)?`<li class="sub">${esc(x.slice(0,-1))}</li>`:`<li>${++c}. ${linky(x)}</li>`).join('')})()||'<li>None listed.</li>'}</ol></section>
+  ${r.pair.length?`<section class="gw"><h2>Goes with</h2><ul>${r.pair.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></section>`:''}
   ${r.notes?`<section class="notes"><h2>Notes</h2><p>${linky(r.notes)}</p></section>`:''}
  </div></div>`;
  const text=recipeText(r);

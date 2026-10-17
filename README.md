@@ -9,6 +9,7 @@ A recipe box, cook mode and shopping list that runs in your browser. It's part o
 - Cook mode that keeps the screen on, turns times in the steps into one-tap timers and lets you check off ingredients
 - Scaling servings, with US amounts converted as they grow or shrink
 - Links between recipes, like a sauce used in a main dish
+- A Goes with list on each recipe for building a meal around it, like "rice, tortillas, [[Pico de Gallo]]", where linked recipes show the pairing on both pages
 - A meal calendar that tracks servings made, servings eaten and leftovers
 - A Kitchen tab for what you have on hand, recipes you can make without shopping, and a merged shopping list
 - A cooking log with what's due for a comeback
