@@ -1265,10 +1265,11 @@ function vSheet(){if(!SH)return '';let b='';
    +(L.length?L.map(r=>pRow(r,'lnkPut')).join(''):'<p class="mu">No other recipes found.</p>')+`<div class="row" style="margin-top:12px"><button class="g bd" data-a="lnkX" style="flex:1">Cancel</button></div>`)}
  // Add a meal to the calendar, or edit one
  if(SH.kind=='plan'){
-  if(SH.st=='pick'){const q=tkey(SH.q),LO=q?[]:S.plan.filter(b=>b.k=='cook'&&byId(b.rid)&&b.d<=SH.d&&dBetween(b.d,SH.d)<=7&&remAt(b)>0),L=S.recipes.filter(r=>qOk(r,q)).sort(byT);
-   return wrap(`<h2>Add to ${esc(dlab(SH.d))}</h2>`
+  if(SH.st=='pick'){const q=tkey(SH.q),LO=S.plan.filter(b=>b.k=='cook'&&byId(b.rid)&&b.d<=SH.d&&dBetween(b.d,SH.d)<=7&&remAt(b)>0&&qOk(byId(b.rid),q)),L=S.recipes.filter(r=>qOk(r,q)).sort(byT);
+   // The search box sits above everything that changes as you type, so it is never swapped out (that dropped the keyboard)
+   return wrap(`<h2>Add to ${esc(dlab(SH.d))}</h2>${srch('plq',SH.q,'Search your recipes')}`
     +(LO.length?`<div class="sec" style="margin-top:10px">Leftovers</div>${LO.map(b=>{const r=byId(b.rid),n=remAt(b);return `<button class="rc" data-a="plPickL" data-id="${esc(b.id)}">${tile(r)}<span class="rcn"><b>${esc(dn(r)||'Untitled')}</b><span class="mu">From ${b.d==SH.d?'this day':esc(dlab(b.d))}</span></span><span class="lo">${fmtQ(n)} left</span></button>`}).join('')}`:'')
-    +`<div class="sec" style="margin-top:12px">Cook something</div>${srch('plq',SH.q,'Search your recipes')}`
+    +`<div class="sec" style="margin-top:12px">Cook something</div>`
     +(L.length?L.map(r=>pRow(r,'plPick')).join(''):`<p class="mu">${S.recipes.length?'Nothing matches.':'No recipes yet.'}</p>`)
     +`<div class="row" style="margin-top:12px"><button class="g bd" data-a="shClose" style="flex:1">Cancel</button></div>`)}
   const r=byId(SH.rid);if(!r){SH=null;return ''}
@@ -1671,7 +1672,11 @@ const grow1=t=>{const sig=t.clientWidth+'|'+t.value;if(GROWN.get(t)===sig&&t.sty
 
 const DARK=matchMedia('(prefers-color-scheme: dark)');DARK.addEventListener?.('change',()=>S.set.theme=='system'&&R());
 let RK='';
-function R(){const de=document.documentElement,th=S.set.theme||'system';de.dataset.theme=th=='system'?(DARK.matches?'dark':'light'):th;
+function R(){const FA=document.activeElement,FID=FA&&FA.id&&/^(INPUT|TEXTAREA)$/.test(FA.tagName)?FA.id:'',FS=FID?[FA.selectionStart,FA.selectionEnd]:null;
+ R0();
+ // A re-render that swapped out the text box being typed in would drop the phone keyboard: put focus back where it was
+ if(FID&&!FA.isConnected){const n=document.getElementById(FID);if(n&&n!==document.activeElement){n.focus({preventScroll:true});try{n.setSelectionRange(FS[0],FS[1])}catch(_){}}}}
+function R0(){const de=document.documentElement,th=S.set.theme||'system';de.dataset.theme=th=='system'?(DARK.matches?'dark':'light'):th;
  if(T=='recipe'&&!byId(RID))T='browse';
  const c=tabCols(T=='recipe'?navId():T);de.style.setProperty('--pc',c[0]);de.style.setProperty('--pc2',c[1]);
  if(SEL&&T=='kit'){const ids=new Set(shopRows().map(r=>r.id));[...SEL].forEach(id=>{if(!ids.has(id))SEL.delete(id)})}
