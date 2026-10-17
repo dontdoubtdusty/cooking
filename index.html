@@ -143,7 +143,8 @@ img.rt.ph{border-radius:50%;object-fit:cover;background:var(--fld)}img.rt.huge{w
 .rcn{flex:1;min-width:0;display:flex;flex-direction:column}.rcn b,.rcn .mu{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rcn b{font-weight:700;font-size:15px}
 .chev{flex:none;color:var(--mu);opacity:.55}
 .dbox{flex:none;width:48px;height:48px;border-radius:14px;background:var(--fld);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05}.dbox b{font:600 18px var(--fd)}.dbox span{font-size:10px;font-weight:800;text-transform:uppercase;color:var(--mu)}
-.mh{margin:14px 6px 2px}.mh:first-child{margin-top:0}
+.mh{margin:14px 6px 2px}.sec.rh{display:flex;justify-content:space-between;align-items:center}.sec.rh .lnk{text-transform:none;letter-spacing:0;font-size:13px;padding:2px 0}
+.fcl{font-size:13px;padding:2px 8px;margin-left:4px;vertical-align:1px}.mh:first-child{margin-top:0}
 
 /* ===== Recipe page ===== */
 .bk{margin:0 0 -4px}.bk button{padding:6px 8px;font-weight:700}
@@ -726,7 +727,8 @@ const DT=(v,attrs)=>`<label class="dt"><span>${sd(v)}</span><input type="date" v
 const IDate=p=>DT(get(p),`data-p="${p}" data-t="s"`);
 const X=(p,i,label=ICX)=>`<button class="x" data-a="del" data-p="${p}" data-i="${i}" aria-label="Delete">${label}</button>`;
 const tile=(r,big)=>r.img&&IMG[r.img]?`<img class="rt ph${big==2?' huge':big?' big':''}" src="${IMG[r.img]}" alt="" aria-hidden="true">`:`<span class="rt${big?' big':''}" style="background:${cgrad(r.cuisine)}" aria-hidden="true">${esc(inits(r.title))}</span>`;
-function rRow(r){const lc=last(r),meta=[r.cuisine,fmtTime(r.time),lc?'cooked '+ago(lc):'not cooked yet'].filter(Boolean).join(' · ');
+// quiet: leave out "not cooked yet" (for lists that are already all uncooked recipes)
+function rRow(r,quiet){const lc=last(r),meta=[r.cuisine,fmtTime(r.time),lc?'cooked '+ago(lc):quiet===true?'':'not cooked yet'].filter(Boolean).join(' · ');
  return `<button class="rc" data-a="open" data-id="${esc(r.id)}">${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${esc(meta)}</span></span>${CHEV}</button>`}
 function hello(){const h=new Date().getHours(),g=h<5?'Late-night snack?':h<11?'What\'s for breakfast?':h<15?'What\'s for lunch?':'What\'s for dinner?',n=S.recipes.length;
  return `<div class="hello"><b>${g}</b><span>${n} recipe${n==1?'':'s'}</span></div>`}
@@ -754,15 +756,15 @@ function vFind(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF(),t
  const LOW=pSorted().filter(p=>p.days!=null&&pLeft(p)<=5);if(LOW.length){h+=`<div class="card wide"><h3><span>Use it up</span><button class="g lnk" data-a="kitUse">Kitchen ›</button></h3>${LOW.slice(0,3).map(p=>{const n=pLeft(p);return `<button class="urow" data-a="kitUse"><span>${esc(p.name)}</span><span class="dl ${dlCls(n)}">${dlTxt(n)}</span></button>`}).join('')}</div>`}
  h+=`<div class="card wide"><div class="srch">${ICS}<input id="q" type="search" placeholder="Search names, ingredients, tags" value="${esc(f.q)}" autocomplete="off" enterkeyhint="search"></div>
  <div class="row" style="margin-top:8px"><select data-a="sort" aria-label="Sort">${SORTS.map(([v,l])=>`<option value="${v}" ${f.sort==v?'selected':''}>${l}</option>`).join('')}</select><button data-a="surprise" style="flex:none">Surprise me</button></div>`;
- h+=`<details class="fdet" ${O.fl?'open':''} data-o="fl"><summary><h3><span>Filters${act.length?`<span class="cnt">${act.length}</span>`:''}</span><span class="mu fsum">${act.length?esc(act.join(', ')):'<span class="ex">Expand</span><span class="co">Collapse</span>'}</span></h3></summary><div>`
+ h+=`<details class="fdet" ${O.fl?'open':''} data-o="fl"><summary><h3><span>Filters${act.length?`<span class="cnt">${act.length}</span><button class="g lnk fcl" data-a="fclear">Clear</button>`:''}</span><span class="mu fsum">${act.length?esc(act.join(', ')):'<span class="ex">Expand</span><span class="co">Collapse</span>'}</span></h3></summary><div>`
  +FAC.map(([k,l])=>{const v=used(k);return v.length?frow(l,chipsFor(k,v)):''}).join('')
  +frow('Kitchen',`<button class="chip ${f.now?'on':''}" data-a="fnow">Can make now${S.pantry.length?'':' · add your kitchen first'}</button><button class="chip ${f.near?'on':''}" data-a="fnear">Missing 1–2 things</button>`)
  +frow('Time',TIMES.map(v=>`<button class="chip ${f.time==v?'on':''}" data-a="ftime" data-v="${v}">${v?'Under '+fmtTime(v):'Any'}</button>`).join(''))
  +(tags.length?frow('Tags',chipsFor('tags',tags)):'')
- +(act.length?`<button class="g lnk" data-a="fclear" style="margin-top:6px">Clear all filters</button>`:'')+`</div></details></div>`;
+ +`</div></details></div>`;
  if(!S.recipes.length)return h+`<div class="card wide"><p class="mu" style="margin:0 0 10px">No recipes yet.</p><button data-a="tab" data-id="add">Add your first recipe</button></div>`;
  if(!L.length)return h+`<div class="card wide"><p class="mu" style="margin:0 0 10px">Nothing matches.</p><button class="g bd" data-a="fclear">Clear search and filters</button></div>`;
- return h+`<div class="card wide"><div class="sec">${L.length} recipe${L.length==1?'':'s'}${act.length||f.q.trim()?' match':''}</div>${L.map(rRow).join('')}</div>`}
+ return h+`<div class="card wide"><div class="sec rh"><span>${L.length} recipe${L.length==1?'':'s'}${act.length||f.q.trim()?' match':''}</span>${act.length||f.q.trim()?`<button class="g lnk" data-a="fclear">Clear ${act.length?'filters':'search'}</button>`:''}</div>${L.map(rRow).join('')}</div>`}
 
 // ---- Recipes (category grid) ----
 let BC=null;   // open category on the Recipes tab: {k,v} or {k:'all'}
@@ -802,7 +804,7 @@ function vBrowse(){const g=S.set.bg||'meal',N=S.recipes.length;
  let h=(S.set.welcome?welcome():'')+bkNag()+`<div class="hello"><b>All recipes</b><span>${N}</span></div><div class="seg qm wide">${BGS.map(([k,l])=>`<button class="${g==k?'on':''}" data-a="bg" data-k="${k}">${l}</button>`).join('')}</div>`;
  if(!N)return h+`<div class="card wide"><p class="mu" style="margin:0 0 10px">No recipes yet.</p><button data-a="tab" data-id="add">Add your first recipe</button></div>`;
  if(g=='recent'){const c=S.recipes.filter(r=>r.cooked.length).sort((a,b)=>last(a)<last(b)?1:-1),nw=S.recipes.filter(r=>!r.cooked.length);
-  return h+(c.length?`<div class="card wide"><div class="sec">Cooked recently</div>${c.slice(0,30).map(rRow).join('')}</div>`:'')+(nw.length?`<div class="card wide"><div class="sec">Not cooked yet</div>${nw.map(rRow).join('')}</div>`:'')}
+  return h+(c.length?`<div class="card wide"><div class="sec">Cooked recently</div>${c.slice(0,30).map(rRow).join('')}</div>`:'')+(nw.length?`<div class="card wide"><div class="sec">Not cooked yet</div>${nw.map(r=>rRow(r,true)).join('')}</div>`:'')}
  const cnt=new Map();S.recipes.forEach(r=>(g=='cuisine'?[r.cuisine].filter(Boolean):r[g]||[]).forEach(v=>cnt.set(v,(cnt.get(v)||0)+1)));
  const ord=abc(cnt.keys());
  return h+`<div class="cgrid wide">${ord.map(v=>ctile(g,v,cnt.get(v))).join('')}${g=='cuisine'?`<button class="ctl flag all" data-a="cat" data-k="all" data-v=""><i class="fl globe"></i><em>${N}</em><b>All</b></button>`:`<button class="ctl all" data-a="cat" data-k="all" data-v=""><img class="ci" src="icons/cutlery.svg" alt=""><em>${N}</em><b>All</b></button>`}</div>`
@@ -1060,8 +1062,11 @@ function vHist(){const ev=[];S.recipes.forEach(r=>r.cooked.forEach(d=>ev.push([d
  const cb=S.recipes.filter(r=>r.cooked.length&&dayDiff(last(r))<=-21).sort((a,b)=>last(a)<last(b)?-1:1).slice(0,6);
  if(cb.length)h+=`<div class="card wide"><div class="sec">Due for a comeback</div>${cb.map(rRow).join('')}</div>`;
  if(!ev.length)return h+`<div class="card wide"><p class="mu" style="margin:0">Nothing logged yet. Tap <b>Cooked today</b> on a recipe, or finish one in Cook mode, and it shows up here.</p></div>`;
- let g='',body='';ev.slice(0,400).forEach(([d,r])=>{const k=d.slice(0,7);if(k!=g){g=k;body+=`<div class="sec mh">${MOL[+k.slice(5)-1]} ${k.slice(0,4)}</div>`}
-  body+=`<button class="rc" data-a="open" data-id="${esc(r.id)}"><span class="dbox"><b>${+d.slice(8)}</b><span>${MO[+d.slice(5,7)-1]}</span></span><span class="rcn"><b>${esc(r.title||'Untitled')}</b><span class="mu">${esc([WD[new Date(d+'T00:00').getDay()],r.cuisine].filter(Boolean).join(' · '))}</span></span>${CHEV}</button>`});
+ // Grouped by how long ago, one row per recipe in each group; ✕ takes off its latest entry in that group
+ const PER=[[7,'Past week'],[30,'Past 30 days'],[90,'Past 3 months'],[365,'Past year'],[1e9,'Longer ago']],G=PER.map(()=>new Map());
+ ev.forEach(([d,r])=>{const gi=PER.findIndex(([n])=>-dayDiff(d)<n),m=G[gi];if(!m.has(r.id))m.set(r.id,{r,ds:[]});m.get(r.id).ds.push(d)});
+ const body=PER.map(([,l],gi)=>{if(!G[gi].size)return '';return `<div class="sec mh">${l}</div>`+[...G[gi].values()].map(({r,ds})=>{const n=ds.length,sub=[r.cuisine,n>1?'made '+(n==2?'twice':n+' times'):''].filter(Boolean).join(' · ');
+   return `<div class="srow pr"><button class="rc" data-a="open" data-id="${esc(r.id)}" style="flex:1;min-width:0">${tile(r)}<span class="rcn"><b>${esc(r.title||'Untitled')}</b>${sub?`<span class="mu">${esc(sub)}</span>`:''}</span></button><button class="g" data-a="logDel" data-id="${esc(r.id)}" data-d="${ds[0]}" aria-label="Remove ${esc(r.title||'this')} from the log${n>1?' (one time)':''}" style="padding:6px">${ICX}</button></div>`}).join('')}).join('');
  return h+`<div class="card wide">${body}</div>`}
 
 // ---- Tags and lists ----
@@ -1352,6 +1357,8 @@ async function wakeSync(){const want=T=='cook'&&!!byId(S.cookId)&&!document.hidd
  else if(!want&&WL){const w=WL;WL=null;try{await w.release()}catch(e){}}}
 
 const ACT={
+ // Cooking log: take one entry off (the latest one in its group), with undo
+ logDel:d=>{const r=byId(d.id);if(!r)return;const i=r.cooked.lastIndexOf(d.d);if(i<0)return;const s=snap();r.cooked.splice(i,1);commit();toast('Removed from your log',()=>restore(s))},
  // Discover
  dsAdd:()=>{const inp=document.getElementById('dsin'),u=normUrl(inp&&inp.value||'');if(!u)return;if(!isUrl(u)||!hostOf(u).includes('.')){toast('That doesn’t look like a link');return}
   if(S.srcs.some(x=>srcKey(x.url)==srcKey(u))){toast('Already in your sources');return}
@@ -1377,7 +1384,7 @@ const ACT={
  // browse
  fil:d=>{const a=S.f[d.k],i=a.indexOf(d.v);i<0?a.push(d.v):a.splice(i,1);commit()},
  ftime:d=>{S.f.time=+d.v;commit()},
- fclear:()=>{const s=S.f.sort;S.f=blankF();S.f.sort=s;commit()},
+ fclear:()=>{const old=JSON.stringify(S.f),so=S.f.sort;S.f=blankF();S.f.sort=so;const q=document.getElementById('q');if(q)q.value='';commit();toast('Filters cleared',()=>{S.f=JSON.parse(old);commit()})},
  sort:(d,el)=>{S.f.sort=el.value;commit()},
  welcomeOff:()=>{delete S.set.welcome;commit()},
  // recipe page
