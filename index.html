@@ -1286,10 +1286,8 @@ function vMore(){return `<div class="card"><h2>Settings</h2><div class="sec">App
 // 7. ACTIONS (buttons/selects/checkboxes with data-a="name" call ACT.name(dataset, element))
 // =====================================================================
 let RST=[];   // recipes opened through a link, so Back returns to the one you came from
-function openRecipe(id,prev){if(T!='recipe'){PREV=prev||T;RST=[];try{history.pushState({r:1},'')}catch(_){}}RID=id;T='recipe';R();scrollTo(0,0);slideIn(1)}
+function openRecipe(id,prev){if(T!='recipe'){PREV=prev||T;RST=[]}RID=id;T='recipe';R();scrollTo(0,0);slideIn(1)}
 function closeRecipe(){while(RST.length){RID=RST.pop();if(byId(RID)){R();scrollTo(0,0);slideIn(-1);return}}T=TABS.some(t=>t[0]==PREV)||PREV=='more'||PREV=='lists'?PREV:'browse';R();scrollTo(0,0);slideIn(-1)}
-let SKIP=0;   // set when we pop the recipe's history entry ourselves
-addEventListener('popstate',()=>{if(SKIP){SKIP=0;return}if(T=='recipe')closeRecipe()});
 function surprise(){const L=S.recipes.filter(match);if(!L.length){toast('No recipes match these filters');return}
  const C=L.length>1&&SUR?L.filter(r=>r.id!=SUR):L,w=C.map(r=>{const lc=last(r);return lc?Math.min(-dayDiff(lc),180)+3:60});
  let x=Math.random()*sum(w,v=>v),i=0;while(i<C.length-1&&x>w[i]){x-=w[i];i++}SUR=C[i].id;SURN=L.length;
@@ -1370,11 +1368,11 @@ const ACT={
  ftag:d=>{const so=S.f.sort;S.f=blankF();S.f.sort=so;if(S.f[d.k])S.f[d.k]=[d.v];O.fl=1;save();goTab('find')},
  // navigation
  tab:d=>{if(d.id=='browse'&&T=='browse'&&BC)return ACT.catX();goTab(d.id)}, gear:()=>goTab(T=='more'||T=='lists'?'browse':'more'),
- open:d=>{SUR=null;if(T=='recipe'){if(d.id==RID)return;RST.push(RID);try{history.pushState({r:1},'')}catch(_){}RID=d.id;R();scrollTo(0,0);slideIn(1)}else openRecipe(d.id)},
+ open:d=>{SUR=null;if(T=='recipe'){if(d.id==RID)return;RST.push(RID);RID=d.id;R();scrollTo(0,0);slideIn(1)}else openRecipe(d.id)},
  bg:d=>{S.set.bg=d.k;commit()},
  cat:d=>{BC=d.k=='all'?{k:'all'}:{k:d.k,v:d.v};R();scrollTo(0,0);slideIn(1)},
  catX:()=>{BC=null;R();scrollTo(0,0);slideIn(-1)},
- back:()=>{if(history.state&&history.state.r)history.back();else closeRecipe()},
+ back:()=>closeRecipe(),
  surprise,
  // browse
  fil:d=>{const a=S.f[d.k],i=a.indexOf(d.v);i<0?a.push(d.v):a.splice(i,1);commit()},
@@ -1651,7 +1649,7 @@ function R(){const de=document.documentElement,th=S.set.theme||'system';de.datas
  const ni=navId(),nb=t=>t[0]=='add'?`<button class="qab ${T=='add'?'on':''}"${T=='add'?' aria-current="page"':''} data-a="tab" data-id="add" aria-label="Add recipe"><b>+</b><span>Add</span></button>`
   :`<button class="${ni==t[0]?'on':''}"${ni==t[0]?' aria-current="page"':''} style="--tc:${tabCols(t[0])[0]}" data-a="tab" data-id="${t[0]}"><svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[t[0]]}</svg><span>${t[1]}</span></button>`,qi=TABS.findIndex(t=>t[0]=='add');
  patch(document.getElementById('nav'),`<i class="hl" aria-hidden="true"></i><div class="nh">${TABS.slice(0,qi).map(nb).join('')}</div>${nb(TABS[qi])}<div class="nh">${TABS.slice(qi+1).map(nb).join('')}</div>`);
- placeHL(ni);const sh=document.getElementById('sheet');if(SH||sh.firstChild)patch(sh,vSheet());document.body.classList.toggle('shopen',!!SH);sheetFocus(sh);if(T=='add')document.querySelectorAll('#app textarea.auto').forEach(grow1);wakeSync();dock()}
+ placeHL(ni);const sh=document.getElementById('sheet');if(SH||sh.firstChild)patch(sh,vSheet());document.body.classList.toggle('shopen',!!SH);sheetFocus(sh);if(T=='add')document.querySelectorAll('#app textarea.auto').forEach(grow1);wakeSync();dock();navSync()}
 // Focus moves into the sheet (the panel, not a text box, so the phone keyboard doesn't pop up) and back out on close
 let SHO=false,PREVF=null;
 function sheetFocus(sh){const open=!!SH;if(open&&!SHO){PREVF=document.activeElement;sh.querySelector('.shp')?.focus({preventScroll:true})}
@@ -1669,8 +1667,34 @@ const APP=()=>document.getElementById('app'),EZ_IN='cubic-bezier(.16,1,.3,1)',EZ
 function slideIn(dir){const m=APP(),w=innerWidth;m.style.willChange='transform,opacity';m.style.transition='none';m.style.transform=`translate3d(${dir*Math.min(80,w*.15)}px,0,0)`;m.style.opacity='0';void m.offsetWidth;
  m.style.transition=`transform .22s ${EZ_IN},opacity .16s ease-out`;m.style.transform='translate3d(0,0,0)';m.style.opacity='1';
  setTimeout(()=>{m.style.transition='';m.style.transform='';m.style.opacity='';m.style.willChange=''},240)}
+// Levels below the Recipes tab: Settings 1, Lists 2; a category, Kitchen > Shopping and Add > Paste text add one;
+// a recipe page sits one above where it was opened from; a popup (and its inner step) sits on top of everything
+const tabDepth=t=>(t=='browse'?0:t=='lists'?2:1)+(t=='browse'&&BC?1:0)+(t=='kit'&&KV=='shop'?1:0)+(t=='add'&&AM=='paste'?1:0),
+ plStep=()=>SH&&SH.kind=='plan'&&SH.st!='pick'&&SH.from&&!SH.id;
+function navDepth(){return (T=='recipe'?tabDepth(PREV)+1+RST.length:tabDepth(T))+(SEL&&T=='kit'?1:0)+(SH?1+(SH.kind=='link'&&SH.back?1:0)+(plStep()?1:0):0)}
+function navUp(){if(SH){if(plStep())ACT.plBack();else ACT.shClose();return}
+ if(SEL&&T=='kit')return ACT.sSelX();
+ if(T=='recipe')return closeRecipe();
+ if(T=='lists')return goTab('more');
+ if(T=='browse'&&BC)return ACT.catX();
+ if(T=='kit'&&KV=='shop')return ACT.kitV({v:'use'});
+ if(T=='add'&&AM=='paste')return ACT.am({m:'type'});
+ if(T!='browse'){BC=null;goTab('browse')}}   // back from another tab lands on the top of Recipes
+// ---- Phone back button (the same block in Big Saucy Recipes, Diet and Budget) ----
+// Every open layer (a popup, an editor, a sub-view, any tab but the first) has one browser-history entry,
+// so Back closes the top layer and only leaves the app from the first tab with nothing open.
+// The app says how deep it is (navDepth) and how to go up one level (navUp); R() calls navSync() after drawing.
+let HD=0,HPOP=0;   // history entries the app has added; set while the app removes its own entries
+function navSync(){if(HPOP)return;const d=navDepth();
+ if(d>HD){const ua=navigator.userActivation;if(ua&&!ua.isActive)return;   // entries added without a tap get skipped by Back, so wait for one
+  try{while(HD<d){history.pushState({nav:HD+1},'');HD++}}catch(_){}}
+ else if(d<HD){const n=HD-d;HD=d;HPOP=1;try{history.go(-n)}catch(_){HPOP=0}}}
+addEventListener('popstate',e=>{if(HPOP){HPOP=0;navSync();return}
+ const to=Math.max(0,(e.state&&e.state.nav)||0);if(to>HD){HD=to;navSync();return}   // Forward: undo it
+ let n=HD-to;HD=to;while(n-->0&&navDepth()>0)navUp();navSync()});
+['pointerup','touchend','keydown'].forEach(t=>addEventListener(t,()=>setTimeout(navSync),true));   // catch layers opened by a long press
 function goTab(id){if(id==T){scrollTo({top:0,behavior:'smooth'});return}
- if(T=='recipe'&&history.state&&history.state.r){SKIP=1;try{history.go(-(RST.length+1))}catch(_){SKIP=0}}RST=[];
+ RST=[];
 const o=TABS.map(t=>t[0]),dir=o.indexOf(id)>o.indexOf(navId())?1:-1;T=id;R();scrollTo(0,0);slideIn(T=='more'||T=='lists'?1:dir);if(T=='disc')loadFeeds()}
 
 // =====================================================================
