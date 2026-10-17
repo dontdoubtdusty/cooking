@@ -437,7 +437,7 @@ function match(r){const f=S.f;
  for(const [k,,one] of FAC){const sel=f[k];if(sel.length){const v=one?[r.cuisine]:r[k];if(!sel.some(x=>v.includes(x)))return false}}
  if(f.tags.length&&!f.tags.every(t=>r.tags.includes(t)))return false;
  if(f.time&&!(r.time&&r.time<=f.time))return false;if((f.now||f.near)&&!((f.now&&kReady(r))||(f.near&&kNear(r))))return false;return true}
-function sortList(L){const s=S.f.sort,t=r=>(r.title||'').toLowerCase(),az=(a,b)=>t(a)<t(b)?-1:t(a)>t(b)?1:0;
+function sortList(L){const s=S.f.sort,t=r=>dn(r).toLowerCase(),az=(a,b)=>t(a)<t(b)?-1:t(a)>t(b)?1:0;
  L.sort(s=='stale'?(a,b)=>{const x=last(a),y=last(b);if(!x&&!y)return az(a,b);if(!x)return -1;if(!y)return 1;return x<y?-1:x>y?1:az(a,b)}
   :s=='new'?(a,b)=>(a.added<b.added?1:a.added>b.added?-1:0)||(S.recipes.indexOf(b)-S.recipes.indexOf(a))
   :s=='quick'?(a,b)=>((a.time||1e9)-(b.time||1e9))||az(a,b)
@@ -1249,7 +1249,7 @@ function vSheet(){if(!SH)return '';let b='';
  if(SH.kind=='photo')return wrap(phSheet());
  if(SH.kind=='crop')return wrap(cropSheet());
  if(SH.kind=='shout')return wrap(`<h2>Copy ${SH.what=='Link'?'the link':'the recipe'}</h2><p class="mu" style="margin:0 0 8px">Sharing isn't available here, so copy it and paste it wherever you like.</p><textarea id="shoT" class="rx" readonly>${esc(SH.t)}</textarea><div class="row" style="margin-top:12px"><button class="g bd" data-a="shClose">Close</button><button data-a="shoCopy" style="flex:1">Copy</button></div>`);
- const byT=(a,b)=>(a.title||'').toLowerCase()<(b.title||'').toLowerCase()?-1:1,qOk=(x,q)=>!q||(x.title+' '+(x.sn||'')+' '+x.cuisine+' '+x.tags.join(' ')).toLowerCase().includes(q);
+ const byT=(a,b)=>dn(a).toLowerCase()<dn(b).toLowerCase()?-1:1,qOk=(x,q)=>!q||(x.title+' '+(x.sn||'')+' '+x.cuisine+' '+x.tags.join(' ')).toLowerCase().includes(q);
  const pRow=(r,a,extra='')=>`<button class="rc" data-a="${a}" data-id="${esc(r.id)}"${extra}>${tile(r)}<span class="rcn"><b>${esc(dn(r)||'Untitled')}</b><span class="mu">${esc([r.cuisine,r.serves?'serves '+r.serves:'',fmtTime(r.time)].filter(Boolean).join(' · ')||' ')}</span></span>${CHEV}</button>`;
  const srch=(id,v,ph)=>`<div class="srch" style="margin:8px 0 4px">${ICS}<input id="${id}" type="search" placeholder="${ph}" value="${esc(v||'')}" autocomplete="off" enterkeyhint="search"></div>`;
  // A kitchen item: name, group, use-by
@@ -1288,7 +1288,7 @@ function vSheet(){if(!SH)return '';let b='';
    +`<div class="hint" style="margin-top:8px">${hint}</div>`
    +`<div class="row" style="margin-top:12px">${SH.id?`<button class="x" data-a="plDel">Remove</button><button class="g bd" data-a="plOpen" data-id="${esc(r.id)}">Recipe</button>`:'<button class="g bd" data-a="shClose">Cancel</button>'}<button data-a="plSave" style="flex:1">${SH.id?'Save':'Add'}</button></div>`)}
  const row=(g,x,i,sub)=>`<label class="chk"><input type="checkbox" data-a="shT" data-g="${g}" data-i="${i}" ${x.on?'checked':''}><span>${esc(x.name)}${sub?` <span class="mu">· ${esc(sub)}</span>`:''}</span></label>`;
- if(SH.kind=='pick'){const L=[...S.recipes].sort((a,b)=>(a.title||'').toLowerCase()<(b.title||'').toLowerCase()?-1:1);
+ if(SH.kind=='pick'){const L=[...S.recipes].sort(byT);
   b=`<h2>Plan your shopping</h2><p class="mu" style="margin:0 0 8px">Pick what you'll cook. Their ingredients merge into one list.</p>`
   +(L.length?L.map(r=>`<label class="chk"><input type="checkbox" data-a="pickT" data-id="${esc(r.id)}" ${S.shop.rids.includes(r.id)?'checked':''}>${tile(r)}<span class="rcn"><b>${esc(dn(r)||'Untitled')}</b><span class="mu">${esc([r.cuisine,fmtTime(r.time)].filter(Boolean).join(' · ')||' ')}</span></span></label>`).join(''):'<p class="mu">No recipes yet.</p>')
   +`<div class="row" style="margin-top:12px"><button data-a="shClose" style="flex:1">Done</button></div>`}
