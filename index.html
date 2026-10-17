@@ -357,7 +357,9 @@ const MIGRATIONS=[
 ];
 // A brand-new setup: run every migration, then put back the sample's stated time
 function fresh(){S=seed();migrate();S.recipes.forEach(r=>r.time=num(sample().time))}
-function migrate(){S.set=S.set||{};for(let v=S.v||0;v<MIGRATIONS.length;v++)MIGRATIONS[v](S);S.v=MIGRATIONS.length}
+function migrate(){S.set=S.set||{};for(let v=S.v||0;v<MIGRATIONS.length;v++)MIGRATIONS[v](S);S.v=MIGRATIONS.length;
+ // Every load: a device on an older version can sync in recipes without Goes with after the migration has run
+ (S.recipes||[]).forEach(r=>{if(r&&!Array.isArray(r.pair))r.pair=[]});if(S.draft&&typeof S.draft.pairT!='string')S.draft.pairT=''}
 function load(){try{S=JSON.parse(localStorage.getItem(LS))}catch(e){}if(!S)fresh();else migrate();try{TM=JSON.parse(localStorage.getItem(LST))||[]}catch(e){TM=[]}}
 let SVT=0,SI=null,SVFAIL=0;   // SI: merged shopping items, rebuilt after each save
 // Saving can fail (storage full, private browsing, blocked site data). Say so once instead of failing silently.
@@ -399,14 +401,15 @@ function linkHtml(s){let o='',i=0;String(s).replace(LRE,(m,t,off)=>{const r=byTi
  o+=esc(s.slice(i,off))+(r?`<button class="rl" data-a="open" data-id="${esc(r.id)}">${esc(t.trim())}</button>`:`<span class="rl no" title="No recipe with this name yet">${esc(t.trim())}</span>`);i=off+m.length;return m});return o+esc(s.slice(i))}
 // Recipes whose ingredients link to this one
 const usedIn=r=>S.recipes.filter(x=>x.id!=r.id&&x.ing.some(l=>linksIn(l).some(t=>tkey(t)==tkey(r.title))));
+const prs=r=>r&&Array.isArray(r.pair)?r.pair:[];   // a recipe's Goes with items, [] when missing
 // ---- Goes with: "rice, tortillas, [[Pico de Gallo]]" -> one item each. Commas inside [[ ]] stay with the name. ----
 function pairsOf(txt){const o=[];let cur='',d=0;const put=()=>{const x=cur.replace(/^\s*[-*+]\s*/,'').trim();if(x&&!o.some(y=>tkey(y)==tkey(x)))o.push(x);cur=''};
  for(let i=0;i<txt.length;i++){const c=txt[i];if(c=='['&&txt[i+1]=='['){d++;cur+='[[';i++}else if(c==']'&&txt[i+1]==']'){d=Math.max(0,d-1);cur+=']]';i++}
   else if(!d&&(c==','||c=='\n'))put();else cur+=c}put();return o}
 // Recipes whose Goes with links to this one, so a pairing shows on both recipes
-const pairedFrom=r=>S.recipes.filter(x=>x.id!=r.id&&x.pair.some(l=>linksIn(l).some(t=>tkey(t)==tkey(r.title))));
+const pairedFrom=r=>S.recipes.filter(x=>x.id!=r.id&&prs(x).some(l=>linksIn(l).some(t=>tkey(t)==tkey(r.title))));
 // This recipe's Goes with items, plus recipes that pair with it and aren't already listed
-function pairItems(r){const own=r.pair.map(l=>linkHtml(l)),seen=new Set(r.pair.flatMap(l=>linksIn(l).map(tkey)));
+function pairItems(r){const P=prs(r),own=P.map(l=>linkHtml(l)),seen=new Set(P.flatMap(l=>linksIn(l).map(tkey)));
  return [...own,...pairedFrom(r).filter(x=>!seen.has(tkey(x.title))).map(x=>`<button class="rl" data-a="open" data-id="${esc(x.id)}">${esc(x.title.trim())}</button>`)]}
 
 // ---- Plan: cook days, servings eaten, and the leftovers they leave ----
@@ -943,7 +946,7 @@ var PST=0,PBUSY=0;          // var, not let: flush() can run before this part of
 const fp=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)+':'+s.length};
 const plainL=l=>String(l||'').replace(LRE,(m,t)=>t.trim());   // [[Linked recipe]] -> Linked recipe
 const pubOf=r=>({app:'cooking',v:2,title:r.title,cuisine:r.cuisine,meal:r.meal,protein:r.protein,method:r.method,diet:r.diet,tags:r.tags,serves:r.serves,time:r.time,img:r.img||'',
- ing:r.ing.map(plainL),steps:r.steps.map(plainL),...(r.pair.length?{pair:r.pair.map(plainL)}:{}),nut:r.nut,notes:plainL(r.notes),src:r.src,vid:r.vid});
+ ing:r.ing.map(plainL),steps:r.steps.map(plainL),...(prs(r).length?{pair:prs(r).map(plainL)}:{}),nut:r.nut,notes:plainL(r.notes),src:r.src,vid:r.vid});
 const SHARE_SITE='https://big-saucy.pages.dev';   // the share site on Cloudflare Pages (share/ in this repo)
 const shareUrl=id=>SHARE_SITE+'/r/'+id;
 const newShareId=()=>{const a='abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';return [...crypto.getRandomValues(new Uint8Array(10))].map(x=>a[x%a.length]).join('')};
@@ -980,7 +983,7 @@ function recipeText(r){const L=[r.title||'Untitled'];if(r.serves)L.push('Serves 
  const sec=(h,a)=>{if(a.length)L.push('',h,...a)};
  sec('Ingredients',r.ing.map(plainL));
  {let c=0;sec('Directions',r.steps.map(x=>isHd(x)?plainL(x):(++c)+'. '+plainL(x)))}
- sec('Goes with',r.pair.length?[r.pair.map(plainL).join(', ')]:[]);
+ sec('Goes with',prs(r).length?[prs(r).map(plainL).join(', ')]:[]);
  sec('Notes',plainL(r.notes).split('\n').map(x=>x.trim()).filter(Boolean));
  sec('Nutrition',r.nut);
  const ln=[isUrl(r.src)?'Source: '+r.src:r.src?'From: '+r.src:'',isUrl(r.vid)?'Video: '+r.vid:''].filter(Boolean);if(ln.length)L.push('',...ln);
@@ -1324,7 +1327,7 @@ function saveDraft(){pull();const d=S.draft,title=d.title.trim();if(!title){toas
  const o=fix({id:old?old.id:uid('r'),title,cuisine:d.cuisine,meal:[...d.meal],protein:[...d.protein],method:[...d.method],diet:[...d.diet],tags:[...d.tags],serves:num(d.serves),time:tm,ing,steps,pair:pairsOf(d.pairT||''),nut,notes:d.notes.trim(),src:normUrl(d.src),vid:normUrl(d.vid)});
  if(old)Object.assign(old,o,{cooked:old.cooked,added:old.added});else S.recipes.push(o);
  // Renamed: point [[links]] to the new name
- if(old&&tkey(oldT)&&tkey(oldT)!=tkey(title))S.recipes.forEach(r=>{const re=l=>l.replace(LRE,(m,t)=>tkey(t)==tkey(oldT)?'[['+title+']]':m);r.ing=r.ing.map(re);r.pair=r.pair.map(re)});
+ if(old&&tkey(oldT)&&tkey(oldT)!=tkey(title))S.recipes.forEach(r=>{const re=l=>l.replace(LRE,(m,t)=>tkey(t)==tkey(oldT)?'[['+title+']]':m);r.ing=r.ing.map(re);if(Array.isArray(r.pair))r.pair=r.pair.map(re)});
  if(o.cuisine&&!S.facets.cuisine.includes(o.cuisine))S.facets.cuisine.push(o.cuisine);
  S.draft=blankD();PARSED='';AM='type';save();flush();openRecipe(o.id,'browse');toast(old?'Changes saved':'Recipe saved')}
 function renameVal(k,from,to){if(k!='tags'){const L=S.facets[k],ex=L.find(y=>y.toLowerCase()==to.toLowerCase()&&y!=from);if(ex){L.splice(L.indexOf(from),1);to=ex}else L[L.indexOf(from)]=to}
@@ -1407,7 +1410,7 @@ const ACT={
  cook:d=>{if(S.cookId!=d.id){S.cookId=d.id;S.step=0}save();goTab('cook')},
  cooked:d=>{const r=byId(d.id);if(!r||!logCooked(r))return;afterCook(r);R();toast('Logged as cooked today',()=>{const i=r.cooked.lastIndexOf(tdy());if(i>=0)r.cooked.splice(i,1);commit()})},
  edit:d=>{const r=byId(d.id);if(!r)return;if(!dEmpty(S.draft)&&S.draft.id!=r.id&&!confirm('Discard the recipe you were adding?'))return;
-  S.draft=Object.assign(blankD(),{id:r.id,title:r.title,cuisine:r.cuisine,meal:[...r.meal],protein:[...r.protein],method:[...r.method],diet:[...r.diet],tags:[...r.tags],serves:r.serves||'',time:r.time?fmtTime(r.time):'',ingT:r.ing.join('\n'),stepT:r.steps.join('\n'),pairT:r.pair.join(', '),nutT:r.nut.join('\n'),notes:r.notes,src:r.src,vid:r.vid});
+  S.draft=Object.assign(blankD(),{id:r.id,title:r.title,cuisine:r.cuisine,meal:[...r.meal],protein:[...r.protein],method:[...r.method],diet:[...r.diet],tags:[...r.tags],serves:r.serves||'',time:r.time?fmtTime(r.time):'',ingT:r.ing.join('\n'),stepT:r.steps.join('\n'),pairT:prs(r).join(', '),nutT:r.nut.join('\n'),notes:r.notes,src:r.src,vid:r.vid});
   AM='type';PARSED='';save();goTab('add')},
  delR:d=>{const i=S.recipes.findIndex(r=>r.id==d.id);if(i<0)return;const [x]=S.recipes.splice(i,1);if(x.share)S.shareGone=[...(S.shareGone||[]),x.share];if(S.cookId==x.id)S.cookId=null;if(S.shop.rids.includes(x.id))pruneShop();save();ACT.back();toast(`Deleted “${x.title}”`,()=>{S.recipes.splice(i,0,x);if(x.share)S.shareGone=(S.shareGone||[]).filter(id=>id!=x.share);commit()},'del')},
  phTap:d=>{if(byId(d.id)){SH={kind:'photo',id:d.id};R()}},
