@@ -1161,7 +1161,8 @@ async function loadFeeds(all){const due=S.srcs.filter(x=>srcKind(x.url)!='soc'&&
  saveFD();if(named)save();if(T=='disc')R();loadPosts()}
 const recent=it=>!it.d||Date.now()-Date.parse(it.d)<POST_DAYS*864e5;
 // Check blog posts we haven't seen for a recipe (YouTube posts arrive already checked)
-async function loadPosts(){const q=[];S.srcs.forEach(x=>{if(srcKind(x.url)!='site'||!FD[x.id])return;(FD[x.id].items||[]).forEach(it=>{if(recent(it)&&!PI[it.u]&&!PIL.has(it.u))q.push(it.u)})});if(!q.length)return;
+async function loadPosts(){const q=[];S.srcs.forEach(x=>{if(srcKind(x.url)!='site'||!FD[x.id])return;(FD[x.id].items||[]).forEach(it=>{if(recent(it))q.push(it.u)})});return checkPosts(q)}
+async function checkPosts(q){q=[...new Set(q)].filter(u=>u&&!PI[u]&&!PIL.has(u));if(!q.length)return;
  q.forEach(u=>PIL.add(u));let i=0;
  const one=async u=>{try{const res=await fetch(SHARE_SITE+'/feed?post='+encodeURIComponent(u));const r=await res.json();if(res.ok&&!r.error){PI[u]={at:Date.now(),r:r.r,ing:r.ing||[],tm:r.tm||0,cu:r.cu||'',img:r.img||''};KC=null}}catch(e){}PIL.delete(u);dsLater()};
  await Promise.all(Array.from({length:Math.min(3,q.length)},async()=>{while(i<q.length)await one(q[i++])}));savePI();dsLater()}
@@ -1181,6 +1182,53 @@ const DSUG=[['https://www.budgetbytes.com','Budget Bytes',['American'],0],['http
 function dsSugg(){const no=new Set(S.set.dsNo||[]),have=new Set(S.srcs.map(x=>srcKey(x.url))),cu={};S.recipes.forEach(r=>{const k=fkey(r.cuisine||'');if(k)cu[k]=(cu[k]||0)+1});
  const veg=S.recipes.length&&S.recipes.filter(r=>r.diet.some(d=>/vegan|vegetarian/i.test(d))).length/S.recipes.length>=.5;
  return DSUG.filter(([u])=>!no.has(srcKey(u))&&!have.has(srcKey(u))).map(([u,n,c,v],i)=>{const m=c.filter(x=>cu[fkey(x)]);return {u,n,why:m.length?m.join(', '):v&&veg?'Vegetarian-friendly':'Popular',sc:m.reduce((a,x)=>a+cu[fkey(x)]*3,0)+(v&&veg?2:0)-i/100}}).sort((a,b)=>b.sc-a.sc).slice(0,2)}
+// One post in a Discover list: photo or source icon, title, details, and what it needs from your kitchen
+function dsRow(o){const meta=[o.x.name,o.tm?fmtTime(o.tm):'',o.cu,o.it.d?relT(o.it.d):''].filter(Boolean).join(' · '),
+  badge=o.k=='ready'?`<span class="dsk ok">Have everything</span>`:o.k=='near'?`<span class="dsk nr">Missing ${esc(o.c.miss.map(m=>m.name.toLowerCase()).join(', '))}</span>`:'';
+ return `<a class="rc dsp" href="${esc(o.it.u)}" target="_blank" rel="noopener">${o.img?`<span class="dst" aria-hidden="true">${ini(o.x)}<img class="ph" src="${esc(o.img)}" alt="" loading="lazy" onerror="this.remove()"></span>`:sIcon(o.x,'dst')}<span class="rcn"><b>${esc(o.it.t)}</b><span class="mu">${esc(meta)}</span>${badge}</span></a>`}
+const dsRank={ready:0,near:1,'':2},dsSort=(a,b)=>dsRank[a.k]-dsRank[b.k]||((b.it.d||'')>(a.it.d||'')?1:(b.it.d||'')<(a.it.d||'')?-1:0);
+
+// ---- Discover search: recipes from your sources that use the ingredients you pick ----
+// Blogs are searched through the share site (/feed?u=…&q=…), which reaches posts from any year on WordPress sites.
+// YouTube channels and sites without a search are matched against the posts their feed already brought in.
+// Every hit gets the same recipe check as the feed, so it can say which ones you could make from your kitchen.
+// Results live in memory only; post checks share the feed's cache.
+let DQ=[],DQT='',DQR=null,DQB=new Set(),DQM='all',DQN=DSPAGE;   // picked ingredients, typed text, results, sources searching, kitchen filter, shown
+const DQMAX=5;
+// Does a recipe use this ingredient? "spinach" matches "2 cups baby spinach"
+const dqHas=(ing,w)=>ing.some(l=>pm(w,ingInfo(l).key)||pm(w,nkey(l)));
+function dqAdd(v){v=(v||'').replace(/\s+/g,' ').trim().toLowerCase().slice(0,40);if(!v||!nkey(v))return 0;
+ if(DQ.some(x=>nkey(x)==nkey(v)))return 0;if(DQ.length>=DQMAX){toast('Up to '+DQMAX+' ingredients at a time');return 0}DQ.push(v);return 1}
+async function dqGo(){if(DQT.trim()){dqAdd(DQT);DQT=''}if(!DQ.length){toast('Add an ingredient first');R();return}
+ const w=[...DQ],q=w.join(' '),xs=S.srcs.filter(x=>srcKind(x.url)=='site');DQR={q,w,by:{}};DQM='all';DQN=DSPAGE;DQB=new Set(xs.map(x=>x.id));R();
+ const mine=()=>DQR&&DQR.q==q;let i=0;
+ const one=async x=>{let r;try{const res=await fetch(SHARE_SITE+'/feed?u='+encodeURIComponent(x.url)+'&q='+encodeURIComponent(q));r=await res.json();if(!res.ok&&!r.error)r={error:'Couldn’t reach it'}}catch(e){r={error:navigator.onLine===false?'You’re offline':'Couldn’t reach it'}}
+  if(!mine())return;DQR.by[x.id]={err:r.error||'',items:(r.items||[]).slice(0,12)};DQB.delete(x.id);dsLater()};
+ await Promise.all(Array.from({length:Math.min(4,xs.length)},async()=>{while(i<xs.length)await one(xs[i++])}));
+ if(!mine())return;dsLater();checkPosts(Object.values(DQR.by).flatMap(s=>s.items.map(it=>it.u)))}
+// What the search found, plus matching posts from sources it couldn't search
+function dqList(){if(!DQR)return [];const A=[],seen=new Set(),w=DQR.w;
+ const add=(x,it)=>{if(!it.u||seen.has(it.u))return;const o=postOf(x,it);if(o.r===0)return;if(o.ing.length&&!w.every(v=>dqHas(o.ing,v)))return;seen.add(it.u);A.push(o)};
+ S.srcs.forEach(x=>{if(srcKind(x.url)=='soc')return;const s=DQR.by[x.id];
+  if(s&&!s.err)s.items.forEach(it=>add(x,it));
+  else if(!DQB.has(x.id)&&FD[x.id]&&FD[x.id].items)FD[x.id].items.forEach(it=>{const o=postOf(x,it);if(o.ing.length||w.every(v=>pm(v,nkey(it.t))))add(x,it)})});
+ return A}
+function vDq(){const busy=DQB.size>0,ks=pSorted().filter(p=>!DQ.some(v=>nkey(v)==nkey(p.name))).slice(0,6);
+ let h=`<div class="card wide"><h3><span>Search your sources</span>${DQ.length||DQR?`<button class="g lnk" data-a="dqClr">Clear</button>`:''}</h3>`
+  +`<div class="row"><input id="dqin" type="text" placeholder="Add an ingredient, like chicken" enterkeyhint="search" autocomplete="off" value="${esc(DQT)}"><button data-a="dqAdd" style="flex:none">Add</button></div>`
+  +(DQ.length?`<div class="chips" style="margin:8px 0 0">${DQ.map((v,i)=>`<span class="chip ed2"><span class="cn">${esc(v)}</span><button class="cx" data-a="dqX" data-i="${i}" aria-label="Remove ${esc(v)}">${ICX}</button></span>`).join('')}</div>`:'')
+  +(ks.length&&DQ.length<DQMAX?`<div class="hint" style="margin:10px 0 6px">From your kitchen</div><div class="chips" style="margin:0">${ks.map(p=>`<button class="chip add" data-a="dqP" data-n="${esc(p.name)}">+ ${esc(p.name)}</button>`).join('')}</div>`:'')
+  +`<button data-a="dqGo" ${busy||!(DQ.length||DQT.trim())?'disabled':''} style="width:100%;margin-top:10px">${busy?'Searching…':'Find recipes'}</button>`;
+ if(!DQR)return h+`<div class="hint">Finds recipes from your blogs that use all of these, from any year, not just the newest posts.</div></div>`;
+ const A=dqList(),nR=A.filter(o=>o.k=='ready').length,nN=A.filter(o=>o.k=='near').length;if(DQM=='ready'&&!nR||DQM=='near'&&!nN)DQM='all';
+ const P=A.filter(o=>DQM=='all'||o.k==DQM).sort(dsSort),checking=A.some(o=>o.r==null&&PIL.has(o.it.u));
+ const none=S.srcs.filter(x=>srcKind(x.url)!='soc'&&!DQB.has(x.id)&&!(DQR.by[x.id]&&!DQR.by[x.id].err)).map(x=>x.name);
+ h+=`<div style="margin-top:14px">`
+  +((nR||nN)?`<div class="chips" style="margin:0 0 8px">${[['all','All · '+A.length],['ready','Ready to cook'+(nR?' · '+nR:'')],['near','Missing 1–2'+(nN?' · '+nN:'')]].map(([v,l])=>`<button class="chip ${DQM==v?'on':''}" data-a="dqM" data-v="${v}">${l}</button>`).join('')}</div>`:'')
+  +(P.length?P.slice(0,DQN).map(dsRow).join('')+(P.length>DQN?`<button class="g lnk" data-a="dqMore" style="margin-top:6px">Show ${Math.min(DSPAGE,P.length-DQN)} more</button>`:'')
+   :`<p class="mu" style="margin:0">${busy?'Searching your sources…':'No recipes with '+(DQR.w.length>1?'all of these':'that')+' turned up.'+(DQR.w.length>1?' Try fewer ingredients.':'')}</p>`)
+  +`<div class="hint">${!S.pantry.length&&A.some(o=>o.ing.length)?'Add what’s in your kitchen on the Kitchen tab to see which of these you can make now. ':''}${!busy&&none.length?esc(none.length>2?none.slice(0,2).join(', ')+' and '+(none.length-2)+' more':none.join(' and '))+' can’t be searched, so only '+(none.length==1?'its':'their')+' newest posts were checked. ':''}${checking?'Checking recipes…':''}</div></div>`;
+ return h+`</div>`}
 function vDisc(){const L=[...S.srcs].sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:'base'})),busy=FDL.size>0,checking=PIL.size>0,kit=S.pantry.length>0;
  let h=`<div class="hello"><b>Discover</b><span>${S.srcs.length||''}</span></div>`;
  h+=`<div class="card wide"><h3><span>Add a source</span></h3><div class="row"><input id="dsin" type="url" inputmode="url" placeholder="Paste a site, blog, YouTube or Instagram link" enterkeyhint="done" autocomplete="off" autocapitalize="none"><button data-a="dsAdd" style="flex:none">Add</button></div>`
@@ -1190,15 +1238,14 @@ function vDisc(){const L=[...S.srcs].sort((a,b)=>a.name.localeCompare(b.name,und
  // The feed: recipes only, from the last few months; ones you can make now come first
  const A=[];S.srcs.forEach(x=>{const f=FD[x.id];if(!f||!f.items||(DSF&&DSF!=x.id))return;f.items.forEach(it=>{if(!recent(it))return;const o=postOf(x,it);if(o.r!==0)A.push(o)})});
  const nR=A.filter(o=>o.k=='ready').length,nN=A.filter(o=>o.k=='near').length;if(DSM=='ready'&&!nR||DSM=='near'&&!nN)DSM='all';
- const rank={ready:0,near:1,'':2},P=A.filter(o=>DSM=='all'||o.k==DSM).sort((a,b)=>rank[a.k]-rank[b.k]||((b.it.d||'')>(a.it.d||'')?1:(b.it.d||'')<(a.it.d||'')?-1:0));
+ const P=A.filter(o=>DSM=='all'||o.k==DSM).sort(dsSort);
  const fs=L.filter(x=>FD[x.id]&&FD[x.id].items&&FD[x.id].items.length),last=Math.max(0,...S.srcs.map(x=>FD[x.id]?FD[x.id].at:0));
  if(S.srcs.some(x=>srcKind(x.url)!='soc')){
+  h+=vDq();
   h+=`<div class="card wide"><h3><span>Lately</span><button class="g lnk" data-a="dsRef" ${busy?'disabled':''}>${busy?'Checking…':'Refresh'}</button></h3>`
   +((nR||nN)?`<div class="chips" style="margin:0 0 8px">${[['all','All'],['ready','Ready to cook'+(nR?' · '+nR:'')],['near','Missing 1–2'+(nN?' · '+nN:'')]].map(([v,l])=>`<button class="chip ${DSM==v?'on':''}" data-a="dsM" data-v="${v}">${l}</button>`).join('')}</div>`:'')
   +(fs.length>1?`<select data-a="dsF" aria-label="Source" style="margin-bottom:8px"><option value="">All sources</option>${fs.map(x=>`<option value="${esc(x.id)}" ${DSF==x.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>`:'')
-  +(P.length?P.slice(0,DSN).map(o=>{const meta=[o.x.name,o.tm?fmtTime(o.tm):'',o.cu,o.it.d?relT(o.it.d):''].filter(Boolean).join(' · '),
-     badge=o.k=='ready'?`<span class="dsk ok">Have everything</span>`:o.k=='near'?`<span class="dsk nr">Missing ${esc(o.c.miss.map(m=>m.name.toLowerCase()).join(', '))}</span>`:'';
-     return `<a class="rc dsp" href="${esc(o.it.u)}" target="_blank" rel="noopener">${o.img?`<span class="dst" aria-hidden="true">${ini(o.x)}<img class="ph" src="${esc(o.img)}" alt="" loading="lazy" onerror="this.remove()"></span>`:sIcon(o.x,'dst')}<span class="rcn"><b>${esc(o.it.t)}</b><span class="mu">${esc(meta)}</span>${badge}</span></a>`}).join('')
+  +(P.length?P.slice(0,DSN).map(dsRow).join('')
     +(P.length>DSN?`<button class="g lnk" data-a="dsMore" style="margin-top:6px">Show ${Math.min(DSPAGE,P.length-DSN)} more</button>`:'')
    :`<p class="mu" style="margin:0">${busy||checking?'Checking your sources…':'No new recipes from your sources lately.'}</p>`)
   +`<div class="hint">${!kit&&A.some(o=>o.ing.length)?'Add what’s in your kitchen on the Kitchen tab to see which of these you can make now. ':''}${last?'Updated '+esc(relT(new Date(last).toISOString()))+'.':''}${checking?' Checking new posts…':''}</div></div>`}
@@ -1419,6 +1466,13 @@ const ACT={
  dsF:(d,el)=>{DSF=el&&el.value||'';DSN=DSPAGE;R()},
  dsM:d=>{DSM=d.v;DSN=DSPAGE;R()},
  dsMore:()=>{DSN+=DSPAGE;R()},
+ dqAdd:()=>{if(dqAdd(DQT))DQT='';R();document.getElementById('dqin')?.focus()},
+ dqP:d=>{dqAdd(d.n);R()},
+ dqX:d=>{DQ.splice(+d.i,1);R()},
+ dqClr:()=>{DQ=[];DQT='';DQR=null;DQB=new Set();R()},
+ dqGo:()=>dqGo(),
+ dqM:d=>{DQM=d.v;DQN=DSPAGE;R()},
+ dqMore:()=>{DQN+=DSPAGE;R()},
  dsSug:d=>{if(S.srcs.some(x=>srcKey(x.url)==srcKey(d.u)))return;S.srcs.push({id:uid('s'),url:d.u,name:d.n,auto:0,added:tdy()});commit();toast('Added '+d.n);loadFeeds()},
  dsNo:d=>{const k=srcKey(d.u);S.set.dsNo=[...(S.set.dsNo||[]),k];commit();toast('Won’t suggest that again',()=>{S.set.dsNo=(S.set.dsNo||[]).filter(x=>x!=k);commit()})},
  // A category, cuisine or tag on a recipe: open Find with just that filter on
@@ -1637,6 +1691,7 @@ document.addEventListener('input',e=>{const t=e.target,d=t.dataset;
  if(t.matches('.dt input')&&!d.p)t.previousElementSibling.textContent=sd(t.value);
  if(t.id=='q'){S.f.q=t.value;save();clearTimeout(QT);QT=setTimeout(R,150);return}
  if(t.id=='pt')PT=t.value;
+ if(t.id=='dqin'){DQT=t.value;const b=document.querySelector('#app [data-a="dqGo"]');if(b&&!DQB.size)b.disabled=!(DQ.length||DQT.trim());return}
  if((t.id=='plq'||t.id=='lnq')&&SH){SH.q=t.value;R();return}
  if(t.id=='pitN'&&SH){SH.name=t.value;return}
  if(d.nk!=null){if(t.value.trim())S.shop.note[d.nk]=t.value;else delete S.shop.note[d.nk];save();return}
@@ -1652,6 +1707,7 @@ document.addEventListener('keydown',e=>{const t=e.target;if(e.key!='Enter'||e.is
  else if(t.id&&t.id.startsWith('fa-')){e.preventDefault();ACT.facAdd({k:t.id.slice(3)})}
  else if(t.id=='pin'){e.preventDefault();ACT.pAdd()}
  else if(t.id=='dsin'){e.preventDefault();ACT.dsAdd()}
+ else if(t.id=='dqin'){e.preventDefault();if(t.value.trim())ACT.dqAdd();else if(DQ.length)dqGo()}
  else if(t.id=='ingE'){e.preventDefault();ACT.ingSave()}
  else if(t.id=='xin'){e.preventDefault();ACT.xAdd()}
  else if(t.id=='pitN'){e.preventDefault();ACT.pitSave()}
