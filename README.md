@@ -11,7 +11,7 @@ A recipe box, cook mode and shopping list that runs in your browser. It's part o
 - Scaling servings, with US amounts converted as they grow or shrink
 - Links between recipes, like a sauce used in a main dish
 - A Goes with list on each recipe for building a meal around it, like "rice, tortillas, [[Pico de Gallo]]", where linked recipes show the pairing on both pages
-- A meal calendar that tracks servings made, servings eaten and leftovers
+- A meal calendar that tracks servings made, servings eaten and leftovers, with an optional layer of food holidays (from National Today's Food & Beverage list) you can switch on from the calendar's key
 - A Kitchen tab for what you have on hand, recipes you can make without shopping, and a merged shopping list
 - A cooking log with what's due for a comeback
 - A Discover tab for the cooking sites, blogs, YouTube channels and social accounts you follow, with one feed of their newest recipes that flags the ones you can make from your kitchen, a few suggested sources, and a search that finds recipes using the ingredients you pick (or what's in your kitchen) across your blogs' whole archives, not just their newest posts (read through the share site's `/feed`, see `share/functions/feed.js`; searching works on WordPress blogs, and other sources are matched against their newest posts)
