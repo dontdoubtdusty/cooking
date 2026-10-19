@@ -2,8 +2,6 @@
 //   /feed?u=<link to a cooking site, blog or YouTube channel>
 //   /feed?post=<link to one post>   is it a recipe, and if so its ingredients, time, cuisine and photo
 //                                   (read from the schema.org Recipe data recipe plugins put in the page)
-//   /feed?u=<site>&q=<words>        that site's posts matching the words, from any year: { items, via }
-//                                   (WordPress search; other sites and YouTube answer 404 "No search")
 // Browsers can't read other sites' feeds directly (they block it), so the app asks here instead.
 // This finds the source's RSS or Atom feed (YouTube channels have one too), reads it and answers with
 // its newest posts as small JSON: { title, site, feed, items: [{ t: title, u: link, d: ISO date, img }] }.
@@ -142,35 +140,6 @@ async function postInfo(u) {
   return { r: 1, ing, tm: mins(r.totalTime) || (mins(r.prepTime) + mins(r.cookTime)) || 0, cu: text(str(r.recipeCuisine)).slice(0, 30), img: abs(str(r.image), url) };
 }
 
-// ---- Searching a source's whole archive ----
-// Most food blogs run WordPress, which answers a search as a feed (?s=…&feed=rss2) and through its REST API.
-// Either one works on posts from any year, not just the newest few. Other sites answer null (no search).
-const SEARCH_AGE = 6 * 3600, MAX_HITS = 12;
-async function searchSite(u, q) {
-  const bases = [u.origin];
-  const path = u.pathname.replace(/\/+$/, '');
-  if (path && !/\.(xml|rss|atom)$/i.test(path)) bases.push(u.origin + path.replace(/\/(feed|rss)$/i, ''));
-  for (const b of [...new Set(bases)]) {
-    try {
-      const g = await get(b + '/?s=' + encodeURIComponent(q) + '&feed=rss2');
-      if (isFeed(g.text)) { const p = parse(g.text, g.url); return { items: p.items.slice(0, MAX_HITS), via: 'feed' } }
-    } catch (e) { }
-    try {
-      const g = await get(b + '/wp-json/wp/v2/posts?search=' + encodeURIComponent(q) + '&per_page=' + MAX_HITS + '&_fields=link,title,date_gmt,jetpack_featured_media_url');
-      const a = JSON.parse(g.text);
-      if (Array.isArray(a)) return {
-        via: 'wp',
-        items: a.map(x => ({
-          t: text(String(x.title && x.title.rendered || '')), u: abs(String(x.link || ''), g.url),
-          d: x.date_gmt && !isNaN(Date.parse(x.date_gmt + 'Z')) ? new Date(x.date_gmt + 'Z').toISOString() : '',
-          img: abs(String(x.jetpack_featured_media_url || ''), g.url)
-        })).filter(x => x.t && x.u)
-      };
-    } catch (e) { }
-  }
-  return null;
-}
-
 // YouTube channel pages -> the channel's video feed
 async function youtubeFeed(u) {
   let id = /\/channel\/(UC[\w-]{22})/.exec(u.pathname)?.[1];
@@ -192,15 +161,6 @@ export async function onRequest({ request }) {
   }
   const u = okUrl(q.get('u') || '');
   if (!u) return json({ error: 'That link doesn\'t look right' }, 400, 60);
-  if (q.has('q')) {
-    const words = (q.get('q') || '').replace(/\s+/g, ' ').trim().slice(0, 100);
-    if (!words) return json({ error: 'Nothing to search for' }, 400, 60);
-    if (/(^|\.)youtube\.com$/i.test(u.hostname)) return json({ error: 'No search' }, 404, 86400);
-    try {
-      const r = await searchSite(u, words);
-      return r ? json(r, 200, SEARCH_AGE) : json({ error: 'No search' }, 404, 86400);
-    } catch (e) { return json({ error: 'Couldn\'t reach it' }, 502, 300) }
-  }
   try {
     let feed = '', got = null;
     if (/(^|\.)youtube\.com$/i.test(u.hostname)) feed = await youtubeFeed(u);

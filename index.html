@@ -111,12 +111,27 @@ body.hast #toast{bottom:calc(140px + env(safe-area-inset-bottom,0px))}
 .ctl b{position:absolute;left:0;right:0;bottom:0;padding:22px 10px 9px;font:600 16px/1.15 var(--fd);text-shadow:0 1px 3px #0006;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 [hidden]{display:none!important}
 /* Discover: a source's icon (its first letter until the site's icon loads over it), post thumbnails */
-.dsi,.dst{flex:none;position:relative;display:grid;place-content:center;overflow:hidden;background:var(--fld);color:var(--mu);font:800 17px 'Nunito',sans-serif}
+.dsi{flex:none;position:relative;display:grid;place-content:center;overflow:hidden;background:var(--fld);color:var(--mu);font:800 17px 'Nunito',sans-serif}
 .dsi{width:40px;height:40px;border-radius:12px}.dsi img{position:absolute;inset:8px;width:24px;height:24px}
-.dst{width:84px;height:56px;border-radius:12px;object-fit:cover}span.dst img{position:absolute;inset:14px 28px;width:28px;height:28px}span.dst img.ph{inset:0;width:100%;height:100%;object-fit:cover}
 a.rc{text-decoration:none}
-.dsp{align-items:flex-start}.dsp .rcn b{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:14.5px;line-height:1.3}
-.dsp{padding:8px 6px 10px}.dsk{align-self:flex-start;margin-top:4px;font-size:11.5px;font-weight:800;padding:2px 8px;border-radius:99px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsk{font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:99px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px 12px}
+.dsc{display:flex;flex-direction:column;gap:8px;min-width:0;color:var(--tx);text-decoration:none;border-radius:16px;transition:transform var(--fast) var(--bounce)}.dsc:active{transform:scale(.97)}
+.dsph{position:relative;display:block;aspect-ratio:1;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,color-mix(in srgb,var(--pc) 22%,var(--fld)),color-mix(in srgb,var(--pc2) 30%,var(--fld)));box-shadow:var(--sh)}
+.dsph img.ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+@media(hover:hover){.dsc:hover .dsph img.ph{transform:scale(1.05)}.dsc:hover b{color:var(--pc)}}
+.dsin{position:absolute;inset:0;display:grid;place-content:center;color:color-mix(in srgb,var(--pc2) 70%,var(--tx));font:800 40px var(--fd)}.dsin img{position:absolute;top:50%;left:50%;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:10px}
+.dsfl{position:absolute;top:8px;right:8px;width:30px;height:20px;object-fit:cover;border-radius:5px;box-shadow:0 0 0 2px rgba(255,255,255,.9),0 2px 6px rgba(0,0,0,.25)}
+.dsph .dsk{position:absolute;left:8px;bottom:8px;max-width:calc(100% - 16px);box-shadow:0 2px 8px rgba(0,0,0,.22)}.dsph .dsk.ok{background:#17a06a;color:#fff}.dsph .dsk.nr{background:#c96a1f;color:#fff}
+.dsct{display:flex;flex-direction:column;min-width:0;padding:0 2px}.dsct b{font-weight:700;font-size:14.5px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;transition:color var(--fast)}
+.dsct .mu{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dsct .dssn{font-weight:700;margin-top:2px}
+.dss{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 4px;margin:0 -2px;scroll-snap-type:x proximity}.dss::-webkit-scrollbar{display:none}
+.dsb{flex:none;width:68px;box-shadow:none;border:0;display:flex;flex-direction:column;align-items:center;gap:5px;background:none;color:var(--mu);padding:4px 0;scroll-snap-align:start}
+.dsb .dsi{width:52px;height:52px;border-radius:50%;background:var(--card);box-shadow:0 0 0 2px var(--bd);transition:box-shadow var(--fast),transform var(--fast) var(--bounce)}.dsb .dsi img{inset:12px;width:28px;height:28px}
+.dsb.on .dsi{box-shadow:0 0 0 2.5px var(--card),0 0 0 5px var(--pc);transform:scale(1.04)}.dsb.on{color:var(--tx)}
+.dsall{font:800 14px var(--fd);color:var(--pc)}
+.dsbn{max-width:100%;font-size:11.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsrc .dsgh{margin:14px 0 2px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:11px}
 .dsk.ok{background:color-mix(in srgb,#17a06a 16%,transparent);color:#138a5b}.dsk.nr{background:color-mix(in srgb,#f2994a 18%,transparent);color:#b8621c}
 :root[data-theme="dark"] .dsk.ok{color:#4fd29b}:root[data-theme="dark"] .dsk.nr{color:#ffb070}
 .dsg{opacity:.92}.dsg h3{font-size:14px}
@@ -1158,7 +1173,7 @@ function vLists(){const tg=allTags().sort((a,b)=>a[0].localeCompare(b[0],undefin
 // Each post is checked once for a recipe (blogs: through the share site; YouTube: from its description), so the feed
 // keeps only recipes and can say which ones you could make from your kitchen.
 // What came back is kept on this device only (not synced, not in backups); feeds refresh when over an hour old.
-const LSF='saucy-feed',LSP='saucy-posts',FEED_AGE=36e5,POST_DAYS=90,DSPAGE=10;
+const LSF='saucy-feed',LSP='saucy-posts',FEED_AGE=36e5,POST_DAYS=90,DSPAGE=12;
 let FD={},PI={},FDL=new Set(),PIL=new Set(),DSF='',DSM='all',DSN=DSPAGE,DSRT=0;   // feeds, post info, loading, source filter, kitchen filter, posts shown
 try{FD=JSON.parse(localStorage.getItem(LSF))||{}}catch(e){FD={}}
 try{PI=JSON.parse(localStorage.getItem(LSP))||{}}catch(e){PI={}}
@@ -1213,89 +1228,50 @@ const DSUG=[['https://www.budgetbytes.com','Budget Bytes',['American'],0],['http
 function dsSugg(){const no=new Set(S.set.dsNo||[]),have=new Set(S.srcs.map(x=>srcKey(x.url))),cu={};S.recipes.forEach(r=>{const k=fkey(r.cuisine||'');if(k)cu[k]=(cu[k]||0)+1});
  const veg=S.recipes.length&&S.recipes.filter(r=>r.diet.some(d=>/vegan|vegetarian/i.test(d))).length/S.recipes.length>=.5;
  return DSUG.filter(([u])=>!no.has(srcKey(u))&&!have.has(srcKey(u))).map(([u,n,c,v],i)=>{const m=c.filter(x=>cu[fkey(x)]);return {u,n,why:m.length?m.join(', '):v&&veg?'Vegetarian-friendly':'Popular',sc:m.reduce((a,x)=>a+cu[fkey(x)]*3,0)+(v&&veg?2:0)-i/100}}).sort((a,b)=>b.sc-a.sc).slice(0,2)}
-// One post in a Discover list: photo or source icon, title, details, and what it needs from your kitchen
-function dsRow(o){const meta=[o.x.name,o.tm?fmtTime(o.tm):'',o.cu,o.it.d?relT(o.it.d):''].filter(Boolean).join(' · '),
+// The flag for a post's cuisine, when there's one in flags/ ("Italian, American" uses the first)
+const dsFlag=cu=>{const f=fkey((cu||'').split(/[,/]/)[0]);return f&&FLAGS.has(f)?`<img class="dsfl" src="flags/${f}.svg" alt="${esc(cu)}" title="${esc(cu)}" loading="lazy">`:''};
+// One post in the Discover grid: a big photo (or the source's icon), its cuisine flag and kitchen badge on top, then title and details
+function dsCard(o){const meta=[o.tm?fmtTime(o.tm):'',o.it.d?relT(o.it.d):''].filter(Boolean).join(' · '),
   badge=o.k=='ready'?`<span class="dsk ok">Have everything</span>`:o.k=='near'?`<span class="dsk nr">Missing ${esc(o.c.miss.map(m=>m.name.toLowerCase()).join(', '))}</span>`:'';
- return `<a class="rc dsp" href="${esc(o.it.u)}" target="_blank" rel="noopener">${o.img?`<span class="dst" aria-hidden="true">${ini(o.x)}<img class="ph" src="${esc(o.img)}" alt="" loading="lazy" onerror="this.remove()"></span>`:sIcon(o.x,'dst')}<span class="rcn"><b>${esc(o.it.t)}</b><span class="mu">${esc(meta)}</span>${badge}</span></a>`}
+ return `<a class="dsc" href="${esc(o.it.u)}" target="_blank" rel="noopener"><span class="dsph${o.img?'':' noimg'}" aria-hidden="true"><span class="dsin">${ini(o.x)}<img src="${esc(favi(o.x.url))}" alt="" loading="lazy" onerror="this.remove()"></span>${o.img?`<img class="ph" src="${esc(o.img)}" alt="" loading="lazy" onerror="this.remove()">`:''}${dsFlag(o.cu)}${badge}</span>`
+  +`<span class="dsct"><b>${esc(o.it.t)}</b><span class="mu dssn">${esc(o.x.name)}</span>${meta?`<span class="mu">${esc(meta)}</span>`:''}</span></a>`}
 const dsRank={ready:0,near:1,'':2},dsSort=(a,b)=>dsRank[a.k]-dsRank[b.k]||((b.it.d||'')>(a.it.d||'')?1:(b.it.d||'')<(a.it.d||'')?-1:0);
+const dsAddBox=()=>`<div class="row"><input id="dsin" type="url" inputmode="url" placeholder="Paste a site, blog, YouTube or Instagram link" enterkeyhint="done" autocomplete="off" autocapitalize="none"><button data-a="dsAdd" style="flex:none">Add</button></div>`
+ +`<div class="hint">Blogs and YouTube channels show their newest recipes in the feed. Instagram, TikTok and other social accounts are saved as links.</div>`;
 
-// ---- Discover search: recipes from your sources that use the ingredients you pick ----
-// Blogs are searched through the share site (/feed?u=…&q=…), which reaches posts from any year on WordPress sites.
-// YouTube channels and sites without a search are matched against the posts their feed already brought in.
-// Every hit gets the same recipe check as the feed, so it can say which ones you could make from your kitchen.
-// Results live in memory only; post checks share the feed's cache.
-let DQ=[],DQT='',DQR=null,DQB=new Set(),DQM='all',DQN=DSPAGE;   // picked ingredients, typed text, results, sources searching, kitchen filter, shown
-const DQMAX=5;
-// Does a recipe use this ingredient? "spinach" matches "2 cups baby spinach"
-const dqHas=(ing,w)=>ing.some(l=>pm(w,ingInfo(l).key)||pm(w,nkey(l)));
-function dqAdd(v){v=(v||'').replace(/\s+/g,' ').trim().toLowerCase().slice(0,40);if(!v||!nkey(v))return 0;
- if(DQ.some(x=>nkey(x)==nkey(v)))return 0;if(DQ.length>=DQMAX){toast('Up to '+DQMAX+' ingredients at a time');return 0}DQ.push(v);return 1}
-async function dqGo(){if(DQT.trim()){dqAdd(DQT);DQT=''}if(!DQ.length){toast('Add an ingredient first');R();return}
- const w=[...DQ],q=w.join(' '),xs=S.srcs.filter(x=>srcKind(x.url)=='site');DQR={q,w,by:{}};DQM='all';DQN=DSPAGE;DQB=new Set(xs.map(x=>x.id));R();
- const mine=()=>DQR&&DQR.q==q;let i=0;
- const one=async x=>{let r;try{const res=await fetch(SHARE_SITE+'/feed?u='+encodeURIComponent(x.url)+'&q='+encodeURIComponent(q));r=await res.json();if(!res.ok&&!r.error)r={error:'Couldn’t reach it'}}catch(e){r={error:navigator.onLine===false?'You’re offline':'Couldn’t reach it'}}
-  if(!mine())return;DQR.by[x.id]={err:r.error||'',items:(r.items||[]).slice(0,12)};DQB.delete(x.id);dsLater()};
- await Promise.all(Array.from({length:Math.min(4,xs.length)},async()=>{while(i<xs.length)await one(xs[i++])}));
- if(!mine())return;dsLater();checkPosts(Object.values(DQR.by).flatMap(s=>s.items.map(it=>it.u)))}
-// How well a post fits the search: an ingredient in the title counts most, then how central it is to the recipe
-// (near the top of the ingredient list, used in more than one line). Posts not checked yet are judged by title alone.
-function dqScore(o,w){const tk=nkey(o.it.t||'');let s=0;
- w.forEach(v=>{if(pm(v,tk))s+=100;if(!o.ing.length)return;let first=-1,n=0;
-  o.ing.forEach((l,i)=>{if(dqHas([l],v)){n++;if(first<0)first=i}});
-  if(first>=0)s+=Math.min(n,3)*4+Math.max(0,8-first)});
- return s}
-// What the search found, plus matching posts from sources it couldn't search
-function dqList(){if(!DQR)return [];const A=[],seen=new Set(),w=DQR.w;
- const add=(x,it)=>{if(!it.u||seen.has(it.u))return;const o=postOf(x,it);if(o.r===0)return;if(o.ing.length&&!w.every(v=>dqHas(o.ing,v)))return;seen.add(it.u);o.sc=dqScore(o,w);A.push(o)};
- S.srcs.forEach(x=>{if(srcKind(x.url)=='soc')return;const s=DQR.by[x.id];
-  if(s&&!s.err)s.items.forEach(it=>add(x,it));
-  else if(!DQB.has(x.id)&&FD[x.id]&&FD[x.id].items)FD[x.id].items.forEach(it=>{const o=postOf(x,it);if(o.ing.length||w.every(v=>pm(v,nkey(it.t))))add(x,it)})});
- return A}
-function vDq(){const busy=DQB.size>0,ks=pSorted().filter(p=>!DQ.some(v=>nkey(v)==nkey(p.name))).slice(0,6);
- let h=`<div class="card wide"><h3><span>Search your sources</span>${DQ.length||DQR?`<button class="g lnk" data-a="dqClr">Clear</button>`:''}</h3>`
-  +`<div class="row"><input id="dqin" type="text" placeholder="Add an ingredient, like chicken" enterkeyhint="search" autocomplete="off" value="${esc(DQT)}"><button data-a="dqAdd" style="flex:none">Add</button></div>`
-  +(DQ.length?`<div class="chips" style="margin:8px 0 0">${DQ.map((v,i)=>`<span class="chip ed2"><span class="cn">${esc(v)}</span><button class="cx" data-a="dqX" data-i="${i}" aria-label="Remove ${esc(v)}">${ICX}</button></span>`).join('')}</div>`:'')
-  +(ks.length&&DQ.length<DQMAX?`<div class="hint" style="margin:10px 0 6px">From your kitchen</div><div class="chips" style="margin:0">${ks.map(p=>`<button class="chip add" data-a="dqP" data-n="${esc(p.name)}">+ ${esc(p.name)}</button>`).join('')}</div>`:'')
-  +`<button data-a="dqGo" ${busy||!(DQ.length||DQT.trim())?'disabled':''} style="width:100%;margin-top:10px">${busy?'Searching…':'Find recipes'}</button>`;
- if(!DQR)return h+`<div class="hint">Finds recipes from your blogs that use all of these, from any year, not just the newest posts.</div></div>`;
- const A=dqList(),nR=A.filter(o=>o.k=='ready').length,nN=A.filter(o=>o.k=='near').length;if(DQM=='ready'&&!nR||DQM=='near'&&!nN)DQM='all';
- const P=A.filter(o=>DQM=='all'||o.k==DQM).sort((a,b)=>b.sc-a.sc||dsSort(a,b)),checking=A.some(o=>o.r==null&&PIL.has(o.it.u));
- const none=S.srcs.filter(x=>srcKind(x.url)!='soc'&&!DQB.has(x.id)&&!(DQR.by[x.id]&&!DQR.by[x.id].err)).map(x=>x.name);
- h+=`<div style="margin-top:14px">`
-  +((nR||nN)?`<div class="chips" style="margin:0 0 8px">${[['all','All · '+A.length],['ready','Ready to cook'+(nR?' · '+nR:'')],['near','Missing 1–2'+(nN?' · '+nN:'')]].map(([v,l])=>`<button class="chip ${DQM==v?'on':''}" data-a="dqM" data-v="${v}">${l}</button>`).join('')}</div>`:'')
-  +(P.length?P.slice(0,DQN).map(dsRow).join('')+(P.length>DQN?`<button class="g lnk" data-a="dqMore" style="margin-top:6px">Show ${Math.min(DSPAGE,P.length-DQN)} more</button>`:'')
-   :`<p class="mu" style="margin:0">${busy?'Searching your sources…':'No recipes with '+(DQR.w.length>1?'all of these':'that')+' turned up.'+(DQR.w.length>1?' Try fewer ingredients.':'')}</p>`)
-  +`<div class="hint">${!S.pantry.length&&A.some(o=>o.ing.length)?'Add what’s in your kitchen on the Kitchen tab to see which of these you can make now. ':''}${!busy&&none.length?esc(none.length>2?none.slice(0,2).join(', ')+' and '+(none.length-2)+' more':none.join(' and '))+' can’t be searched, so only '+(none.length==1?'its':'their')+' newest posts were checked. ':''}${checking?'Checking recipes…':''}</div></div>`;
- return h+`</div>`}
 function vDisc(){const L=[...S.srcs].sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:'base'})),busy=FDL.size>0,checking=PIL.size>0,kit=S.pantry.length>0;
  let h=`<div class="hello"><b>Discover</b><span>${S.srcs.length||''}</span></div>`;
- h+=`<div class="card wide"><h3><span>Add a source</span></h3><div class="row"><input id="dsin" type="url" inputmode="url" placeholder="Paste a site, blog, YouTube or Instagram link" enterkeyhint="done" autocomplete="off" autocapitalize="none"><button data-a="dsAdd" style="flex:none">Add</button></div>`
-  +`<div class="hint">Blogs and YouTube channels show their newest recipes below. Instagram, TikTok and other social accounts are saved as links.</div></div>`;
  const sg=dsSugg(),sugg=sg.length?`<div class="card wide dsg"><h3><span>You might like</span></h3>${sg.map(x=>`<div class="srow pr">${sIcon({name:x.n,url:x.u})}<span class="rcn" style="flex:1"><b>${esc(x.n)}</b><span class="mu">${esc(x.why)}</span></span><button class="g lnk" data-a="dsSug" data-u="${esc(x.u)}" data-n="${esc(x.n)}" style="flex:none;padding:6px">Add</button><button class="g" data-a="dsNo" data-u="${esc(x.u)}" aria-label="Not interested in ${esc(x.n)}" style="padding:6px">${ICX}</button></div>`).join('')}</div>`:'';
- if(!S.srcs.length)return h+`<div class="card wide"><p class="mu" style="margin:0">Collect the cooking sites, blogs and channels you like here. Each one becomes a link you can tap, and their latest recipes show up in one feed.</p></div>`+sugg;
- // The feed: recipes only, from the last few months; ones you can make now come first
- const A=[];S.srcs.forEach(x=>{const f=FD[x.id];if(!f||!f.items||(DSF&&DSF!=x.id))return;f.items.forEach(it=>{if(!recent(it))return;const o=postOf(x,it);if(o.r!==0)A.push(o)})});
- const nR=A.filter(o=>o.k=='ready').length,nN=A.filter(o=>o.k=='near').length;if(DSM=='ready'&&!nR||DSM=='near'&&!nN)DSM='all';
- const P=A.filter(o=>DSM=='all'||o.k==DSM).sort(dsSort);
- const fs=L.filter(x=>FD[x.id]&&FD[x.id].items&&FD[x.id].items.length),last=Math.max(0,...S.srcs.map(x=>FD[x.id]?FD[x.id].at:0));
- if(S.srcs.some(x=>srcKind(x.url)!='soc')){
-  h+=vDq();
-  h+=`<div class="card wide"><h3><span>Lately</span><button class="g lnk" data-a="dsRef" ${busy?'disabled':''}>${busy?'Checking…':'Refresh'}</button></h3>`
-  +((nR||nN)?`<div class="chips" style="margin:0 0 8px">${[['all','All'],['ready','Ready to cook'+(nR?' · '+nR:'')],['near','Missing 1–2'+(nN?' · '+nN:'')]].map(([v,l])=>`<button class="chip ${DSM==v?'on':''}" data-a="dsM" data-v="${v}">${l}</button>`).join('')}</div>`:'')
-  +(fs.length>1?`<select data-a="dsF" aria-label="Source" style="margin-bottom:8px"><option value="">All sources</option>${fs.map(x=>`<option value="${esc(x.id)}" ${DSF==x.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>`:'')
-  +(P.length?P.slice(0,DSN).map(dsRow).join('')
-    +(P.length>DSN?`<button class="g lnk" data-a="dsMore" style="margin-top:6px">Show ${Math.min(DSPAGE,P.length-DSN)} more</button>`:'')
+ if(!S.srcs.length)return h+`<div class="card wide"><h3><span>Add a source</span></h3><p class="mu" style="margin:0 0 10px">Collect the cooking sites, blogs and channels you like here. Their latest recipes show up in one feed.</p>${dsAddBox()}</div>`+sugg;
+ const fs=L.filter(x=>FD[x.id]&&FD[x.id].items&&FD[x.id].items.length),last=Math.max(0,...S.srcs.map(x=>FD[x.id]?FD[x.id].at:0)),feeds=S.srcs.some(x=>srcKind(x.url)!='soc');
+ if(DSF&&!fs.some(x=>x.id==DSF))DSF='';
+ if(feeds){
+  // The feed: recipes only, from the last few months; ones you can make now come first
+  const A=[];S.srcs.forEach(x=>{const f=FD[x.id];if(!f||!f.items||(DSF&&DSF!=x.id))return;f.items.forEach(it=>{if(!recent(it))return;const o=postOf(x,it);if(o.r!==0)A.push(o)})});
+  const nR=A.filter(o=>o.k=='ready').length,nN=A.filter(o=>o.k=='near').length;if(DSM=='ready'&&!nR||DSM=='near'&&!nN)DSM='all';
+  const P=A.filter(o=>DSM=='all'||o.k==DSM).sort(dsSort);
+  // Sources to filter by, as a row of icons
+  if(fs.length>1)h+=`<div class="dss wide" role="group" aria-label="Show recipes from">`
+   +`<button class="dsb${DSF?'':' on'}" data-a="dsF" data-id="" aria-pressed="${!DSF}"><span class="dsi dsall">All</span><span class="dsbn">All</span></button>`
+   +fs.map(x=>`<button class="dsb${DSF==x.id?' on':''}" data-a="dsF" data-id="${esc(x.id)}" aria-pressed="${DSF==x.id}">${sIcon(x)}<span class="dsbn">${esc(x.name)}</span></button>`).join('')+`</div>`;
+  h+=`<div class="card wide"><h3><span>${DSF?esc((fs.find(x=>x.id==DSF)||{}).name||'Lately'):'Lately'}</span><button class="g lnk" data-a="dsRef" ${busy?'disabled':''}>${busy?'Checking…':'Refresh'}</button></h3>`
+  +((nR||nN)?`<div class="chips" style="margin:0 0 10px">${[['all','All'],['ready','Ready to cook'+(nR?' · '+nR:'')],['near','Missing 1–2'+(nN?' · '+nN:'')]].map(([v,l])=>`<button class="chip ${DSM==v?'on':''}" data-a="dsM" data-v="${v}">${l}</button>`).join('')}</div>`:'')
+  +(P.length?`<div class="dsgrid">${P.slice(0,DSN).map(dsCard).join('')}</div>`
+    +(P.length>DSN?`<button class="g lnk" data-a="dsMore" style="margin-top:10px">Show ${Math.min(DSPAGE,P.length-DSN)} more</button>`:'')
    :`<p class="mu" style="margin:0">${busy||checking?'Checking your sources…':'No new recipes from your sources lately.'}</p>`)
   +`<div class="hint">${!kit&&A.some(o=>o.ing.length)?'Add what’s in your kitchen on the Kitchen tab to see which of these you can make now. ':''}${last?'Updated '+esc(relT(new Date(last).toISOString()))+'.':''}${checking?' Checking new posts…':''}</div></div>`}
- // The sources, by kind
+ h+=sugg;
+ // Your sources, folded away: add one, rename or remove, grouped by kind
+ const open=O.dsrc!=null?O.dsrc:!feeds;
+ h+=`<details class="card wide dsrc" ${open?'open':''} data-o="dsrc"><summary><h3><span>Your sources</span><span class="mu">${S.srcs.length}</span></h3></summary><div>${dsAddBox()}`;
  [['yt','YouTube'],['site','Sites and blogs'],['soc','Social']].forEach(([k,l])=>{const xs=L.filter(x=>srcKind(x.url)==k);if(!xs.length)return;
-  h+=`<div class="card wide"><h3><span>${l}</span><span class="mu">${xs.length}</span></h3>`+xs.map(x=>{const f=FD[x.id];let st;
+  h+=`<div class="hint dsgh">${l} · ${xs.length}</div>`+xs.map(x=>{const f=FD[x.id];let st;
    if(k=='soc'||!f)st=FDL.has(x.id)?'Checking…':hostOf(x.url);
    else if(FDL.has(x.id))st='Checking…';
    else if(f.err)st=/No feed/.test(f.err)?'No feed, link only':f.items&&f.items.length?'Couldn’t load lately'+(f.ok?' · last worked '+relT(new Date(f.ok).toISOString()):''):f.err;
    else{const wk=f.items.filter(it=>it.d&&Date.now()-Date.parse(it.d)<7*864e5).length;st=wk?wk+' new this week':f.items.length?'Last post '+(relT(f.items[0].d)||'a while ago'):'No posts yet'}
-   return `<div class="srow pr"><a class="rc" href="${esc(x.url)}" target="_blank" rel="noopener" style="flex:1;min-width:0">${sIcon(x)}<span class="rcn"><b>${esc(x.name)}</b><span class="mu">${esc(st)}</span></span></a><button class="g" data-a="dsRen" data-id="${esc(x.id)}" aria-label="Rename ${esc(x.name)}" style="padding:6px">${ICP}</button><button class="g" data-a="dsDel" data-id="${esc(x.id)}" aria-label="Remove ${esc(x.name)}" style="padding:6px">${ICX}</button></div>`}).join('')+`</div>`});
- return h+sugg}
+   return `<div class="srow pr"><a class="rc" href="${esc(x.url)}" target="_blank" rel="noopener" style="flex:1;min-width:0">${sIcon(x)}<span class="rcn"><b>${esc(x.name)}</b><span class="mu">${esc(st)}</span></span></a><button class="g" data-a="dsRen" data-id="${esc(x.id)}" aria-label="Rename ${esc(x.name)}" style="padding:6px">${ICP}</button><button class="g" data-a="dsDel" data-id="${esc(x.id)}" aria-label="Remove ${esc(x.name)}" style="padding:6px">${ICX}</button></div>`}).join('')});
+ return h+`</div></details>`}
 
 // ---- Kitchen ----
 let EX=new Set(),SEL=null,LPX=0;   // shopping list: expanded rows, selection (long press)
@@ -1503,16 +1479,9 @@ const ACT={
  dsDel:d=>{const i=S.srcs.findIndex(x=>x.id==d.id);if(i<0)return;const [x]=S.srcs.splice(i,1);if(DSF==x.id)DSF='';commit();toast('Removed '+x.name,()=>{S.srcs.splice(i,0,x);commit()})},
  dsRen:d=>{const x=S.srcs.find(y=>y.id==d.id);if(!x)return;const v=(prompt('Name',x.name)||'').trim();if(!v||v==x.name)return;x.name=v.slice(0,60);x.auto=0;commit()},
  dsRef:()=>loadFeeds(true),
- dsF:(d,el)=>{DSF=el&&el.value||'';DSN=DSPAGE;R()},
+ dsF:d=>{DSF=d.id&&d.id!=DSF?d.id:'';DSN=DSPAGE;R()},
  dsM:d=>{DSM=d.v;DSN=DSPAGE;R()},
  dsMore:()=>{DSN+=DSPAGE;R()},
- dqAdd:()=>{if(dqAdd(DQT))DQT='';R();document.getElementById('dqin')?.focus()},
- dqP:d=>{dqAdd(d.n);R()},
- dqX:d=>{DQ.splice(+d.i,1);R()},
- dqClr:()=>{DQ=[];DQT='';DQR=null;DQB=new Set();R()},
- dqGo:()=>dqGo(),
- dqM:d=>{DQM=d.v;DQN=DSPAGE;R()},
- dqMore:()=>{DQN+=DSPAGE;R()},
  dsSug:d=>{if(S.srcs.some(x=>srcKey(x.url)==srcKey(d.u)))return;S.srcs.push({id:uid('s'),url:d.u,name:d.n,auto:0,added:tdy()});commit();toast('Added '+d.n);loadFeeds()},
  dsNo:d=>{const k=srcKey(d.u);S.set.dsNo=[...(S.set.dsNo||[]),k];commit();toast('Won’t suggest that again',()=>{S.set.dsNo=(S.set.dsNo||[]).filter(x=>x!=k);commit()})},
  // A category, cuisine or tag on a recipe: open Find with just that filter on
@@ -1739,7 +1708,6 @@ document.addEventListener('input',e=>{const t=e.target,d=t.dataset;
  if(t.matches('.dt input')&&!d.p)t.previousElementSibling.textContent=sd(t.value);
  if(t.id=='q'){S.f.q=t.value;save();clearTimeout(QT);QT=setTimeout(R,150);return}
  if(t.id=='pt')PT=t.value;
- if(t.id=='dqin'){DQT=t.value;const b=document.querySelector('#app [data-a="dqGo"]');if(b&&!DQB.size)b.disabled=!(DQ.length||DQT.trim());return}
  if((t.id=='plq'||t.id=='lnq')&&SH){SH.q=t.value;R();return}
  if(t.id=='pitN'&&SH){SH.name=t.value;return}
  if(d.nk!=null){if(t.value.trim())S.shop.note[d.nk]=t.value;else delete S.shop.note[d.nk];save();return}
@@ -1755,7 +1723,6 @@ document.addEventListener('keydown',e=>{const t=e.target;if(e.key!='Enter'||e.is
  else if(t.id&&t.id.startsWith('fa-')){e.preventDefault();ACT.facAdd({k:t.id.slice(3)})}
  else if(t.id=='pin'){e.preventDefault();ACT.pAdd()}
  else if(t.id=='dsin'){e.preventDefault();ACT.dsAdd()}
- else if(t.id=='dqin'){e.preventDefault();if(t.value.trim())ACT.dqAdd();else if(DQ.length)dqGo()}
  else if(t.id=='ingE'){e.preventDefault();ACT.ingSave()}
  else if(t.id=='xin'){e.preventDefault();ACT.xAdd()}
  else if(t.id=='pitN'){e.preventDefault();ACT.pitSave()}
