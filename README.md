@@ -7,7 +7,7 @@ A recipe box, cook mode and shopping list that runs in your browser. It's part o
 - Recipes typed in or pasted from any website or doc, with ingredients, steps, notes, nutrition and video links
 - Browsing by category, cuisine and protein, plus search, filters, your own tags and a Surprise me button
 - Cook mode right on the recipe page (tap Start cooking): the screen stays on, and checked-off ingredients and steps drop out of sight
-- Timers in steps: write `@10m`, `@30s`, `@1h` or `@1h30m` in a step line and it becomes a one-tap timer (one runs at a time, pinned above the nav, with a sound and vibration when it's done)
+- Timers in steps: write an @ and a time in a step line, like `@10m`, `@20 min`, `@30 sec`, `@2 hours` or `@1 hr 30 min`, and it becomes a one-tap timer (one runs at a time, pinned above the nav, with a sound and vibration when it's done)
 - Scaling servings, with US amounts converted as they grow or shrink
 - Links between recipes, like a sauce used in a main dish
 - A Goes with list on each recipe for building a meal around it, like "rice, tortillas, [[Pico de Gallo]]", where linked recipes show the pairing on both pages

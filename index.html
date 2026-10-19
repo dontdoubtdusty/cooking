@@ -505,15 +505,22 @@ function scaleLine(l,f){const p=parseIng(l);if(!p||!(p.q>0))return ['',l];let q=
 
 // ---- Times in step text ("simmer 15 minutes"): only used to suggest a recipe's total time ----
 const TRE=/(\d+(?:\.\d+)?)(?:\s*(?:-|–|to)\s*\d+(?:\.\d+)?)?\s*(seconds?|secs?|minutes?|mins?|hours?|hrs?)\b/gi;
-// ---- Timer tags in step text: @10m, @30s, @1h, @1h30m, or a bare @10 (minutes). They show as a tap-to-start timer. ----
-// The @ needs a space (or the start of the line) before it, so email addresses are left alone.
-const TGRE=/(^|[\s(])@(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?(\d+)?(?![\w@])/gi;
-const tagSec=(h,m,s,b)=>(+h||0)*3600+((+m||0)+(+b||0))*60+(+s||0);   // b: a bare number, read as minutes ("@1h30" too)
+// ---- Timer tags in step text: an @ followed by a time. They show as a tap-to-start timer. ----
+// Any unit spelling works: @10m, @10 min, @10 minutes, @1h, @1 hr, @2 hours, @30s, @30 sec, @1h30m, @1 hr 30 min,
+// and a bare @10 means minutes. The unit word is part of the tag, so "@20 min" never shows as "20 min min".
+// The @ needs a space, "(" or the start of the line before it, so email addresses are left alone.
+const TGU=/^(\d+(?:\.\d+)?) ?(hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)?(?![a-z])/i;
 // Seconds -> "1 hr 30 min", "10 min", "45 sec"
 function tagTxt(sec){const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return [h?h+' hr':'',m?m+' min':'',s?s+' sec':''].filter(Boolean).join(' ')||'0 min'}
-// Each timer tag in a line: {i: where the tag starts, len, sec}. "@10" with no unit means minutes.
-function tagsIn(l){const o=[];String(l||'').replace(TGRE,(m,pre,h,mi,s,b,off)=>{const sec=tagSec(h,mi,s,b);
-  if(sec>0)o.push({i:off+pre.length,len:m.length-pre.length,sec});return m});return o}
+// Each timer tag in a line: {i: where the tag starts, len, sec}
+function tagsIn(l){l=String(l||'');const o=[];let at=-1;
+ while((at=l.indexOf('@',at+1))>=0){if(at>0&&!/[\s(]/.test(l[at-1]))continue;
+  let j=at+1,sec=0,parts=0;
+  for(;;){const gap=parts&&l[j]==' '?1:0,m=TGU.exec(l.slice(j+gap));if(!m)break;
+   const n=parseFloat(m[1]),u=(m[2]||'m')[0].toLowerCase();sec+=n*(u=='h'?3600:u=='s'?1:60);j+=gap+m[0].length;parts++;if(!m[2])break}   // a bare number ends the tag
+  if(!parts||/[\w@]/.test(l[j]||''))continue;
+  sec=Math.round(sec);if(sec>0)o.push({i:at,len:j-at,sec});at=j-1}
+ return o}
 // Step text with each timer tag written out ("Simmer @15m" -> "Simmer 15 min"), for sharing and copying
 const plainS=l=>{l=plainL(l);let o='',i=0;tagsIn(l).forEach(t=>{o+=l.slice(i,t.i)+tagTxt(t.sec);i=t.i+t.len});return o+l.slice(i)};
 // Total minutes in the steps: a step with timer tags counts those, otherwise the times it mentions
