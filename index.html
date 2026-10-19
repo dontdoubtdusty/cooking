@@ -60,7 +60,7 @@ input[type=checkbox]:checked{background:linear-gradient(135deg,var(--pc),var(--p
 input[type=checkbox].pop{animation:pop .3s var(--bounce)}@keyframes pop{40%{transform:scale(1.22)}}
 button{background:linear-gradient(135deg,var(--pc),var(--pc2));color:#fff;border:0;border-radius:14px;padding:10px 16px;font:inherit;font-weight:800;cursor:pointer;box-shadow:0 6px 14px -6px color-mix(in srgb,var(--pc) 70%,transparent);transition:transform .25s var(--bounce),filter .1s,background var(--fast)}
 button.g,button.x,nav button,.seg button,.gear,#toast button,.chip,.rc,.tmr,.tp button{box-shadow:none}
-button:active{transform:scale(.93);filter:brightness(.95);transition-duration:.08s}
+button:is(:active,.prs){transform:scale(.93);filter:brightness(.95);transition-duration:.08s}
 button:disabled{opacity:.4;pointer-events:none}
 button.g{background:none;color:var(--mu);padding:8px 10px;font-weight:600}button.x{background:none;color:var(--neg);padding:8px 8px;font-weight:600}
 button.bd{border:1px solid var(--bd);color:var(--tx)}
@@ -90,7 +90,7 @@ details[open] .fsum .ex,details:not([open]) .fsum .co{display:none}
 .gear{position:absolute;right:10px;bottom:7px;background:none;color:var(--mu);width:40px;height:40px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:12px}.gear.on{color:var(--brand);background:color-mix(in srgb,var(--brand) 13%,transparent)}
 nav{position:fixed;z-index:6;left:0;right:0;bottom:0;display:flex;align-items:center;gap:2px;background:color-mix(in srgb,var(--card) 92%,transparent);-webkit-backdrop-filter:saturate(1.6) blur(14px);backdrop-filter:saturate(1.6) blur(14px);border-top:1px solid var(--bd);padding:5px 6px calc(5px + env(safe-area-inset-bottom,0px))}
 nav button{flex:1;min-width:0;background:none;color:var(--mu);border-radius:16px;padding:6px 0 5px;font-size:11px;font-weight:700;letter-spacing:-.1px;display:flex;flex-direction:column;align-items:center;gap:2px;transition:color .25s}nav button.on{color:var(--tc)}
-nav button:not(.qab):active{transform:none;filter:none}
+nav button:not(.qab):is(:active,.prs){transform:none;filter:none}
 .nh{flex:1;display:flex;gap:2px;min-width:0;position:relative;z-index:1}.nh button{flex:1;min-width:0}.ni{width:23px;height:23px}
 .hl{position:absolute;left:0;top:0;z-index:0;pointer-events:none;border-radius:16px;width:var(--hw,0);height:var(--hh,0);transform:translate3d(var(--hx,0),var(--hy,0),0);background:color-mix(in srgb,var(--hc,#ff4d5e) 14%,transparent);opacity:var(--ho,0);transition:transform .34s var(--bounce),width .34s var(--bounce),opacity .2s,background .25s}
 nav.drag .hl{transition:none}
@@ -116,7 +116,7 @@ body.hast #toast{bottom:calc(140px + env(safe-area-inset-bottom,0px))}
 a.rc{text-decoration:none}
 .dsk{font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:99px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px 12px}
-.dsc{display:flex;flex-direction:column;gap:8px;min-width:0;color:var(--tx);text-decoration:none;border-radius:16px;transition:transform var(--fast) var(--bounce)}.dsc:active{transform:scale(.97)}
+.dsc{display:flex;flex-direction:column;gap:8px;min-width:0;color:var(--tx);text-decoration:none;border-radius:16px;transition:transform var(--fast) var(--bounce)}.dsc:is(:active,.prs){transform:scale(.97)}
 .dsph{position:relative;display:block;aspect-ratio:1;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,color-mix(in srgb,var(--pc) 22%,var(--fld)),color-mix(in srgb,var(--pc2) 30%,var(--fld)));box-shadow:var(--sh)}
 .dsph img.ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .4s cubic-bezier(.2,.8,.2,1)}
 @media(hover:hover){.dsc:hover .dsph img.ph{transform:scale(1.05)}.dsc:hover b{color:var(--pc)}}
@@ -136,18 +136,18 @@ a.rc{text-decoration:none}
 :root[data-theme="dark"] .dsk.ok{color:#4fd29b}:root[data-theme="dark"] .dsk.nr{color:#ffb070}
 .dsg{opacity:.92}.dsg h3{font-size:14px}
 /* Tags on a recipe open Find with that filter */
-button.pill{border:0;box-shadow:none;cursor:pointer;font-family:inherit}button.pill:active{transform:scale(.95)}
+button.pill{border:0;box-shadow:none;cursor:pointer;font-family:inherit}button.pill:is(:active,.prs){transform:scale(.95)}
 .mlk{background:none;border:0;box-shadow:none;padding:0;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:3px}
 .ctl.flag{border-color:var(--bd);background:var(--card)}.ctl .fl{position:absolute;inset:0 0 34px}.ctl.flag b{background:var(--card);color:var(--tx);text-shadow:none;height:34px;padding:0 10px;line-height:33px;font-size:15px;border-top:1px solid var(--bd)}
 .ctl em{position:absolute;top:8px;right:8px;font-style:normal;font-weight:800;font-size:12px;min-width:24px;height:22px;padding:0 7px;display:grid;place-content:center;border-radius:99px;background:#00000059;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .ctl.all{background:linear-gradient(135deg,var(--pc),var(--pc2))}.ctl.flag.all{background:var(--card)}.ctl .fl.globe{background:#04060d url(img/globe.jpg) center/cover no-repeat}
 .ctl .ci{position:absolute;left:50%;top:43%;width:44%;height:44%;transform:translate(-50%,-50%);opacity:.95;filter:drop-shadow(0 1px 2px #0003);pointer-events:none}
-.ctl:active{transform:scale(.97)}
+.ctl:is(:active,.prs){transform:scale(.97)}
 .hello{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:4px 4px -2px}
 .hello b{font:600 25px/1.2 var(--fd)}.hello span{flex:none;font-size:13px;font-weight:800;color:var(--pc);background:color-mix(in srgb,var(--pc) 13%,transparent);padding:5px 12px;border-radius:99px}
 .srch{display:flex;align-items:center;gap:8px;background:var(--fld);border-radius:14px;padding:0 12px;color:var(--mu)}.srch input{background:none!important;border:0!important;box-shadow:none!important;padding:11px 0;font-size:16px}
 .rc{display:flex;align-items:center;gap:12px;width:100%;background:none;color:var(--tx);border-radius:14px;padding:8px 6px;text-align:left;font-weight:500}
-.rc:active{transform:scale(.98);background:var(--fld)}
+.rc:is(:active,.prs){transform:scale(.98);background:var(--fld)}
 .rt{flex:none;width:48px;height:48px;border-radius:15px;display:grid;place-content:center;color:#fff;font:600 17px var(--fd);letter-spacing:.4px;text-shadow:0 1px 2px #0003}
 .rt.big{width:70px;height:70px;border-radius:21px;font-size:25px}
 img.rt.ph{border-radius:50%;object-fit:cover;background:var(--fld)}img.rt.huge{width:150px;height:150px}
@@ -206,7 +206,7 @@ ol.steps li:before{content:counter(s);position:absolute;left:0;top:8px;width:28p
 .tp.done{background:linear-gradient(135deg,#ff4d5e,#e8336b);animation:pulse 1s ease-in-out infinite}@keyframes pulse{50%{transform:scale(1.05)}}
 
 /* ===== Add / edit ===== */
-.lrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.lbtn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:14px;border:1px solid var(--bd);color:var(--tx);text-decoration:none;font-weight:800;font-size:14px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lbtn:active{transform:scale(.95)}.lbtn .ic{color:var(--pc)}
+.lrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.lbtn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:14px;border:1px solid var(--bd);color:var(--tx);text-decoration:none;font-weight:800;font-size:14px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lbtn:is(:active,.prs){transform:scale(.95)}.lbtn .ic{color:var(--pc)}
 .g2f{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.g2f label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:800;color:var(--mu)}.g2f input{font:600 15px 'Nunito',sans-serif;color:var(--tx)}
 .nrow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--bd)}.nrow:first-of-type{border-top:0}.nrow b{font-weight:800;text-align:right}
 .hint{font-size:12px;color:var(--mu);margin:6px 2px 0}
@@ -236,7 +236,7 @@ body.hast .savebar{bottom:calc(128px + env(safe-area-inset-bottom,0px))}
 .si:first-of-type{border-top:0}
 .sih{display:flex;align-items:center;gap:12px}.sih>label{display:flex;padding:11px 0;cursor:pointer;flex:none}
 .sin{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:none;color:var(--tx);box-shadow:none;padding:11px 0;border-radius:0;text-align:left;font-weight:700;font-size:16px;line-height:1.3}
-.sin:active{transform:none;filter:none}
+.sin:is(:active,.prs){transform:none;filter:none}
 .sin .nm{flex:1;min-width:0;display:flex;flex-direction:column}.sin .nm>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sin .nm small{font-size:12px;font-weight:600;color:var(--mu);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sin .chev{transition:transform .2s}.si.open .sin .chev{transform:rotate(90deg)}
@@ -277,6 +277,7 @@ button.hlt u.h{background:none;box-shadow:inset 0 0 0 1.5px var(--wn)}button.hlt
 .sbig{min-width:30px;text-align:center;font:600 18px var(--fd)}
 @media(prefers-reduced-motion:reduce){*,*:after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
 </style></head><body><header class="top"><span class="tt"><svg class="logo" viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#e8333f"/><circle cx="16" cy="16" r="12.2" fill="#ffe0dc"/><circle cx="16" cy="16" r="10.6" fill="#ff6b6b"/><path d="M16 6v20M6 16h20M8.6 8.6l14.8 14.8M23.4 8.6 8.6 23.4" stroke="#ffe0dc" stroke-width="1.7" stroke-linecap="round"/><circle cx="16" cy="16" r="2.2" fill="#ffe0dc"/></svg><span><span class="jz">Big Saucy</span> Recipes</span></span><button id="gear" class="gear" aria-label="Settings" data-a="gear"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></header><div class="vclip"><main id="app" class="view"></main></div><div id="tdock"></div><nav id="nav"></nav><div id="toast" role="status" aria-live="polite"></div><div id="sheet"></div>
+<script src="feedback.js"></script>
 <script src="sync.js"></script>
 <script>
 // =====================================================================
@@ -409,7 +410,7 @@ function del(p,i){const [x]=get(p).splice(i,1);commit();toast('Deleted',()=>{get
 const snap=()=>JSON.stringify(S),restore=s=>{S=JSON.parse(s);commit()};
 let TT=0,UNDO=null,UGRP='',UCNT=0;
 // grp: consecutive toasts in the same group (e.g. several quick deletes) share one Undo that reverts all of them, newest first
-function toast(msg,undo,grp){const el=document.getElementById('toast');
+function toast(msg,undo,grp){window.Feedback&&Feedback.fromToast(msg);const el=document.getElementById('toast');
  if(undo&&grp&&UNDO&&UGRP==grp){const prev=UNDO,cur=undo;undo=()=>{cur();prev()};UCNT++;msg=grp=='del'?`Deleted ${UCNT} items`:msg}else UCNT=1;
  UGRP=undo?grp||'':'';el.innerHTML=`<span>${esc(msg)}</span>${undo?'<button data-a="undo">Undo</button>':''}`;UNDO=undo||null;el.classList.add('on');clearTimeout(TT);TT=setTimeout(()=>{el.classList.remove('on');UNDO=null;UGRP=''},5000)}
 // Backup reminder: nag once a week since the last backup (or snooze), counting from first use
@@ -1395,7 +1396,7 @@ function vSheet(){if(!SH)return '';let b='';
  return `<div class="shbg"></div><div class="shp" role="dialog" aria-modal="true" tabindex="-1"><div class="grab"></div>${b}</div>`}
 
 // ---- Settings ----
-function vMore(){return `<div class="card"><h2>Settings</h2><div class="sec">Appearance</div><div class="seg qm">${[['system','Auto'],['daynight','Day/Night'],['light','Light'],['dark','Dark']].map(([v,l])=>`<button class="${S.set.theme==v?'on':''}" data-a="theme" data-v="${v}">${l}</button>`).join('')}</div></div>
+function vMore(){return `<div class="card"><h2>Settings</h2><div class="sec">Appearance</div><div class="seg qm">${[['system','Auto'],['daynight','Day/Night'],['light','Light'],['dark','Dark']].map(([v,l])=>`<button class="${S.set.theme==v?'on':''}" data-a="theme" data-v="${v}">${l}</button>`).join('')}</div>${window.Feedback?Feedback.view('qm'):''}</div>
  <div class="card"><h2>Tags and lists</h2><p class="mu">Rename or remove cuisines, categories, proteins, methods, diets and your own tags.</p><button data-a="tab" data-id="lists">Edit tags and lists</button></div>
  ${window.CloudSync?CloudSync.view():''}
  <div class="card"><h2>Backup & restore</h2><p class="mu">Everything is saved in this browser only. Download a backup now and then to keep it safe, or to move it to another device.</p>
@@ -1694,7 +1695,7 @@ const ACT={
 // Long press on a shopping row starts selecting
 (function(){let t=0,sx=0,sy=0;const stop=()=>{clearTimeout(t);t=0};
  document.addEventListener('pointerdown',e=>{const row=e.target.closest('#app .si');if(!row||SEL||e.target.closest('input[type=text]'))return;sx=e.clientX;sy=e.clientY;stop();
-  t=setTimeout(()=>{t=0;SEL=new Set([row.dataset.sid]);EX.clear();LPX=1;try{navigator.vibrate&&navigator.vibrate(15)}catch(_){}R()},450)});
+  t=setTimeout(()=>{t=0;SEL=new Set([row.dataset.sid]);EX.clear();LPX=1;window.Feedback&&Feedback.hap('select');R()},450)});
  document.addEventListener('pointerup',()=>{if(LPX)setTimeout(()=>LPX=0,80)},true);
  document.addEventListener('pointermove',e=>{if(t&&Math.hypot(e.clientX-sx,e.clientY-sy)>10)stop()});
  ['pointerup','pointercancel','scroll'].forEach(n=>document.addEventListener(n,stop,true));
@@ -1872,7 +1873,7 @@ const rmPeek=()=>{const p=document.getElementById('peek');if(p)p.remove()};
   if(!commit){mv(m,0,`transform .32s ${EZ_BACK}`);if(p)mv(p,dir*w,`transform .3s ${EZ_IN}`);placeHL(navId());setTimeout(()=>{done();rmPeek()},330);return}
   busy=true;const rem=w-Math.abs(dx),dur=Math.round(Math.max(170,Math.min(300,rem/Math.max(1.2,Math.abs(vx)*1.4)))),tr=`transform ${dur}ms cubic-bezier(.2,.8,.2,1)`;
   mv(m,-dir*w,tr);mv(p,0,tr);placeHL(to);
-  try{navigator.vibrate&&navigator.vibrate(8)}catch(_){}
+  window.Feedback&&Feedback.hap('tick')
   setTimeout(()=>{m.style.transition='none';m.style.transform='';T=to;R();scrollTo(0,0);m.style.willChange='';requestAnimationFrame(()=>{rmPeek();m.style.transition='';busy=false})},dur)};
  document.addEventListener('touchend',end,{passive:true});document.addEventListener('touchcancel',end,{passive:true});
 })();

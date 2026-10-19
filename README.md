@@ -16,6 +16,7 @@ A recipe box, cook mode and shopping list that runs in your browser. It's part o
 - A cooking log with what's due for a comeback
 - A Discover tab for the cooking sites, blogs, YouTube channels and social accounts you follow, with one feed of their newest recipes that flags the ones you can make from your kitchen, a few suggested sources, and a search that finds recipes using the ingredients you pick (or what's in your kitchen) across your blogs' whole archives, not just their newest posts (read through the share site's `/feed`, see `share/functions/feed.js`; searching works on WordPress blogs, and other sources are matched against their newest posts)
 - Light, dark and automatic themes, plus a Day/Night option that switches to dark at 6pm and back to light at 6am
+- Light haptic ticks when you save, delete, finish or toggle something, and buttons that visibly press in on every tap. Turn haptics off under **Settings > Haptics**.
 - Recipe photos, cropped to a circle
 - Sharing a recipe as a short link to a simple recipe page that stays up to date, or as plain text
 - Backups you can share, download and import, with a weekly reminder
@@ -70,6 +71,7 @@ Or as a Worker (**Workers & Pages → Create → Import a repository**): set **P
 | `share.html` | Forwards older share links to the share site |
 | `share/` | The shared recipe site on Cloudflare Pages, with link previews |
 | `sync.js` | Optional sync across devices (shared by all the Big apps) |
+| `feedback.js` | Haptic ticks and button press feedback (shared by all the Big apps) |
 | `manifest.webmanifest` | The app's name, colors and icons, used when it's installed |
 | `sw.js` | Saves a copy of the app so it opens offline |
 | `icon-192.png`, `icon-512.png`, `apple-touch-icon.png` | The app icon at each size browsers and phones ask for |
