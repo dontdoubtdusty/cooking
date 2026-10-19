@@ -88,16 +88,18 @@ details[open] .fsum .ex,details:not([open]) .fsum .co{display:none}
 .top .tt{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 44px;white-space:nowrap}.top .logo{flex:none;animation:spin 18s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
 .jz{background:linear-gradient(90deg,#ff4d5e,#e8336b 55%,#1fa971);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
 .gear{position:absolute;right:10px;bottom:7px;background:none;color:var(--mu);width:40px;height:40px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:12px}.gear.on{color:var(--brand);background:color-mix(in srgb,var(--brand) 13%,transparent)}
-nav{position:fixed;z-index:6;left:0;right:0;bottom:0;display:flex;align-items:center;gap:2px;background:color-mix(in srgb,var(--card) 92%,transparent);-webkit-backdrop-filter:saturate(1.6) blur(14px);backdrop-filter:saturate(1.6) blur(14px);border-top:1px solid var(--bd);padding:5px 6px calc(5px + env(safe-area-inset-bottom,0px))}
-nav button{flex:1;min-width:0;background:none;color:var(--mu);border-radius:16px;padding:6px 0 5px;font-size:11px;font-weight:700;letter-spacing:-.1px;display:flex;flex-direction:column;align-items:center;gap:2px;transition:color .25s}nav button.on{color:var(--tc)}
+nav{position:fixed;z-index:6;left:0;right:0;bottom:0;display:flex;align-items:center;gap:0;background:color-mix(in srgb,var(--card) 92%,transparent);-webkit-backdrop-filter:saturate(1.6) blur(14px);backdrop-filter:saturate(1.6) blur(14px);border-top:1px solid var(--bd);padding:5px 6px calc(5px + env(safe-area-inset-bottom,0px))}
+nav button{flex:1 1 0;min-width:0;background:none;color:var(--mu);border-radius:16px;padding:7px 0 5px;font-size:11px;font-weight:600;letter-spacing:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:color .25s}nav button.on{color:var(--tc)}
+nav button>span{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
 nav button:not(.qab):is(:active,.prs){transform:none;filter:none}
-.nh{flex:1;display:flex;gap:2px;min-width:0;position:relative;z-index:1}.nh button{flex:1;min-width:0}.ni{width:23px;height:23px}
+.nh{flex:1 1 0;display:flex;gap:0;min-width:0;position:relative;z-index:1}.nh button{flex:1 1 0;min-width:0}.ni{flex:none;width:24px;height:24px}
+/* One small highlight pill that sits behind the active tab's icon only and glides between tabs; the buttons themselves never move */
 .hl{position:absolute;left:0;top:0;z-index:0;pointer-events:none;border-radius:16px;width:var(--hw,0);height:var(--hh,0);transform:translate3d(var(--hx,0),var(--hy,0),0);background:color-mix(in srgb,var(--hc,#ff4d5e) 14%,transparent);opacity:var(--ho,0);transition:transform .34s var(--bounce),width .34s var(--bounce),opacity .2s,background .25s}
 nav.drag .hl{transition:none}
 #peek{position:fixed;left:0;right:0;bottom:0;z-index:4;overflow:hidden;pointer-events:none;background:var(--bg);will-change:transform}
 #peek>.view{max-width:1100px;margin:0 auto;padding:12px}
-nav button.qab,nav button.qab.on{flex:none;width:64px;height:64px;margin:-26px 6px 0;border-radius:50%;background:linear-gradient(135deg,#e8336b,#ff5e62);color:#fff;padding:0;justify-content:center;gap:0;box-shadow:0 8px 20px -4px #ff4d5e80;border:4px solid var(--bg)}
-nav button.qab b{font:600 30px/.9 var(--fd)}nav button.qab span{font-size:9px;font-weight:800}
+nav button.qab,nav button.qab.on{flex:none;width:60px;height:60px;margin:-24px 6px 0;border-radius:50%;background:linear-gradient(135deg,#e8336b,#ff5e62);color:#fff;padding:0;justify-content:center;gap:0;box-shadow:0 8px 20px -4px #ff4d5e80;border:4px solid var(--bg)}
+nav button.qab b{font:600 28px/.9 var(--fd)}nav button.qab span{font-size:9px;font-weight:800;overflow:visible}
 
 /* ===== Toast ===== */
 #toast{position:fixed;z-index:30;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);opacity:0;pointer-events:none;display:flex;align-items:center;gap:14px;max-width:calc(100vw - 32px);background:var(--tst);color:#fff;border-radius:18px;padding:10px 10px 10px 16px;font-size:14px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.25);transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .18s}
@@ -809,8 +811,6 @@ const tile=(r,big)=>r.img&&IMG[r.img]?`<img class="rt ph${big==2?' huge':big?' b
 // quiet: leave out "not cooked yet" (for lists that are already all uncooked recipes)
 function rRow(r,quiet){const lc=last(r),meta=[r.cuisine,fmtTime(r.time),lc?'cooked '+ago(lc):quiet===true?'':'not cooked yet'].filter(Boolean).join(' · ');
  return `<button class="rc" data-a="open" data-id="${esc(r.id)}">${tile(r)}<span class="rcn"><b>${esc(dn(r)||'Untitled')}</b><span class="mu">${esc(meta)}</span></span>${CHEV}</button>`}
-function hello(){const h=new Date().getHours(),g=h<5?'Late-night snack?':h<11?'What\'s for breakfast?':h<15?'What\'s for lunch?':'What\'s for dinner?',n=S.recipes.length;
- return `<div class="hello"><b>${g}</b><span>${n} recipe${n==1?'':'s'}</span></div>`}
 const welcome=()=>`<div class="card wide"><h3><span>Welcome to Big Saucy</span><button class="g" data-a="welcomeOff" aria-label="Dismiss">${ICX}</button></h3><p class="mu" style="margin:0 0 12px">Type recipes in or paste them from any website or doc. Then filter by cuisine, protein, method, time and your own tags, or let Surprise me decide. The Kitchen tab holds what you have on hand and builds your shopping list, flagging anything you already have. There's one sample recipe to show you around.</p><div class="row"><button data-a="tab" data-id="add">Add a recipe</button><button class="g bd" data-a="gear">Import a backup</button></div></div>`;
 
 // In cook mode, checked lines are hidden, and so is a heading with nothing left under it.
@@ -843,14 +843,20 @@ function stepsCard(r){const id=esc(r.id);
 // =====================================================================
 // 6. VIEWS (one function per screen; each returns HTML for #app)
 // =====================================================================
-// ---- Recipes (browse) ----
+// ---- Recipes: search bar shared by the Recipes tab and its Search and filters screen ----
+const useItUp=()=>{const LOW=pSorted().filter(p=>p.days!=null&&pLeft(p)<=5);return LOW.length?`<div class="card wide"><h3><span>Use it up</span><button class="g lnk" data-a="kitUse">Kitchen ›</button></h3>${LOW.slice(0,3).map(p=>{const n=pLeft(p);return `<button class="urow" data-a="kitUse"><span>${esc(p.name)}</span><span class="dl ${dlCls(n)}">${dlTxt(n)}</span></button>`}).join('')}</div>`:''};
+const srchBox=()=>`<div class="srch">${ICS}<input id="q" type="search" placeholder="Search names, ingredients, tags" value="${esc(S.f.q)}" autocomplete="off" enterkeyhint="search"></div>`;
+// On the Recipes tab: typing in the box (or tapping Filters) opens the Search and filters screen
+function srchCard(){const act=activeF();
+ return `<div class="card wide">${srchBox()}<div class="row" style="margin-top:8px"><button class="g bd" data-a="findOpen" style="flex:1">Filters${act.length?`<span class="cnt">${act.length}</span>`:''}</button><button data-a="surprise" style="flex:1">Surprise me</button></div></div>`}
+
+// ---- Recipes: Search and filters ----
 function vFind(){const f=S.f,L=sortList(S.recipes.filter(match)),act=activeF(),tags=abc(new Set([...allTags().map(x=>x[0]),...f.tags]));
  // Filters only offer what your recipes actually use (and anything still switched on), in A to Z order
  const used=k=>{const c=countFac(k);return abc(new Set([...Object.keys(c),...f[k]]))};
  const chipsFor=(k,vals)=>`${vals.map(v=>`<button class="chip ${f[k].includes(v)?'on':''}" data-a="fil" data-k="${k}" data-v="${esc(v)}">${esc(k=='tags'?'#'+v:v)}</button>`).join('')}`,frow=(l,c)=>`<div class="frow"><div class="fh">${l}</div><div class="chips">${c}</div></div>`;
- let h=hello()+(S.set.welcome?welcome():'');
- const LOW=pSorted().filter(p=>p.days!=null&&pLeft(p)<=5);if(LOW.length){h+=`<div class="card wide"><h3><span>Use it up</span><button class="g lnk" data-a="kitUse">Kitchen ›</button></h3>${LOW.slice(0,3).map(p=>{const n=pLeft(p);return `<button class="urow" data-a="kitUse"><span>${esc(p.name)}</span><span class="dl ${dlCls(n)}">${dlTxt(n)}</span></button>`}).join('')}</div>`}
- h+=`<div class="card wide"><div class="srch">${ICS}<input id="q" type="search" placeholder="Search names, ingredients, tags" value="${esc(f.q)}" autocomplete="off" enterkeyhint="search"></div>
+ let h=`<div class="bk"><button class="g" data-a="findX">‹ All recipes</button></div>`;
+ h+=`<div class="card wide">${srchBox()}
  <div class="row" style="margin-top:8px"><select data-a="sort" aria-label="Sort">${SORTS.map(([v,l])=>`<option value="${v}" ${f.sort==v?'selected':''}>${l}</option>`).join('')}</select><button data-a="surprise" style="flex:none">Surprise me</button></div>`;
  h+=`<details class="fdet" ${O.fl?'open':''} data-o="fl"><summary><h3><span>Filters${act.length?`<span class="cnt">${act.length}</span><button class="g lnk fcl" data-a="fclear">Clear</button>`:''}</span><span class="mu fsum">${act.length?esc(act.join(', ')):'<span class="ex">Expand</span><span class="co">Collapse</span>'}</span></h3></summary><div>`
  +FAC.map(([k,l])=>{const v=used(k);return v.length?frow(l,chipsFor(k,v)):''}).join('')
@@ -897,7 +903,7 @@ function vBrowse(){const g=S.set.bg||'meal',N=S.recipes.length;
  if(BC){const L=BC.k=='all'?S.recipes:S.recipes.filter(r=>BC.k=='cuisine'?r.cuisine==BC.v:(r[BC.k]||[]).includes(BC.v)),srt=sortList(L),t=BC.k=='all'?'All recipes':BC.v;
   return `<div class="bk"><button class="g" data-a="catX">‹ All categories</button></div><div class="hello"><b>${esc(t)}</b><span>${L.length} recipe${L.length==1?'':'s'}</span></div>`
    +(L.length?`<div class="card wide">${srt.map(rRow).join('')}</div>`:`<div class="card wide"><p class="mu" style="margin:0">Nothing here anymore.</p></div>`)}
- let h=(S.set.welcome?welcome():'')+bkNag()+`<div class="hello"><b>All recipes</b><span>${N}</span></div><div class="seg qm wide">${BGS.map(([k,l])=>`<button class="${g==k?'on':''}" data-a="bg" data-k="${k}">${l}</button>`).join('')}</div>`;
+ let h=(S.set.welcome?welcome():'')+bkNag()+`<div class="hello"><b>All recipes</b><span>${N}</span></div>`+(N?srchCard()+useItUp():'')+`<div class="seg qm wide">${BGS.map(([k,l])=>`<button class="${g==k?'on':''}" data-a="bg" data-k="${k}">${l}</button>`).join('')}</div>`;
  if(!N)return h+`<div class="card wide"><p class="mu" style="margin:0 0 10px">No recipes yet.</p><button data-a="tab" data-id="add">Add your first recipe</button></div>`;
  if(g=='recent'){const c=S.recipes.filter(r=>r.cooked.length).sort((a,b)=>last(a)<last(b)?1:-1),nw=S.recipes.filter(r=>!r.cooked.length);
   return h+(c.length?`<div class="card wide"><div class="sec">Cooked recently</div>${c.slice(0,30).map(rRow).join('')}</div>`:'')+(nw.length?`<div class="card wide"><div class="sec">Not cooked yet</div>${nw.map(r=>rRow(r,true)).join('')}</div>`:'')}
@@ -1409,7 +1415,7 @@ function vMore(){return `<div class="card"><h2>Settings</h2><div class="sec">App
 // =====================================================================
 let RST=[];   // recipes opened through a link, so Back returns to the one you came from
 function openRecipe(id,prev){if(T!='recipe'){PREV=prev||T;RST=[]}RID=id;T='recipe';R();scrollTo(0,0);slideIn(1)}
-function closeRecipe(){while(RST.length){RID=RST.pop();if(byId(RID)){R();scrollTo(0,0);slideIn(-1);return}}T=TABS.some(t=>t[0]==PREV)||PREV=='more'||PREV=='lists'?PREV:'browse';R();scrollTo(0,0);slideIn(-1)}
+function closeRecipe(){while(RST.length){RID=RST.pop();if(byId(RID)){R();scrollTo(0,0);slideIn(-1);return}}T=TABS.some(t=>t[0]==PREV)||PREV=='find'||PREV=='more'||PREV=='lists'?PREV:'browse';R();scrollTo(0,0);slideIn(-1)}
 function surprise(){const L=S.recipes.filter(match);if(!L.length){toast('No recipes match these filters');return}
  const C=L.length>1&&SUR?L.filter(r=>r.id!=SUR):L,w=C.map(r=>{const lc=last(r);return lc?Math.min(-dayDiff(lc),180)+3:60});
  let x=Math.random()*sum(w,v=>v),i=0;while(i<C.length-1&&x>w[i]){x-=w[i];i++}SUR=C[i].id;SURN=L.length;
@@ -1496,7 +1502,8 @@ const ACT={
  // A category, cuisine or tag on a recipe: open Find with just that filter on
  ftag:d=>{const so=S.f.sort;S.f=blankF();S.f.sort=so;if(S.f[d.k])S.f[d.k]=[d.v];O.fl=1;save();goTab('find')},
  // navigation
- tab:d=>{if(d.id=='browse'&&T=='browse'&&BC)return ACT.catX();goTab(d.id)}, gear:()=>goTab(T=='more'||T=='lists'?'browse':'more'),
+ tab:d=>{if(d.id=='browse'&&T=='browse'&&BC)return ACT.catX();goTab(d.id)},
+ findOpen:()=>{O.fl=1;goTab('find')}, findX:()=>goTab('browse'), gear:()=>goTab(T=='more'||T=='lists'?'browse':'more'),
  open:d=>{SUR=null;if(T=='recipe'){if(d.id==RID)return;RST.push(RID);RID=d.id;R();scrollTo(0,0);slideIn(1)}else openRecipe(d.id)},
  bg:d=>{S.set.bg=d.k;commit()},
  cat:d=>{BC=d.k=='all'?{k:'all'}:{k:d.k,v:d.v};R();scrollTo(0,0);slideIn(1)},
@@ -1716,7 +1723,7 @@ document.addEventListener('change',e=>{const t=e.target,d=t.dataset;
  if(t.type=='checkbox'&&t.checked&&t.isConnected){t.classList.remove('pop');void t.offsetWidth;t.classList.add('pop');setTimeout(()=>t.classList.remove('pop'),320)}});
 document.addEventListener('input',e=>{const t=e.target,d=t.dataset;
  if(t.matches('.dt input')&&!d.p)t.previousElementSibling.textContent=sd(t.value);
- if(t.id=='q'){S.f.q=t.value;save();clearTimeout(QT);QT=setTimeout(R,150);return}
+ if(t.id=='q'){S.f.q=t.value;save();clearTimeout(QT);if(T=='browse'&&!BC&&t.value.trim()){T='find';R();return}QT=setTimeout(R,150);return}
  if(t.id=='pt')PT=t.value;
  if((t.id=='plq'||t.id=='lnq')&&SH){SH.q=t.value;R();return}
  if(t.id=='pitN'&&SH){SH.name=t.value;return}
@@ -1748,9 +1755,10 @@ const ICON={browse:'<path d="M4 19.5V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2v0a2 2
  disc:'<circle cx="12" cy="12" r="9"/><path d="M15.8 8.2l-2.3 5.3-5.3 2.3 2.3-5.3z"/>',
  hist:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
  plan:'<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/>'};
-const TABS=[['browse','Recipes'],['find','Find'],['plan','Plan'],['add','Add'],['kit','Kitchen'],['disc','Discover']];
+const TABS=[['browse','Recipes'],['disc','Discover'],['add','Add'],['kit','Kitchen'],['plan','Plan']];
+// Search and filters ('find') open as a screen inside the Recipes tab, not a tab of their own
 const VIEW={disc:vDisc,plan:vPlan,kit:vKit,browse:vBrowse,find:vFind,add:vAdd,hist:vHist,lists:vLists,more:vMore,recipe:vRecipe};
-const navId=()=>T=='recipe'?(TABS.some(t=>t[0]==PREV)?PREV:'browse'):T;
+const navId=()=>{const t=T=='recipe'?PREV:T;return TABS.some(x=>x[0]==t)?t:'browse'};
 const tabCols=id=>(TC[id]||TC.browse)[document.documentElement.dataset.theme=='dark'?1:0];
 
 // ---- Minimal DOM diff: update only what changed, so typing focus, open sections and scroll stay put ----
@@ -1790,7 +1798,7 @@ function R(){const FA=document.activeElement,FID=FA&&FA.id&&/^(INPUT|TEXTAREA)$/
  if(FID&&!FA.isConnected){const n=document.getElementById(FID);if(n&&n!==document.activeElement){n.focus({preventScroll:true});try{n.setSelectionRange(FS[0],FS[1])}catch(_){}}}}
 function R0(){const de=document.documentElement,th=S.set.theme||'system';de.dataset.theme=themeOf(th);dnTimer();
  if(T=='recipe'&&!byId(RID))T='browse';
- const c=tabCols(T=='recipe'?navId():T);de.style.setProperty('--pc',c[0]);de.style.setProperty('--pc2',c[1]);
+ const c=tabCols(T=='recipe'||T=='find'?navId():T);de.style.setProperty('--pc',c[0]);de.style.setProperty('--pc2',c[1]);
  if(SEL&&T=='kit'){const ids=new Set(shopRows().map(r=>r.id));[...SEL].forEach(id=>{if(!ids.has(id))SEL.delete(id)})}
  const key=T+'|'+(T=='recipe'?RID:''),full=key!==RK;RK=key;
  patch(APP(),VIEW[T](),full);
@@ -1805,8 +1813,10 @@ function sheetFocus(sh){const open=!!SH;if(open&&!SHO){PREVF=document.activeElem
  else if(!open&&SHO){const p=PREVF;PREVF=null;if(p&&p.isConnected&&p.focus)p.focus({preventScroll:true})}SHO=open}
 document.addEventListener('keydown',e=>{if(e.key=='Escape'&&SH)ACT.shClose()});
 // ---- Nav highlight: a pill that glides between tabs (and follows a swipe part-way) ----
-function hlBox(id){const nav=document.getElementById('nav'),b=nav.querySelector(`button[data-id="${id}"]`);if(!b)return null;const n=nav.getBoundingClientRect(),r=b.getBoundingClientRect(),q=id=='add';
- return {x:r.left-n.left,y:r.top-n.top,w:r.width,h:r.height,o:q?0:1,c:q?'#ff4d5e':tabCols(id)[0]}}
+function hlBox(id){const nav=document.getElementById('nav'),b=nav.querySelector(`button[data-id="${id}"]`);if(!b)return null;const n=nav.getBoundingClientRect(),br=b.getBoundingClientRect(),q=id=='add',ic=b.querySelector('.ni'),r=ic?ic.getBoundingClientRect():br;
+ // Pill hugs the icon: up to 48px wide (never wider than the slot) and 30px tall, centred on the icon
+ const w=Math.min(48,br.width-4),h=30,cx=r.left+r.width/2-n.left,cy=r.top+r.height/2-n.top;
+ return {x:cx-w/2,y:cy-h/2,w,h,o:q?0:1,c:q?'#ff4d5e':tabCols(id)[0]}}
 function placeHL(a,b,p=0){const nav=document.getElementById('nav'),A=hlBox(a);if(!A){nav.style.setProperty('--ho','0');return}
  const B=b&&hlBox(b)||A,L=(u,v)=>u+(v-u)*p,s=nav.style;
  s.setProperty('--hx',L(A.x,B.x).toFixed(1)+'px');s.setProperty('--hy',L(A.y,B.y).toFixed(1)+'px');s.setProperty('--hw',L(A.w,B.w).toFixed(1)+'px');s.setProperty('--hh',L(A.h,B.h).toFixed(1)+'px');s.setProperty('--ho',L(A.o,B.o).toFixed(3));
@@ -1816,7 +1826,7 @@ const APP=()=>document.getElementById('app'),EZ_IN='cubic-bezier(.16,1,.3,1)',EZ
 function slideIn(dir){const m=APP(),w=innerWidth;m.style.willChange='transform,opacity';m.style.transition='none';m.style.transform=`translate3d(${dir*Math.min(80,w*.15)}px,0,0)`;m.style.opacity='0';void m.offsetWidth;
  m.style.transition=`transform .22s ${EZ_IN},opacity .16s ease-out`;m.style.transform='translate3d(0,0,0)';m.style.opacity='1';
  setTimeout(()=>{m.style.transition='';m.style.transform='';m.style.opacity='';m.style.willChange=''},240)}
-// Levels below the Recipes tab: Settings 1, Lists 2; a category, Kitchen > Shopping and Add > Paste text add one;
+// Levels below the Recipes tab: Settings 1, Lists 2, Search and filters 1; a category, Kitchen > Shopping and Add > Paste text add one;
 // a recipe page sits one above where it was opened from; a popup (and its inner step) sits on top of everything
 const tabDepth=t=>(t=='browse'?0:t=='lists'?2:1)+(t=='browse'&&BC?1:0)+(t=='kit'&&KV=='shop'?1:0)+(t=='add'&&AM=='paste'?1:0),
  plStep=()=>SH&&SH.kind=='plan'&&SH.st!='pick'&&SH.from&&!SH.id;
@@ -1844,13 +1854,13 @@ addEventListener('popstate',e=>{if(HPOP){HPOP=0;navSync();return}
 ['pointerup','touchend','keydown'].forEach(t=>addEventListener(t,()=>setTimeout(navSync),true));   // catch layers opened by a long press
 function goTab(id){if(id==T){scrollTo({top:0,behavior:'smooth'});return}
  RST=[];
-const o=TABS.map(t=>t[0]),dir=o.indexOf(id)>o.indexOf(navId())?1:-1;T=id;R();scrollTo(0,0);slideIn(T=='more'||T=='lists'?1:dir);if(T=='disc')loadFeeds()}
+const o=TABS.map(t=>t[0]),dir=id=='find'?1:T=='find'&&id=='browse'?-1:o.indexOf(id)>o.indexOf(navId())?1:-1;T=id;R();scrollTo(0,0);slideIn(T=='more'||T=='lists'?1:dir);if(T=='disc')loadFeeds()}
 
 // =====================================================================
 // 9. GESTURES: swipe between tabs (the page and its neighbour move together under your finger)
 // =====================================================================
 const SWIPE=()=>TABS.filter(x=>x[0]!='add');
-function nbr(dir){const SW=SWIPE(),qi=TABS.findIndex(x=>x[0]=='add');let n;if(T=='more'||T=='lists'||T=='recipe')return null;if(T=='add')n=dir>0?qi:qi-1;else n=SW.findIndex(x=>x[0]==T)+dir;return SW[n]?SW[n][0]:null}
+function nbr(dir){const SW=SWIPE(),qi=TABS.findIndex(x=>x[0]=='add');let n;if(T=='more'||T=='lists'||T=='recipe'||T=='find')return null;if(T=='add')n=dir>0?qi:qi-1;else n=SW.findIndex(x=>x[0]==T)+dir;return SW[n]?SW[n][0]:null}
 function mkPeek(id){let p=document.getElementById('peek');
  if(!p){p=document.createElement('div');p.id='peek';p.setAttribute('aria-hidden','true');p.inert=true;document.body.appendChild(p)}
  if(p.dataset.id==id)return p;const c=tabCols(id);
