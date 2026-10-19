@@ -519,10 +519,20 @@ function ingInfo(l){const p=parseIng(l);let rest=p?p.rest:l,cu='';
  if(p&&!p.u){const m=CONT.exec(rest);if(m){cu=sing(m[1].toLowerCase());rest=rest.slice(m[0].length)}}
  const name=cleanName(rest)||cleanName(l);return {p,cu,name,key:nkey(name)}}
 // Does a Use it up item (by name) match an ingredient key?
-// Match when one name's words all appear in the other ("spinach" ~ "baby spinach"), or they share the main word
+// Match when one name's words all appear in the other ("spinach" ~ "baby spinach"), or they share the main word.
+// A word after the name that makes it a different product breaks the match: "apple" is not "apple cider vinegar",
+// "egg" is not "egg noodles", "peanut" is not "peanut butter". Citrus juice and zest still count ("lemon" ~ "lemon juice").
 const toks=s=>(s||'').split(' ').filter(Boolean);
+const DERIV=new Set('vinegar cider juice zest butter sauce extract powder oil paste jam jelly marmalade syrup molasses stock broth bouillon milk cream cheese flour starch sugar spice seasoning salt wine beer ale liqueur soda tea water essence flavoring concentrate puree ketchup salsa pesto dressing spread noodle paper cake cracker chip flake amino'.split(' '));
+const CITRUS=/^(lemon|lime|orange|grapefruit|yuzu|clementine|tangerine|mandarin)$/,ASIS=/^(vanilla|chocolate)$/;
+// Kinds of butter, milk, cream, flour and sugar made from something else: "butter" is not "peanut butter"
+const LEADX=/^(butter|milk|cream|flour|sugar)$/,LEADW=new Set('peanut almond cashew hazelnut pistachio walnut pecan macadamia coconut oat soy rice apple pumpkin sunflower sesame cocoa nut seed hemp flax pea'.split(' '));
+function pmOk(a,b){const lw=a[a.length-1],i=b.lastIndexOf(lw);if(i<0)return true;
+ if(!ASIS.test(lw))for(let j=i+1;j<b.length;j++){const w=b[j];if(!DERIV.has(w))continue;if((w=='juice'||w=='zest')&&CITRUS.test(b[j-1]))continue;return false}
+ if(LEADX.test(lw)&&i>0&&LEADW.has(b[i-1])&&!a.includes(b[i-1]))return false;
+ return true}
 const pm=(pname,key)=>{const a=toks(nkey(pname)),b=toks(key);if(!a.length||!b.length)return false;const has=(x,y)=>x.every(w=>y.includes(w));
- return has(a,b)||(has(b,a)&&a[a.length-1]==b[b.length-1])};
+ return (has(a,b)&&pmOk(a,b))||(has(b,a)&&a[a.length-1]==b[b.length-1]&&pmOk(b,a))};
 // Plain water in any temperature ("warm water", "very hot tap water") never goes on the shopping list; coconut, tonic or rose water still do
 const WATER=/^(?:(?:very|warm|hot|cold|cool|boiling|boiled|lukewarm|tepid|ice|iced|icy|filtered|tap|plain|room|temperature|temp)\s+)*water$/;
 const STAPLE=/^(water|ice|(kosher |sea |table |fine )?salt|((ground |cracked )?black )?pepper|salt and (black )?pepper)$/;
@@ -1206,9 +1216,16 @@ async function dqGo(){if(DQT.trim()){dqAdd(DQT);DQT=''}if(!DQ.length){toast('Add
   if(!mine())return;DQR.by[x.id]={err:r.error||'',items:(r.items||[]).slice(0,12)};DQB.delete(x.id);dsLater()};
  await Promise.all(Array.from({length:Math.min(4,xs.length)},async()=>{while(i<xs.length)await one(xs[i++])}));
  if(!mine())return;dsLater();checkPosts(Object.values(DQR.by).flatMap(s=>s.items.map(it=>it.u)))}
+// How well a post fits the search: an ingredient in the title counts most, then how central it is to the recipe
+// (near the top of the ingredient list, used in more than one line). Posts not checked yet are judged by title alone.
+function dqScore(o,w){const tk=nkey(o.it.t||'');let s=0;
+ w.forEach(v=>{if(pm(v,tk))s+=100;if(!o.ing.length)return;let first=-1,n=0;
+  o.ing.forEach((l,i)=>{if(dqHas([l],v)){n++;if(first<0)first=i}});
+  if(first>=0)s+=Math.min(n,3)*4+Math.max(0,8-first)});
+ return s}
 // What the search found, plus matching posts from sources it couldn't search
 function dqList(){if(!DQR)return [];const A=[],seen=new Set(),w=DQR.w;
- const add=(x,it)=>{if(!it.u||seen.has(it.u))return;const o=postOf(x,it);if(o.r===0)return;if(o.ing.length&&!w.every(v=>dqHas(o.ing,v)))return;seen.add(it.u);A.push(o)};
+ const add=(x,it)=>{if(!it.u||seen.has(it.u))return;const o=postOf(x,it);if(o.r===0)return;if(o.ing.length&&!w.every(v=>dqHas(o.ing,v)))return;seen.add(it.u);o.sc=dqScore(o,w);A.push(o)};
  S.srcs.forEach(x=>{if(srcKind(x.url)=='soc')return;const s=DQR.by[x.id];
   if(s&&!s.err)s.items.forEach(it=>add(x,it));
   else if(!DQB.has(x.id)&&FD[x.id]&&FD[x.id].items)FD[x.id].items.forEach(it=>{const o=postOf(x,it);if(o.ing.length||w.every(v=>pm(v,nkey(it.t))))add(x,it)})});
@@ -1221,7 +1238,7 @@ function vDq(){const busy=DQB.size>0,ks=pSorted().filter(p=>!DQ.some(v=>nkey(v)=
   +`<button data-a="dqGo" ${busy||!(DQ.length||DQT.trim())?'disabled':''} style="width:100%;margin-top:10px">${busy?'Searching…':'Find recipes'}</button>`;
  if(!DQR)return h+`<div class="hint">Finds recipes from your blogs that use all of these, from any year, not just the newest posts.</div></div>`;
  const A=dqList(),nR=A.filter(o=>o.k=='ready').length,nN=A.filter(o=>o.k=='near').length;if(DQM=='ready'&&!nR||DQM=='near'&&!nN)DQM='all';
- const P=A.filter(o=>DQM=='all'||o.k==DQM).sort(dsSort),checking=A.some(o=>o.r==null&&PIL.has(o.it.u));
+ const P=A.filter(o=>DQM=='all'||o.k==DQM).sort((a,b)=>b.sc-a.sc||dsSort(a,b)),checking=A.some(o=>o.r==null&&PIL.has(o.it.u));
  const none=S.srcs.filter(x=>srcKind(x.url)!='soc'&&!DQB.has(x.id)&&!(DQR.by[x.id]&&!DQR.by[x.id].err)).map(x=>x.name);
  h+=`<div style="margin-top:14px">`
   +((nR||nN)?`<div class="chips" style="margin:0 0 8px">${[['all','All · '+A.length],['ready','Ready to cook'+(nR?' · '+nR:'')],['near','Missing 1–2'+(nN?' · '+nN:'')]].map(([v,l])=>`<button class="chip ${DQM==v?'on':''}" data-a="dqM" data-v="${v}">${l}</button>`).join('')}</div>`:'')
