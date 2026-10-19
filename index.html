@@ -59,7 +59,7 @@ input[type=checkbox]::after{content:"";width:6px;height:11px;margin-top:-3px;bor
 input[type=checkbox]:checked{background:linear-gradient(135deg,var(--pc),var(--pc2));border-color:transparent}input[type=checkbox]:checked::after{transform:rotate(45deg) scale(1)}
 input[type=checkbox].pop{animation:pop .3s var(--bounce)}@keyframes pop{40%{transform:scale(1.22)}}
 button{background:linear-gradient(135deg,var(--pc),var(--pc2));color:#fff;border:0;border-radius:14px;padding:10px 16px;font:inherit;font-weight:800;cursor:pointer;box-shadow:0 6px 14px -6px color-mix(in srgb,var(--pc) 70%,transparent);transition:transform .25s var(--bounce),filter .1s,background var(--fast)}
-button.g,button.x,nav button,.seg button,.gear,#toast button,.chip,.rc,.sl,.tmr,.tp button{box-shadow:none}
+button.g,button.x,nav button,.seg button,.gear,#toast button,.chip,.rc,.tmr,.tp button{box-shadow:none}
 button:active{transform:scale(.93);filter:brightness(.95);transition-duration:.08s}
 button:disabled{opacity:.4;pointer-events:none}
 button.g{background:none;color:var(--mu);padding:8px 10px;font-weight:600}button.x{background:none;color:var(--neg);padding:8px 8px;font-weight:600}
@@ -173,14 +173,17 @@ ol.steps li.sh{counter-increment:none;padding:14px 0 2px}ol.steps li.sh:before{c
 ol.steps li:before{content:counter(s);position:absolute;left:0;top:8px;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--pc),var(--pc2));color:#fff;font:600 14px/28px var(--fd);text-align:center}
 .tmr{display:inline-flex;align-items:center;gap:4px;vertical-align:baseline;padding:1px 10px 1px 7px;margin:0 1px;border-radius:99px;font-size:.93em;font-weight:800;line-height:1.5;background:color-mix(in srgb,var(--ac) 16%,transparent);color:var(--ac)}
 
-/* ===== Cook mode ===== */
+/* ===== Cook mode (on the recipe page) ===== */
 .ct{display:block;font:600 19px/1.25 var(--fd);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-.nv button{flex:1}
-.sl{display:flex;gap:12px;width:100%;text-align:left;background:none;color:var(--tx);font-weight:500;padding:9px 6px;border-radius:12px;align-items:flex-start;line-height:1.45}
-.slh{margin:12px 0 2px}
-.sl.dn{opacity:.5}.sl:active{transform:scale(.98)}
-.slnum{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-content:center;background:var(--fld);font:600 13px var(--fd)}
+.cbar{display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 10px 10px 14px;border-radius:16px;background:color-mix(in srgb,var(--ac) 12%,transparent)}
+.cbar .cdot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--ac);animation:cpulse 1.6s ease-in-out infinite}@keyframes cpulse{50%{opacity:.35}}
+.cbar .ctx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}.cbar .ctx b{color:var(--ac);font-weight:800}
+.cks{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--bd);cursor:pointer;line-height:1.55}
+.cks:first-child,.cksh+.cks{border-top:0}
+.cks input{margin-top:1px}
+.cksn{flex:none;min-width:22px;font:600 14px/26px var(--fd);color:var(--pc)}
+.cksh{margin:14px 0 2px}.cksh:first-child{margin-top:0}
+.cdone{text-align:center;padding:6px 0 4px}.cdone p{margin:0 0 10px}
 #tdock{position:fixed;z-index:7;left:0;right:0;bottom:calc(82px + env(safe-area-inset-bottom,0px));display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:0 10px;pointer-events:none}
 .tp{pointer-events:auto;display:flex;align-items:center;gap:6px;background:var(--tst);color:#fff;border-radius:99px;padding:4px 4px 4px 14px;font-size:15px;font-weight:800;box-shadow:0 8px 20px -6px rgba(0,0,0,.45);max-width:100%}
 .tp span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;opacity:.85;font-size:12px;max-width:150px}
@@ -189,7 +192,6 @@ ol.steps li:before{content:counter(s);position:absolute;left:0;top:8px;width:28p
 
 /* ===== Add / edit ===== */
 .lrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.lbtn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:14px;border:1px solid var(--bd);color:var(--tx);text-decoration:none;font-weight:800;font-size:14px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lbtn:active{transform:scale(.95)}.lbtn .ic{color:var(--pc)}
-.sl.cur{background:color-mix(in srgb,var(--pc) 10%,transparent);padding:14px 10px;margin:4px 0}.sl.cur .slnum{background:linear-gradient(135deg,var(--pc),var(--pc2));color:#fff;width:30px;height:30px}.sl.cur .st{font:500 20px/1.55 var(--fd);margin:0 0 12px}
 .g2f{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.g2f label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:800;color:var(--mu)}.g2f input{font:600 15px 'Nunito',sans-serif;color:var(--tx)}
 .nrow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--bd)}.nrow:first-of-type{border-top:0}.nrow b{font-weight:800;text-align:right}
 .hint{font-size:12px;color:var(--mu);margin:6px 2px 0}
@@ -311,7 +313,7 @@ const short=t=>(t||'Recipe').length>20?(t||'').slice(0,19).trim()+'…':(t||'Rec
 // =====================================================================
 let S,T='browse',RID=null,PREV='browse';
 let SH=null,KV='use',QT=0;   // open bottom sheet, Kitchen sub-view
-let O={},AM='type',PT='',PARSED='',CK={},SC={},SUR=null,SURN=0,TM=[];   // UI-only state
+let O={},AM='type',PT='',PARSED='',CK={},SK={},SC={},SUR=null,SURN=0,TM=[];   // UI-only state (CK: checked ingredients, SK: checked steps, by recipe id)
 
 const blankD=()=>({id:'',title:'',sn:'',cuisine:'',meal:[],protein:[],method:[],diet:[],tags:[],serves:'',time:'',ingT:'',stepT:'',pairT:'',nutT:'',notes:'',src:'',vid:''});
 const blankShop=()=>({rids:[],x:{},extra:[],ck:{},got:{},have:{},need:{},note:{}});   // x: recipe id -> batches (×2 doubles its amounts)
@@ -326,7 +328,7 @@ function fix(r){const A=x=>Array.isArray(x)?x:[];r.id=r.id||uid('r');r.title=r.t
  r.time=num(r.time);r.serves=num(r.serves);r.notes=r.notes||'';r.src=r.src||'';r.vid=r.vid||'';r.added=r.added||tdy();return r}
 const sample=()=>({title:'One-Pot Chickpea Curry',cuisine:'Indian',meal:['Dinner'],protein:['Chickpeas'],method:['One-pot'],diet:['Vegan','Gluten-free','Dairy-free'],tags:['weeknight','freezer-friendly'],time:35,serves:4,
  ing:['1 tbsp olive oil','1 yellow onion, diced','3 cloves garlic, minced','1 tbsp grated ginger','2 tbsp curry powder','1 tsp ground cumin','1/2 tsp salt','2 cans (15 oz) chickpeas, drained','1 can (14 oz) diced tomatoes','1 can (13.5 oz) coconut milk','3 cups fresh spinach','1/2 lime, juiced','To serve:','Cooked rice'],
- steps:['Heat the oil in a large pot over medium heat. Add the onion and cook until soft, about 6 minutes.','Stir in the garlic, ginger, curry powder and cumin. Cook for 1 minute until fragrant.','Add the chickpeas, tomatoes, coconut milk and salt. Bring to a simmer, then cook uncovered for 15 minutes, stirring now and then.','Stir in the spinach until wilted, about 2 minutes. Finish with the lime juice and taste for salt.','Serve over rice.'],
+ steps:['Heat the oil in a large pot over medium heat. Add the onion and cook until soft @6m.','Stir in the garlic, ginger, curry powder and cumin. Cook until fragrant @1m.','Add the chickpeas, tomatoes, coconut milk and salt. Bring to a simmer, then cook uncovered, stirring now and then @15m.','Stir in the spinach until wilted @2m. Finish with the lime juice and taste for salt.','Serve over rice.'],
  notes:'Keeps 4 days in the fridge. Freezes well without the rice.',src:'',cooked:[]});
 function seed(){return {set:{theme:'system',welcome:1,since:Date.now()},facets:JSON.parse(JSON.stringify(DEFF)),recipes:[fix(sample())],draft:blankD(),f:blankF(),cookId:null,step:0}}
 
@@ -476,17 +478,31 @@ function scaleLine(l,f){const p=parseIng(l);if(!p||!(p.q>0))return ['',l];let q=
   else if(kind=='w'){const t=q*mul,t2=q2!=null?q2*mul:null,lb=t>=16;q=lb?t/16:t;if(t2!=null)q2=lb?t2/16:t2;unit=lb?'lb':'oz'}}
  return [fmtQ(q)+(q2!=null?'–'+fmtQ(q2):'')+(unit?' '+unit:''),p.rest]}
 
-// ---- Timers inside step text ("simmer 15 minutes") ----
+// ---- Times in step text ("simmer 15 minutes"): only used to suggest a recipe's total time ----
 const TRE=/(\d+(?:\.\d+)?)(?:\s*(?:-|–|to)\s*\d+(?:\.\d+)?)?\s*(seconds?|secs?|minutes?|mins?|hours?|hrs?)\b/gi;
-function stepsTime(steps){let t=0;(steps||[]).forEach(s=>{const re=new RegExp(TRE.source,'gi');let m;while(m=re.exec(s)){if(/\b(every|up to|or|at least|as long as|no more than|optional(ly)?[^.]*)\s*$/i.test(s.slice(0,m.index)))continue;t+=parseFloat(m[1])*(/^h/i.test(m[2])?60:/^s/i.test(m[2])?1/60:1)}});return Math.round(t)}
+// ---- Timer tags in step text: @10m, @30s, @1h, @1h30m, or a bare @10 (minutes). They show as a tap-to-start timer. ----
+// The @ needs a space (or the start of the line) before it, so email addresses are left alone.
+const TGRE=/(^|[\s(])@(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?(\d+)?(?![\w@])/gi;
+const tagSec=(h,m,s,b)=>(+h||0)*3600+((+m||0)+(+b||0))*60+(+s||0);   // b: a bare number, read as minutes ("@1h30" too)
+// Seconds -> "1 hr 30 min", "10 min", "45 sec"
+function tagTxt(sec){const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return [h?h+' hr':'',m?m+' min':'',s?s+' sec':''].filter(Boolean).join(' ')||'0 min'}
+// Each timer tag in a line: {i: where the tag starts, len, sec}. "@10" with no unit means minutes.
+function tagsIn(l){const o=[];String(l||'').replace(TGRE,(m,pre,h,mi,s,b,off)=>{const sec=tagSec(h,mi,s,b);
+  if(sec>0)o.push({i:off+pre.length,len:m.length-pre.length,sec});return m});return o}
+// Step text with each timer tag written out ("Simmer @15m" -> "Simmer 15 min"), for sharing and copying
+const plainS=l=>{l=plainL(l);let o='',i=0;tagsIn(l).forEach(t=>{o+=l.slice(i,t.i)+tagTxt(t.sec);i=t.i+t.len});return o+l.slice(i)};
+// Total minutes in the steps: a step with timer tags counts those, otherwise the times it mentions
+function stepsTime(steps){let t=0;(steps||[]).forEach(s=>{const tg=tagsIn(s);if(tg.length){t+=sum(tg,x=>x.sec)/60;return}
+ const re=new RegExp(TRE.source,'gi');let m;while(m=re.exec(s)){if(/\b(every|up to|or|at least|as long as|no more than|optional(ly)?[^.]*)\s*$/i.test(s.slice(0,m.index)))continue;t+=parseFloat(m[1])*(/^h/i.test(m[2])?60:/^s/i.test(m[2])?1/60:1)}});return Math.round(t)}
 // A step line ending in ":" is a section heading (like "For the sauce:"), the same as in ingredients
 const isHd=l=>/:$/.test(l),realSteps=r=>r.steps.filter(l=>!isHd(l));
 const stepsOf=t=>(t||'').split('\n').map(l=>l.trim().replace(/^(step\s*)?\d+\s*[.):]\s+/i,'').trim()).filter(Boolean);
 const VIDRE=/youtu\.?be|vimeo\.com|tiktok\.com|instagram\.com\/(reel|p)\/|facebook\.com\/.*video|fb\.watch/i;
 const normUrl=u=>{u=(u||'').trim();if(!u)return '';if(!/^[a-z]+:\/\//i.test(u)&&/^[\w-]+(\.[\w-]+)+(\/|$)/.test(u))u='https://'+u;return u};
 const isUrl=u=>/^https?:\/\//i.test(u||'');
-function stepHtml(s,r,n){let o='',i=0;s.replace(TRE,(m,a,u,off)=>{const sec=Math.round(parseFloat(a)*(/^h/i.test(u)?3600:/^s/i.test(u)?1:60));
- o+=esc(s.slice(i,off))+`<button class="tmr" data-a="timer" data-s="${sec}" data-l="${esc(short(dn(r))+' · step '+(n+1))}">${ICT}${esc(m)}</button>`;i=off+m.length;return m});return o+esc(s.slice(i))}
+// Step text -> HTML: timer tags become tap-to-start timers, [[links]] open those recipes
+function stepHtml(s,r,n){let o='',i=0;const l=esc(short(dn(r))+' · step '+(n+1));
+ tagsIn(s).forEach(t=>{o+=linkHtml(s.slice(i,t.i))+`<button class="tmr" data-a="timer" data-s="${t.sec}" data-l="${l}">${ICT}${esc(tagTxt(t.sec))}</button>`;i=t.i+t.len});return o+linkHtml(s.slice(i))}
 
 // ---- Heads-up for eggs and meat ----
 function dietWarn(t){t=(t||'').toLowerCase().replace(/\b(vegan|veggie|vegetarian|plant[- ]based|meatless|meat-free|egg-free|eggless|no[- ]egg|beyond|impossible|faux|mock)\s+[\w-]+(\s+[\w-]+)?/g,'').replace(/\boyster mushrooms?\b/g,'');
@@ -774,15 +790,32 @@ function hello(){const h=new Date().getHours(),g=h<5?'Late-night snack?':h<11?'W
  return `<div class="hello"><b>${g}</b><span>${n} recipe${n==1?'':'s'}</span></div>`}
 const welcome=()=>`<div class="card wide"><h3><span>Welcome to Big Saucy</span><button class="g" data-a="welcomeOff" aria-label="Dismiss">${ICX}</button></h3><p class="mu" style="margin:0 0 12px">Type recipes in or paste them from any website or doc. Then filter by cuisine, protein, method, time and your own tags, or let Surprise me decide. The Kitchen tab holds what you have on hand and builds your shopping list, flagging anything you already have. There's one sample recipe to show you around.</p><div class="row"><button data-a="tab" data-id="add">Add a recipe</button><button class="g bd" data-a="gear">Import a backup</button></div></div>`;
 
-// Ingredients with checkboxes and a servings scaler (used on the recipe page and in cook mode)
-function ingCard(r){const f=SC[r.id]||1,ck=CK[r.id]||{},any=Object.values(ck).some(Boolean);
- const rows=r.ing.map((l,j)=>{const pen=`<button class="g ied" data-a="ingEd" data-id="${esc(r.id)}" data-i="${j}" aria-label="Edit ${esc(l)}">${ICP}</button>`;
+// In cook mode, checked lines are hidden, and so is a heading with nothing left under it.
+// Works for ingredients and steps alike: L is the list, ck its checks. Returns which lines to show.
+function cookShow(L,ck){const show=L.map((l,j)=>!isHd(l)&&!ck[j]);
+ L.forEach((l,j)=>{if(!isHd(l))return;let k=j+1;while(k<L.length&&!isHd(L[k])&&!show[k])k++;show[j]=k<L.length&&!isHd(L[k])});return show}
+// Ingredients with checkboxes and a servings scaler. In cook mode checked ones drop out of sight.
+function ingCard(r){const f=SC[r.id]||1,ck=CK[r.id]||{},any=Object.values(ck).some(Boolean),cm=S.cookId==r.id,show=cm?cookShow(r.ing,ck):null;
+ const nck=cm?r.ing.filter((l,j)=>!isHd(l)&&ck[j]).length:0,left=r.ing.filter(l=>!isHd(l)).length-nck;
+ const rows=r.ing.map((l,j)=>{if(cm&&!show[j])return '';const pen=`<button class="g ied" data-a="ingEd" data-id="${esc(r.id)}" data-i="${j}" aria-label="Edit ${esc(l)}">${ICP}</button>`;
   if(/:$/.test(l))return `<div class="srow ihr"><div class="sec ih">${esc(l.slice(0,-1))}</div>${pen}</div>`;const [q,rest]=scaleLine(l,f);
   return `<div class="srow"><label class="ingr"><input type="checkbox" data-a="ck" data-id="${esc(r.id)}" data-i="${j}" ${ck[j]?'checked':''}><span>${q?`<b>${esc(q)}</b> `:''}${linkHtml(rest)}</span></label>${pen}</div>`}).join('');
  const sv=r.serves?'Serves '+fmtQ(r.serves*f):(f==1?'Original':'×'+fmtQ(f));
  return `<div class="card"><h3><span>Ingredients</span><span class="scl"><button class="g sb" data-a="scale" data-id="${esc(r.id)}" data-d="-1" aria-label="Fewer servings">−</button><span class="b">${sv}</span><button class="g sb" data-a="scale" data-id="${esc(r.id)}" data-d="1" aria-label="More servings">+</button></span></h3>`
  +(f!=1?`<div class="mu" style="margin:-4px 0 6px">Amounts scaled ×${fmtQ(f)} · <button class="g lnk" data-a="scale" data-id="${esc(r.id)}" data-d="0">Reset</button></div>`:'')
- +(rows||'<p class="mu" style="margin:0">No ingredients listed.</p>')+`<div class="row ifoot">${any?`<button class="g" data-a="ckClr" data-id="${esc(r.id)}">Uncheck all</button>`:''}<button class="g lnk" data-a="ingNew" data-id="${esc(r.id)}">+ Add ingredient</button></div></div>`}
+ +(rows||`<p class="mu" style="margin:0">${cm&&nck&&!left?'All ingredients checked off.':'No ingredients listed.'}</p>`)
+ +`<div class="row ifoot">${cm?(nck?`<button class="g" data-a="ckClr" data-id="${esc(r.id)}">Bring back ${nck} checked</button>`:'')
+  :any?`<button class="g" data-a="ckClr" data-id="${esc(r.id)}">Uncheck all</button>`:''}<button class="g lnk" data-a="ingNew" data-id="${esc(r.id)}">+ Add ingredient</button></div></div>`}
+// Steps. In cook mode each step gets a checkbox, and checked steps drop out of sight.
+function stepsCard(r){const id=esc(r.id);
+ if(!r.steps.length)return `<div class="card"><h3><span>Steps</span></h3><p class="mu" style="margin:0${S.cookId==r.id?' 0 10px':''}">No steps yet.</p>${S.cookId==r.id?`<button data-a="finish" style="width:100%">Finish and log it</button>`:''}</div>`;
+ if(S.cookId!=r.id)return `<div class="card"><h3><span>Steps</span></h3><ol class="steps">${(()=>{let c=0;return r.steps.map(s=>isHd(s)?`<li class="sh"><div class="sec ih">${esc(s.slice(0,-1))}</div></li>`:`<li>${stepHtml(s,r,c++)}</li>`).join('')})()}</ol></div>`;
+ const sk=SK[r.id]||{},show=cookShow(r.steps,sk),n=realSteps(r).length,nd=r.steps.filter((s,j)=>!isHd(s)&&sk[j]).length;let c=0;
+ const rows=r.steps.map((s,j)=>{if(isHd(s))return show[j]?`<div class="sec cksh">${esc(s.slice(0,-1))}</div>`:'';const k=c++;if(!show[j])return '';
+  return `<label class="cks"><input type="checkbox" data-a="sk" data-id="${id}" data-i="${j}" aria-label="Step ${k+1} done"><span class="cksn">${k+1}</span><span style="flex:1;min-width:0">${stepHtml(s,r,k)}</span></label>`}).join('');
+ return `<div class="card"><h3><span>Steps</span><span class="mu">${nd} of ${n} done</span></h3><div class="bar" style="margin-bottom:6px"><i style="width:${nd/n*100}%"></i></div>`
+  +(rows||`<div class="cdone"><p><b>All steps done.</b></p></div>`)
+  +`<div class="row ifoot">${nd?`<button class="g" data-a="skClr" data-id="${id}">Bring back ${nd} done</button>`:''}<button data-a="finish" style="margin-left:auto">Finish and log it</button></div></div>`}
 
 // =====================================================================
 // 6. VIEWS (one function per screen; each returns HTML for #app)
@@ -859,11 +892,12 @@ function vRecipe(){const r=byId(RID);if(!r)return '';const i=S.recipes.indexOf(r
  h+=`<div class="card wide"><div class="hr"><button class="phb${r.img&&IMG[r.img]?'':' add'}" data-a="phTap" data-id="${esc(r.id)}" aria-label="${r.img?'Change photo':'Add a photo'}">${tile(r,1)}</button><div style="min-width:0"><h2>${esc(r.title||'Untitled')}</h2><div class="mu">${meta}</div></div><button class="g hed" data-a="edit" data-id="${esc(r.id)}" aria-label="Edit recipe">${RIC(RI.edit)}</button></div>`
  +(fac.length||r.tags.length?`<div class="pills">${fac.map(([k,x])=>`<button class="pill" data-a="ftag" data-k="${k}" data-v="${esc(x)}">${esc(x)}</button>`).join('')}${abc(r.tags).map(x=>`<button class="pill tg" data-a="ftag" data-k="tags" data-v="${esc(x)}">#${esc(x)}</button>`).join('')}</div>`:'')
  +`<div class="mu" style="margin-top:10px">${lc?`Last cooked ${ago(lc)} · ${r.cooked.length} time${r.cooked.length==1?'':'s'}`:'Not cooked yet'}${nx?` · <button class="g lnk" data-a="plGo" data-d="${nx.d}">${nx.d==tdy()?'On the calendar today':'Next on the calendar '+esc(dlab(nx.d))}</button>`:''}</div>${kitNote(r)}
- ${linkRow(r)}${r.src?'':`<button class="g lnk" data-a="addLink" data-id="${esc(r.id)}" style="margin-top:10px">+ Add link to original recipe</button>`}<button class="rgo" data-a="cook" data-id="${esc(r.id)}">Start cooking</button><div class="ract">${(()=>{const id=esc(r.id),onL=S.shop.rids.includes(r.id),b=(a,ic,t,al,on)=>`<button data-a="${a}" data-id="${id}"${on?' class="on" aria-pressed="true"':''} aria-label="${al}">${RIC(ic)}<span>${t}</span></button>`;
+ ${linkRow(r)}${r.src?'':`<button class="g lnk" data-a="addLink" data-id="${esc(r.id)}" style="margin-top:10px">+ Add link to original recipe</button>`}${S.cookId==r.id?`<div class="cbar"><span class="cdot"></span><span class="ctx"><b>Cooking</b><span class="mu" id="wks">${esc(wakeTxt())}</span></span><button class="g bd" data-a="cookExit">Exit</button></div>`
+  :`<button class="rgo" data-a="cook" data-id="${esc(r.id)}">Start cooking</button>`}<div class="ract">${(()=>{const id=esc(r.id),onL=S.shop.rids.includes(r.id),b=(a,ic,t,al,on)=>`<button data-a="${a}" data-id="${id}"${on?' class="on" aria-pressed="true"':''} aria-label="${al}">${RIC(ic)}<span>${t}</span></button>`;
   return b('cooked',RI.done,'Cooked','Cooked today')+b('plCal',ICON.plan,'Calendar','Add to calendar')+b('listT',RI.list,onL?'On list':'List',onL?'On the shopping list':'Add to shopping list',onL)+b('rShare',RI.share,'Share','Share')})()}</div></div>`;
  if(warn.length)h+=`<div class="card warn"><h3><span><i class="bang">!</i>Heads up</span></h3><div>This mentions ${esc(warn.join(', '))}.</div></div>`;
  h+=ingCard(r);
- h+=`<div class="card"><h3><span>Steps</span></h3>${r.steps.length?`<ol class="steps">${(()=>{let c=0;return r.steps.map(s=>isHd(s)?`<li class="sh"><div class="sec ih">${esc(s.slice(0,-1))}</div></li>`:`<li>${stepHtml(s,r,c++)}</li>`).join('')})()}</ol>`:'<p class="mu" style="margin:0">No steps yet.</p>'}</div>`;
+ h+=stepsCard(r);
  {const pi=pairItems(r);if(pi.length)h+=`<div class="card"><h3><span>Goes with</span></h3><ul class="gw">${pi.map(x=>`<li>${x}</li>`).join('')}</ul></div>`}
  if(r.notes)h+=`<div class="card"><h3><span>Notes</span></h3><p class="pre">${esc(r.notes)}</p></div>`;
  if(ui.length)h+=`<div class="card"><h3><span>Used in</span><span class="mu">${ui.length}</span></h3>${ui.map(rRow).join('')}</div>`;
@@ -982,7 +1016,7 @@ var PST=0,PBUSY=0;          // var, not let: flush() can run before this part of
 const fp=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)+':'+s.length};
 const plainL=l=>String(l||'').replace(LRE,(m,t)=>t.trim());   // [[Linked recipe]] -> Linked recipe
 const pubOf=r=>({app:'cooking',v:2,title:r.title,cuisine:r.cuisine,meal:r.meal,protein:r.protein,method:r.method,diet:r.diet,tags:r.tags,serves:r.serves,time:r.time,img:r.img||'',
- ing:r.ing.map(plainL),steps:r.steps.map(plainL),...(prs(r).length?{pair:prs(r).map(plainL)}:{}),nut:r.nut,notes:plainL(r.notes),src:r.src,vid:r.vid});
+ ing:r.ing.map(plainL),steps:r.steps.map(plainS),...(prs(r).length?{pair:prs(r).map(plainL)}:{}),nut:r.nut,notes:plainL(r.notes),src:r.src,vid:r.vid});
 const SHARE_SITE='https://big-saucy.pages.dev';   // the share site on Cloudflare Pages (share/ in this repo)
 const shareUrl=id=>SHARE_SITE+'/r/'+id;
 const newShareId=()=>{const a='abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';return [...crypto.getRandomValues(new Uint8Array(10))].map(x=>a[x%a.length]).join('')};
@@ -1018,7 +1052,7 @@ async function pubSync(){if(PBUSY)return;PBUSY=1;
 function recipeText(r){const L=[r.title||'Untitled'];if(r.serves)L.push('Serves '+r.serves);if(r.time)L.push(fmtTime(r.time));
  const sec=(h,a)=>{if(a.length)L.push('',h,...a)};
  sec('Ingredients',r.ing.map(plainL));
- {let c=0;sec('Directions',r.steps.map(x=>isHd(x)?plainL(x):(++c)+'. '+plainL(x)))}
+ {let c=0;sec('Directions',r.steps.map(x=>isHd(x)?plainL(x):(++c)+'. '+plainS(x)))}
  sec('Goes with',prs(r).length?[prs(r).map(plainL).join(', ')]:[]);
  sec('Notes',plainL(r.notes).split('\n').map(x=>x.trim()).filter(Boolean));
  sec('Nutrition',r.nut);
@@ -1036,22 +1070,9 @@ function shareSheet(){const r=byId(SH.id);if(!r)return '';const opt=(a,ic,t,sub)
   +(SH.need?`<div class="card okc" style="margin:0 0 8px;padding:12px"><b>Sign in to share links</b><p class="mu" style="margin:4px 0 10px">Shared recipes are kept with your account, so the link can stay up to date when you edit. Plain text works without signing in.</p><button data-a="shSignIn" style="width:100%">Sign in</button></div>`:'')
   +opt('shLink',ICSH,'Share link','A recipe card anyone can open. It updates when you edit the recipe.')
   +opt('shText',ICTX,'Share as text','Plain lines with no formatting, for copying and pasting.')}
-// ---- Cook mode ----
+// ---- Cook mode: lives on the recipe page (Start cooking). S.cookId is the recipe being cooked. ----
 let WL=null,WP=0,WST='';
-const wakeTxt=()=>WST=='on'?'Screen stays on while you cook':WST=='no'?'Couldn\'t keep the screen on here. It should work once the app is hosted.':'';
-function vCook(){const r=byId(S.cookId);
- if(!r){const rec=S.recipes.filter(x=>last(x)).sort((a,b)=>last(a)<last(b)?1:-1).slice(0,5);
-  return `<div class="card wide"><h2>Cook mode</h2><p class="mu" style="margin:0 0 12px">Open a recipe and tap Start cooking. Your screen stays on, times in the steps become one-tap timers, and you can check off ingredients as you go.</p><button data-a="tab" data-id="browse">Browse recipes</button></div>`
-  +(rec.length?`<div class="card wide"><div class="sec">Cooked recently</div>${rec.map(rRow).join('')}</div>`:'')}
- const n=realSteps(r).length,k=Math.min(S.step||0,Math.max(0,n-1));let c=0;
- let h=`<div class="card wide"><div class="row">${r.img&&IMG[r.img]?tile(r):''}<div style="flex:1;min-width:0"><span class="sec" style="margin:0">Cooking</span><b class="ct">${esc(dn(r))}</b></div><button class="g bd" data-a="cookExit">Exit</button></div>${linkRow(r)}<div class="mu" id="wks" style="margin-top:6px">${wakeTxt()}</div></div>`;
- if(n)h+=`<div class="card wide stepc"><h3><span>Steps</span><span class="mu">Step ${k+1} of ${n}</span></h3><div class="bar" style="margin-bottom:8px"><i style="width:${(k+1)/n*100}%"></i></div>`
-  +r.steps.map(s=>{if(isHd(s))return `<div class="sec slh">${esc(s.slice(0,-1))}</div>`;const j=c++;return j==k?`<div class="sl cur"><span class="slnum">${j+1}</span><div style="flex:1;min-width:0"><div class="st">${stepHtml(s,r,j)}</div><div class="row nv"><button class="g bd" data-a="stp" data-d="-1" ${k?'':'disabled'}>‹ Back</button>${k>=n-1?`<button data-a="finish">Finish and log it</button>`:`<button data-a="stp" data-d="1">Next step ›</button>`}</div></div></div>`
-   :`<button class="sl ${j<k?'dn':''}" data-a="stp" data-to="${j}"><span class="slnum">${j<k?ICK:j+1}</span><span>${esc(s)}</span></button>`}).join('')+`</div>`;
- else h+=`<div class="card wide"><p class="mu" style="margin:0 0 10px">This recipe has no steps.</p><button data-a="finish">Log it as cooked</button></div>`;
- h+=ingCard(r);
- if(r.notes)h+=`<div class="card"><h3><span>Notes</span></h3><p class="pre">${esc(r.notes)}</p></div>`;
- return h}
+const wakeTxt=()=>WST=='on'?'Screen stays on while you cook':WST=='no'?'Couldn\'t keep the screen on here. It should work once the app is hosted.':'Checked items drop out of sight';
 
 // ---- Add / edit ----
 const ctmSug=d=>{const m=stepsTime(stepsOf(d.stepT));return m&&!String(d.time||'').trim()?`Steps mention about ${fmtTime(m)}. <button class="g lnk" data-a="useT" data-v="${m}">Use that</button>`:''};
@@ -1071,7 +1092,7 @@ function vAdd(){const d=S.draft,ed=!!d.id;
  <input type="url" inputmode="url" placeholder="Link to the original recipe (optional)" value="${esc(d.src)}" data-p="draft.src" data-t="s" autocomplete="off" autocapitalize="none" style="margin-top:8px">
  <div class="g2f"><label>Total time<input id="tm" type="text" placeholder="45 min" value="${esc(d.time)}" data-p="draft.time" data-t="s" autocomplete="off"></label><label>Serves<input type="number" inputmode="numeric" min="0" placeholder="4" value="${esc(d.serves)}" data-p="draft.serves" data-t="n"></label></div><div class="hint" id="ctm">${ctmSug(d)}</div></div>`;
  h+=`<div class="card"><h3><span>Ingredients</span></h3><textarea class="auto rx" data-p="draft.ingT" data-t="s" placeholder="2 cups basmati rice&#10;1 can coconut milk&#10;3 cloves garlic, minced&#10;For the sauce:&#10;2 tbsp soy sauce">${esc(d.ingT)}</textarea><div class="row ifoot" style="margin-top:4px"><button class="g lnk" data-a="lnkPick" data-f="ingT">+ Link one of your recipes</button></div><div class="hint">One per line. A line ending in a colon becomes a heading. Put one of your recipe names in double brackets, like <b>1/2 cup [[Pickled Onions]]</b>, to link to it.</div></div>`;
- h+=`<div class="card"><h3><span>Steps</span></h3><textarea class="auto rx" data-p="draft.stepT" data-t="s" placeholder="Rinse the rice and drain.&#10;Simmer the sauce for 10 minutes.&#10;Serve hot.">${esc(d.stepT)}</textarea><div class="hint">One step per line. Times like "10 minutes" become timers you can tap to start, if you want them.</div></div>`;
+ h+=`<div class="card"><h3><span>Steps</span></h3><textarea class="auto rx" data-p="draft.stepT" data-t="s" placeholder="Rinse the rice and drain.&#10;Simmer the sauce @10m.&#10;Serve hot.">${esc(d.stepT)}</textarea><div class="hint">One step per line. Add a timer with <b>@</b> and a time, like <b>Simmer @10m</b>, <b>@30s</b>, <b>@1h</b> or <b>@1h30m</b>. It shows as a button you tap to start. Recipe names in double brackets, like <b>[[Pickled Onions]]</b>, link here too.</div></div>`;
  h+=`<div class="card"><h3><span>Goes with</span></h3><textarea class="auto rx sm" data-p="draft.pairT" data-t="s" placeholder="rice, tortillas&#10;[[Pico de Gallo]]">${esc(d.pairT)}</textarea><div class="row ifoot" style="margin-top:4px"><button class="g lnk" data-a="lnkPick" data-f="pairT">+ Link one of your recipes</button></div><div class="hint">Things to serve with it, separated by commas or new lines. Put one of your recipe names in double brackets, like <b>[[Spanish Rice]]</b>, to link to it. Linked recipes list this one too.</div></div>`;
  if(warn.length)h+=`<div class="card warn"><h3><span><i class="bang">!</i>Heads up</span></h3><div>This mentions ${esc(warn.join(', '))}. Swap or skip as needed.</div></div>`;
  h+=`<div class="card"><h3><span>Sort it</span></h3>${FAC.map(([k,l,one])=>`<div class="sec">${l}${one?' · pick one':''}</div>${fchips(k,one)}`).join('')}
@@ -1117,7 +1138,7 @@ function vHist(){const ev=[];S.recipes.forEach(r=>r.cooked.forEach(d=>ev.push([d
  let h=`<div class="card wide"><div class="sec">Cooking log</div><div class="stats"><div><span class="mu">This month</span><b>${cm}</b></div><div><span class="mu">This year</span><b>${cy}</b></div><div><span class="mu">Tried</span><b>${tried}<small class="mu"> / ${S.recipes.length}</small></b></div></div></div>`;
  const cb=S.recipes.filter(r=>r.cooked.length&&dayDiff(last(r))<=-21).sort((a,b)=>last(a)<last(b)?-1:1).slice(0,6);
  if(cb.length)h+=`<div class="card wide"><div class="sec">Due for a comeback</div>${cb.map(rRow).join('')}</div>`;
- if(!ev.length)return h+`<div class="card wide"><p class="mu" style="margin:0">Nothing logged yet. Tap <b>Cooked today</b> on a recipe, or finish one in Cook mode, and it shows up here.</p></div>`;
+ if(!ev.length)return h+`<div class="card wide"><p class="mu" style="margin:0">Nothing logged yet. Tap <b>Cooked today</b> on a recipe, or finish cooking one, and it shows up here.</p></div>`;
  // Grouped by how long ago, one row per recipe in each group; ✕ takes off its latest entry in that group
  const PER=[[7,'Past week'],[30,'Past 30 days'],[90,'Past 3 months'],[365,'Past year'],[1e9,'Longer ago']],G=PER.map(()=>new Map());
  ev.forEach(([d,r])=>{const gi=PER.findIndex(([n])=>-dayDiff(d)<n),m=G[gi];if(!m.has(r.id))m.set(r.id,{r,ds:[]});m.get(r.id).ds.push(d)});
@@ -1463,10 +1484,12 @@ function tick(){if(!TM.length)return;const now=Date.now();let ch=0;
 setInterval(tick,1000);
 
 // ---- Keep the screen awake in cook mode ----
+// On while something is being cooked and a recipe page is open (the one you're cooking, or a recipe it links to)
 function updW(){const el=document.getElementById('wks');if(el)el.textContent=wakeTxt()}
-async function wakeSync(){const want=T=='cook'&&!!byId(S.cookId)&&!document.hidden;
+const wakeWant=()=>T=='recipe'&&!!byId(S.cookId)&&!document.hidden;
+async function wakeSync(){const want=wakeWant();
  if(want&&!WL&&!WP){if(!('wakeLock' in navigator)){WST='no';updW();return}WP=1;try{WL=await navigator.wakeLock.request('screen');WST='on';
-  if(!(T=='cook'&&byId(S.cookId)&&!document.hidden)){const w=WL;WL=null;WST='';w.release().catch(()=>{});WP=0;return}
+  if(!wakeWant()){const w=WL;WL=null;WST='';w.release().catch(()=>{});WP=0;return}
   WL.addEventListener('release',()=>{WL=null;if(WST=='on')WST='';updW()})}catch(e){WST='no'}WP=0;updW()}
  else if(!want&&WL){const w=WL;WL=null;try{await w.release()}catch(e){}}}
 
@@ -1509,7 +1532,8 @@ const ACT={
  sort:(d,el)=>{S.f.sort=el.value;commit()},
  welcomeOff:()=>{delete S.set.welcome;commit()},
  // recipe page
- cook:d=>{if(S.cookId!=d.id){S.cookId=d.id;S.step=0}save();goTab('cook')},
+ // Start cooking: cook mode turns on right on the recipe page. Starting another recipe ends the last one's session.
+ cook:d=>{if(!byId(d.id))return;const o=S.cookId;if(o&&o!=d.id){CK[o]={};SK[o]={}}S.cookId=d.id;audio();commit();toast('Cooking. Check things off as you go.')},
  cooked:d=>{const r=byId(d.id);if(!r||!logCooked(r))return;afterCook(r);R();toast('Logged as cooked today',()=>{const i=r.cooked.lastIndexOf(tdy());if(i>=0)r.cooked.splice(i,1);commit()})},
  edit:d=>{const r=byId(d.id);if(!r)return;if(!dEmpty(S.draft)&&S.draft.id!=r.id&&!confirm('Discard the recipe you were adding?'))return;
   S.draft=Object.assign(blankD(),{id:r.id,title:r.title,sn:r.sn||'',cuisine:r.cuisine,meal:[...r.meal],protein:[...r.protein],method:[...r.method],diet:[...r.diet],tags:[...r.tags],serves:r.serves||'',time:r.time?fmtTime(r.time):'',ingT:r.ing.join('\n'),stepT:r.steps.join('\n'),pairT:pairEdit(r).join(', '),nutT:r.nut.join('\n'),notes:r.notes,src:r.src,vid:r.vid});
@@ -1542,16 +1566,23 @@ const ACT={
  logAdd:d=>{const r=byId(d.id);if(!r)return;r.cooked.push(tdy());O.log=1;commit()},
  del:d=>del(d.p,+d.i),
  scale:d=>{const r=byId(d.id),f=SC[d.id]||1,s=+d.d;if(!r)return;if(!s)SC[d.id]=1;else if(r.serves){const n=Math.max(1,Math.round(r.serves*f)+s);SC[d.id]=n/r.serves}else SC[d.id]=Math.max(.5,f+s*.5);R()},
- ck:(d,el)=>{(CK[d.id]=CK[d.id]||{})[d.i]=el.checked;R()},
+ // Checking off an ingredient. In cook mode it drops out of sight, with Undo to bring it back.
+ // (Read the box and its data before redrawing: in cook mode the redraw reuses that box for the next line down.)
+ ck:(d,el)=>{const id=d.id,i=d.i,on=el.checked,c=CK[id]=CK[id]||{};c[i]=on;R();const r=byId(id);
+  if(on&&r&&S.cookId==r.id)toast('Checked off '+plainL(r.ing[+i]||''),()=>{c[i]=false;R()})},
  ckClr:d=>{CK[d.id]={};R()},
- // cook mode
- timer:d=>{audio();const s=+d.s;if(!s)return;TM.push({id:uid('t'),l:d.l,end:Date.now()+s*1000});saveT();dock();toast('Timer started: '+clock(s))},
+ // cook mode: checking off a step, bringing done steps back, timers
+ sk:(d,el)=>{const id=d.id,i=d.i,on=el.checked,c=SK[id]=SK[id]||{};c[i]=on;R();const r=byId(id);if(!on||!r)return;
+  const n=r.steps.slice(0,+i+1).filter(s=>!isHd(s)).length;toast('Step '+n+' done',()=>{c[i]=false;R()})},
+ skClr:d=>{SK[d.id]={};R()},
+ // One timer at a time: starting a new one replaces whatever was running
+ timer:d=>{audio();const s=+d.s;if(!s)return;const was=TM.some(t=>!t.done);TM=[{id:uid('t'),l:d.l,end:Date.now()+s*1000}];saveT();dock();toast((was?'Timer replaced: ':'Timer started: ')+clock(s))},
  tmX:d=>{TM=TM.filter(t=>t.id!=d.id);saveT();dock()}, tmOk:d=>ACT.tmX(d),
  tmAdd:d=>{const t=TM.find(x=>x.id==d.id);if(t){t.end+=60000;saveT();dock()}},
- stp:d=>{const r=byId(S.cookId);if(!r)return;const n=realSteps(r).length;S.step=Math.max(0,Math.min(n-1,d.to!=null?+d.to:(S.step||0)+(+d.d)));commit();document.querySelector('#app .sl.cur')?.scrollIntoView({behavior:'smooth',block:'center'})},
- finish:()=>{const r=byId(S.cookId);if(!r)return;const t=tdy(),added=!r.cooked.includes(t);if(added)r.cooked.push(t);S.cookId=null;S.step=0;CK[r.id]={};save();afterCook(r);openRecipe(r.id,'browse');
+ // Finishing or leaving cook mode clears everything checked off, so the recipe is whole again next time
+ finish:()=>{const r=byId(S.cookId);if(!r)return;const t=tdy(),added=!r.cooked.includes(t);if(added)r.cooked.push(t);S.cookId=null;CK[r.id]={};SK[r.id]={};save();afterCook(r);R();scrollTo({top:0,behavior:'smooth'});
   if(added){confetti();toast('Nice. Logged as cooked today.',()=>{const i=r.cooked.lastIndexOf(t);if(i>=0)r.cooked.splice(i,1);commit()})}else toast('Already logged for today')},
- cookExit:()=>{S.cookId=null;S.step=0;commit()},
+ cookExit:()=>{const id=S.cookId;if(id){CK[id]={};SK[id]={}}S.cookId=null;commit()},
  // add / edit
  am:d=>{AM=d.m;if(AM=='paste')PARSED='';R();if(AM=='paste')document.getElementById('pt')?.focus()},
  clip:async()=>{try{const t=await navigator.clipboard.readText();if(t&&t.trim()){PT=t;R()}else toast('The clipboard is empty')}catch(e){toast('Long-press the box and tap Paste instead')}},
@@ -1735,14 +1766,13 @@ document.addEventListener('toggle',e=>{const k=e.target.dataset&&e.target.datase
 // 8. RENDER & NAVIGATION
 // =====================================================================
 const ICON={browse:'<path d="M4 19.5V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2v0a2 2 0 0 0 2 2h14"/><path d="M9 7h7M9 11h5"/>',
- cook:'<path d="M4 10h16v7a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z"/><path d="M2 10h20"/><path d="M9 6.5c0-1.2 1-1.3 1-2.5M14 6.5c0-1.2 1-1.3 1-2.5"/>',
  kit:'<path d="M5 9h14l-1.5 10.3a2 2 0 0 1-2 1.7h-7a2 2 0 0 1-2-1.7z"/><path d="M9 9l3-5.5L15 9M10 13v4M14 13v4"/>',
  find:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
  disc:'<circle cx="12" cy="12" r="9"/><path d="M15.8 8.2l-2.3 5.3-5.3 2.3 2.3-5.3z"/>',
  hist:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
  plan:'<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/>'};
-const TABS=[['browse','Recipes'],['find','Find'],['plan','Plan'],['add','Add'],['kit','Kitchen'],['cook','Cook'],['disc','Discover']];
-const VIEW={disc:vDisc,plan:vPlan,kit:vKit,browse:vBrowse,find:vFind,cook:vCook,add:vAdd,hist:vHist,lists:vLists,more:vMore,recipe:vRecipe};
+const TABS=[['browse','Recipes'],['find','Find'],['plan','Plan'],['add','Add'],['kit','Kitchen'],['disc','Discover']];
+const VIEW={disc:vDisc,plan:vPlan,kit:vKit,browse:vBrowse,find:vFind,add:vAdd,hist:vHist,lists:vLists,more:vMore,recipe:vRecipe};
 const navId=()=>T=='recipe'?(TABS.some(t=>t[0]==PREV)?PREV:'browse'):T;
 const tabCols=id=>(TC[id]||TC.browse)[document.documentElement.dataset.theme=='dark'?1:0];
 
