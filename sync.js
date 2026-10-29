@@ -1,5 +1,5 @@
 // Cloud sync: keeps this app's data the same on every device you sign in on.
-// The same file is used by Big Skinny (diet), Big Saucy (cooking) and the budget app. Edit it in one, copy it to the others.
+// The same file is used by every Big app: Big Minty (budget), Big Saucy (cooking), Big Skinny (diet), Big Tidy (reminders) and Big Shiny (cleaning). Edit it in one, copy it to all the others.
 //
 // How it works
 // - Each person signs in with their own email + password (Firebase Auth). Every account has its own, separate data.
