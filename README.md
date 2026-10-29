@@ -1,6 +1,6 @@
 # Big Saucy Recipes
 
-A recipe box, cook mode and shopping list that runs in your browser. It's part of the Big apps, alongside [Big Skinny Health](https://github.com/dontdoubtdusty/diet) and [Big Minty Finances](https://github.com/dontdoubtdusty/budget). It's one file (`index.html`) with no build step and no server.
+A recipe box, cook mode and shopping list that runs in your browser. It's part of the Big apps, alongside [Big Minty Finances](https://github.com/dontdoubtdusty/budget), [Big Skinny Health](https://github.com/dontdoubtdusty/diet), [Big Tidy Reminders](https://github.com/dontdoubtdusty/reminders) and [Big Shiny Rounds](https://github.com/dontdoubtdusty/cleaning). It's one file (`index.html`) with no build step and no server.
 
 ## Features
 
